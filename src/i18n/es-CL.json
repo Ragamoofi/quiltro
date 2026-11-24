@@ -1,0 +1,178 @@
+{
+  "juego": {
+    "titulo": "QUILTRO",
+    "lema": "Un quiltro. 4.300 km de Chile. Puro aguante."
+  },
+  "ui": {
+    "viajar": "¡Viajar!",
+    "rutaDelDia": "Ruta del día",
+    "cucha": "La Cucha",
+    "logros": "Logros",
+    "opciones": "Opciones",
+    "lucas": "{n} lucas",
+    "km": "{n} km",
+    "record": "Tu récord: {lugar}",
+    "subirNivel": ["¡Wena!", "¡Vamos que se puede!", "¡Esa!", "¡Buena, cabro!"],
+    "legendaria": "¡Bacán!",
+    "otraMano": "Otra mano",
+    "niAhi": "Ni ahí",
+    "paso": "Paso",
+    "nuevo": "Nuevo",
+    "nivelDeA": "Nivel {de} → {a}",
+    "evoluciona": "¡Evoluciona!",
+    "pausa": "Pausa pa'l tecito",
+    "seguir": "Seguir",
+    "paLaCasa": "Pa' la casa",
+    "confirmarSalir": "¿Seguro? Se pierde el viaje.",
+    "muerte": "Se te fue la micro",
+    "victoria": "¡De Arica a Punta Arenas!",
+    "otraAlTiro": "¡Otra, al tiro!",
+    "compartir": "Compartir",
+    "menu": "Menú",
+    "copiarGrupo": "Copiar para el grupo",
+    "rodeado": "¡Te rodearon!",
+    "temblor": "Fue un 6,2. Nadie se movió.",
+    "nuevoRecord": "¡Llegaste más lejos que nunca!",
+    "vecinosIdle": "Mientras no estabas, {vecino} te dejó {n} lucas",
+    "recoger": "Recoger",
+    "sinLucas": "Te faltan {n} lucas, compadre",
+    "teAlcanza": "Te alcanza para {mejora}",
+    "tiempo": "Tiempo",
+    "enemigos": "Enemigos",
+    "nivel": "Nivel",
+    "lucasGanadas": "Lucas ganadas",
+    "cargando": "Cargando..."
+  },
+  "tutorial": {
+    "muevete": "Muévete",
+    "volantines": "Tus volantines atacan solos",
+    "comida": "Junta comida para subir de nivel",
+    "guau": "Mantén para dar hilo, suelta para ¡GUAU!"
+  },
+  "zonas": {
+    "norte": { "titulo": "EL NORTE GRANDE", "subtitulo": "Aquí no llueve nunca. Pero zancudos hay." },
+    "centro": { "titulo": "SANTIAGO", "subtitulo": "Cuidado: la micro no para." },
+    "valparaiso": { "titulo": "VALPARAÍSO", "subtitulo": "Puros cerros. Y gaviotas con hambre." },
+    "sur": { "titulo": "EL SUR", "subtitulo": "Llueve. Y dicen que hay un barco fantasma." },
+    "patagonia": { "titulo": "LA PATAGONIA", "subtitulo": "Aquí el viento manda." },
+    "antartica": { "titulo": "LA ANTÁRTICA", "subtitulo": "Más al sur ya no queda Chile. ¿O sí?" }
+  },
+  "ciudades": {
+    "arica": "Arica",
+    "antofagasta": "Antofagasta",
+    "santiago": "Santiago",
+    "valparaiso": "Valparaíso",
+    "temuco": "Temuco",
+    "puertoMontt": "Puerto Montt",
+    "chiloe": "Chiloé",
+    "coyhaique": "Coyhaique",
+    "puntaArenas": "Punta Arenas",
+    "antartica": "La Antártica"
+  },
+  "jefes": {
+    "alicanto": { "nombre": "El Alicanto", "linea": "Dicen que quien lo sigue encuentra oro. O se pierde para siempre." },
+    "taco": { "nombre": "El Taco", "linea": "Costanera, 18:30 horas." },
+    "caleuche": { "nombre": "El Caleuche", "linea": "Se escucha música de fiesta en medio del mar..." },
+    "granTemblor": { "nombre": "El Gran Temblor", "linea": "Este sí es grado 9. Ahora sí hay que moverse." }
+  },
+  "enemigos": {
+    "zancudo": "Zancudo",
+    "jote": "Jote",
+    "guanaco": "Guanaco",
+    "paloma": "Paloma de la Plaza",
+    "micro": "Micro",
+    "gaviota": "Gaviota de Valpo",
+    "loboMarino": "Lobo marino",
+    "chonchon": "Chonchón",
+    "camahueto": "Camahueto",
+    "basilisco": "Basilisco chilote",
+    "tempano": "Témpano",
+    "chingue": "Chingue",
+    "puma": "Puma"
+  },
+  "armas": {
+    "volantin": { "nombre": "Volantín", "efecto": "Volantines con hilo curado que orbitan según el hilo" },
+    "trompo": { "nombre": "Trompo", "efecto": "Trompos que salen girando y rebotan entre enemigos" },
+    "cables": { "nombre": "Maraña de cables", "efecto": "Chispazo del poste que salta entre enemigos" },
+    "chaya": { "nombre": "Chaya", "efecto": "Estela de confeti y serpentina que daña y ralentiza" },
+    "fuegos": { "nombre": "Fuegos artificiales", "efecto": "Cohetes que suben y explotan en área sobre grupos" },
+    "rayuela": { "nombre": "Rayuela", "efecto": "Lanza el tejo en línea recta hacia donde caminas" },
+    "guau": { "nombre": "¡GUAU!", "efecto": "El ladrido: onda de choque que empuja a todos" }
+  },
+  "rasgos": {
+    "pataDePerro": { "nombre": "Pata de perro", "carta": "No para en la casa" },
+    "chalequito": { "nombre": "Chalequito", "carta": "Tejido por la vecina" },
+    "laOnce": { "nombre": "La once", "carta": "Tecito y marraqueta" },
+    "cachai": { "nombre": "Cachai", "carta": "Lo ve todo" },
+    "choro": { "nombre": "Choro", "carta": "No le tiene miedo a na'" },
+    "laJauria": { "nombre": "La jauría", "carta": "Llegaron los del barrio" },
+    "alTiro": { "nombre": "Al tiro", "carta": "Altiro, altiro" },
+    "olfato": { "nombre": "Olfato", "carta": "Huele un completo a tres cuadras" }
+  },
+  "evoluciones": {
+    "cieloDelDieciocho": "Cielo del Dieciocho",
+    "trompoTornado": "Trompo Tornado",
+    "apagon": "Apagón",
+    "carnaval": "Carnaval",
+    "anoNuevoEnValpo": "Año Nuevo en Valpo",
+    "persigueAutos": "Persigue autos",
+    "aullidoDeLas12": "Aullido de las 12"
+  },
+  "comida": {
+    "sopaipilla": "Sopaipilla",
+    "completo": "Completo",
+    "chorrillana": "Chorrillana",
+    "moteConHuesillo": "Mote con huesillo",
+    "silbido": "Silbido de la vecina",
+    "temblor": "¡Temblor!",
+    "caja": "Caja del Almacén"
+  },
+  "cucha": {
+    "platoLleno": "Plato lleno",
+    "frazada": "Frazada",
+    "pelota": "Pelota",
+    "huesoDeCaracu": "Hueso de caracú",
+    "narizHumeda": "Nariz húmeda",
+    "collarNuevo": "Collar nuevo",
+    "volantinExtra": "Volantín extra",
+    "buenaOnda": "Buena onda",
+    "otraMano": "Otra mano",
+    "cuartaCarta": "Cuarta carta",
+    "segundaVida": "Segunda vida",
+    "cuentaRut": "Cuenta RUT"
+  },
+  "vecinos": {
+    "almacen": "la señora del almacén",
+    "conserje": "el conserje",
+    "feria": "el de la feria",
+    "tiaOnce": "la tía de la once"
+  },
+  "personajes": {
+    "quiltro": "El Quiltro",
+    "quiltra": "La Quiltra del Chalequito",
+    "gato": "El Gato del Almacén",
+    "pudu": "El Pudú",
+    "pinguino": "El Pingüino de Humboldt",
+    "paloma": "La Paloma Rebelde"
+  },
+  "logros": {
+    "niSeInmuto": { "nombre": "Ni se inmutó", "desc": "Sobrevivir un Temblor sin moverte" },
+    "laMicroSiParo": { "nombre": "La micro sí paró", "desc": "Matar una micro antes de que embista" },
+    "dieciochero": { "nombre": "Dieciochero", "desc": "Tener Cielo del Dieciocho" },
+    "deAricaAPuntaArenas": { "nombre": "De Arica a Punta Arenas", "desc": "Vencer al Gran Temblor" },
+    "puroAguante": { "nombre": "Puro aguante", "desc": "Sobrevivir 5 min sin recibir daño" },
+    "paLaFoto": { "nombre": "Pa' la foto", "desc": "Llegar a 300 enemigos en pantalla" },
+    "guardianes": { "nombre": "Guardianes", "desc": "???" }
+  },
+  "intro": ["Arica. Dieciocho.", "¡Nooo, mi volantín!", "Yo lo traigo."],
+  "final": ["...", "¡VOLVISTE!", "De Arica a Punta Arenas. Y de vuelta. Puro aguante."],
+  "datosCarga": [
+    "Chile mide más de 4.000 km de largo y en promedio unos 177 km de ancho.",
+    "El desierto de Atacama es el desierto no polar más seco del mundo.",
+    "El pudú es uno de los ciervos más pequeños del mundo y vive en el sur de Chile.",
+    "Las iglesias de madera de Chiloé son Patrimonio de la Humanidad.",
+    "Consejo: la micro también atropella a tus enemigos. Úsala.",
+    "Consejo: si una gaviota te roba la comida, persigue a la gaviota.",
+    "Consejo: dar hilo es poderoso, pero te pone lento."
+  ]
+}
