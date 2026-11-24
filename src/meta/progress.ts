@@ -1,0 +1,218 @@
+import { FIRST_ZONE_BONUS_LUCAS, lucasForRun, upgradeCost } from '../data/balance.ts';
+import { IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
+import { LOGROS } from '../data/logros.ts';
+import { PERSONAJES } from '../data/personajes.ts';
+import { CIUDADES } from '../data/zonas.ts';
+import type { SaveData } from './save.ts';
+
+/**
+ * Everything La Cucha decides: upgrade costs and effects, run rewards
+ * (lucas, first-time zones, achievements, unlocked characters) and the
+ * neighbours' idle lucas. Pure functions over SaveData, covered by tests.
+ */
+
+/** Totals of the permanent upgrades, applied when a run starts. */
+export interface MetaBonus {
+  maxHp: number;
+  armor: number;
+  speedMult: number;
+  damageMult: number;
+  pickupMult: number;
+  cooldownMult: number;
+  startingKites: number;
+  luck: number;
+  rerolls: number;
+  cards: number;
+  revives: number;
+  lucasMult: number;
+}
+
+export function level(save: SaveData, id: string): number {
+  return save.upgrades[id] ?? 0;
+}
+
+export function nextCost(save: SaveData, def: UpgradeDef): number | null {
+  const l = level(save, def.id);
+  return l >= def.maxLevel ? null : upgradeCost(def.baseCost, l);
+}
+
+export function canBuy(save: SaveData, id: string): boolean {
+  const def = MEJORAS.find((m) => m.id === id);
+  if (!def) return false;
+  const cost = nextCost(save, def);
+  return cost !== null && save.lucas >= cost;
+}
+
+export function buy(save: SaveData, id: string): boolean {
+  const def = MEJORAS.find((m) => m.id === id);
+  if (!def) return false;
+  const cost = nextCost(save, def);
+  if (cost === null || save.lucas < cost) return false;
+  save.lucas -= cost;
+  save.upgrades[id] = level(save, id) + 1;
+  return true;
+}
+
+/** Cheapest upgrade the player can afford right now ("Te alcanza para…"). */
+export function affordable(save: SaveData): UpgradeDef | null {
+  let best: UpgradeDef | null = null;
+  let bestCost = Number.POSITIVE_INFINITY;
+  for (const def of MEJORAS) {
+    const c = nextCost(save, def);
+    if (c !== null && c <= save.lucas && c < bestCost) {
+      best = def;
+      bestCost = c;
+    }
+  }
+  return best;
+}
+
+export function metaBonus(save: SaveData): MetaBonus {
+  const b: MetaBonus = {
+    maxHp: 0,
+    armor: 0,
+    speedMult: 0,
+    damageMult: 0,
+    pickupMult: 0,
+    cooldownMult: 0,
+    startingKites: 0,
+    luck: 0,
+    rerolls: 0,
+    cards: 0,
+    revives: 0,
+    lucasMult: 0,
+  };
+  for (const def of MEJORAS) {
+    const l = level(save, def.id);
+    if (l === 0) continue;
+    for (const [k, v] of Object.entries(def.perLevel) as [keyof MetaBonus, number][]) b[k] += v * l;
+  }
+  return b;
+}
+
+// ---------------------------------------------------------------- run results
+
+export interface RunResult {
+  /** Km that count for lucas (new since the last report of this run). */
+  km: number;
+  /** Total km reached (for the record). Defaults to `km`. */
+  bestKm?: number;
+  /** Second report of the same run (after continuing to Antarctica). */
+  continued?: boolean;
+  kills: number;
+  bosses: number;
+  bossesBeaten: readonly string[];
+  /** Zone ids reached during the run (in order). */
+  zones: readonly string[];
+  killsBy: Readonly<Record<string, number>>;
+  sopaipillas: number;
+  /** Lucas picked up during the run (Paso, cards). */
+  lucasInRun: number;
+  victory: boolean;
+  /** Achievement ids earned during the run. */
+  achievements: readonly string[];
+}
+
+export interface RunRewards {
+  lucas: number;
+  runLucas: number;
+  zoneBonus: number;
+  newZones: string[];
+  newAchievements: string[];
+  achievementLucas: number;
+  newCharacters: string[];
+  newRecord: boolean;
+}
+
+export function cityAt(km: number): string {
+  let id = CIUDADES[0]?.id ?? 'arica';
+  for (const c of CIUDADES) if (km >= c.km) id = c.id;
+  return id;
+}
+
+/** Adds a finished run to the save and returns what was earned. */
+export function applyRun(save: SaveData, r: RunResult): RunRewards {
+  const bonus = metaBonus(save);
+  const runLucas = Math.floor(lucasForRun(r.km, r.kills, r.bosses, 1 + bonus.lucasMult)) + r.lucasInRun;
+  const newZones = r.zones.filter((z) => !save.zonesReached.includes(z));
+  const zoneBonus = newZones.length * FIRST_ZONE_BONUS_LUCAS;
+  save.zonesReached.push(...newZones);
+
+  const newAchievements = r.achievements.filter((a) => !save.achievements.includes(a));
+  const achievementLucas = newAchievements.reduce((s, id) => s + (LOGROS.find((l) => l.id === id)?.lucas ?? 0), 0);
+  save.achievements.push(...newAchievements);
+
+  for (const b of r.bossesBeaten) if (!save.bossesBeaten.includes(b)) save.bossesBeaten.push(b);
+  if (r.victory) save.antartica = true;
+
+  if (!r.continued) save.totals.runs++;
+  save.totals.kills += r.kills;
+  save.totals.sopaipillas += r.sopaipillas;
+  save.totals.palomas += r.killsBy.paloma ?? 0;
+
+  const reached = r.bestKm ?? r.km;
+  const newRecord = reached > save.best.km;
+  if (newRecord) save.best = { km: reached, city: cityAt(reached) };
+
+  const lucas = runLucas + zoneBonus + achievementLucas;
+  save.lucas += lucas;
+  save.totals.lucasEarned += lucas;
+  save.bestRunLucas = Math.max(save.bestRunLucas, runLucas);
+
+  const newCharacters = checkUnlocks(save);
+  return { lucas, runLucas, zoneBonus, newZones, newAchievements, achievementLucas, newCharacters, newRecord };
+}
+
+/** Unlocks characters whose condition is now met; returns the new ones. */
+export function checkUnlocks(save: SaveData): string[] {
+  const fresh: string[] = [];
+  for (const c of PERSONAJES) {
+    if (save.characters.includes(c.id)) continue;
+    const u = c.unlock;
+    const ok =
+      u.kind === 'inicio' ||
+      (u.kind === 'llegarA' && save.best.km >= (CIUDADES.find((x) => x.id === u.ciudad)?.km ?? Infinity)) ||
+      (u.kind === 'total' && (u.stat === 'sopaipillas' ? save.totals.sopaipillas : save.totals.palomas) >= u.cantidad) ||
+      (u.kind === 'vencer' && save.bossesBeaten.includes(u.jefe));
+    if (ok) {
+      save.characters.push(c.id);
+      fresh.push(c.id);
+    }
+  }
+  return fresh;
+}
+
+// ---------------------------------------------------------------- neighbours
+
+export function lucasPerHour(save: SaveData): number {
+  return VECINOS.filter((v) => save.vecinos.includes(v.id)).reduce((s, v) => s + v.lucasPerHour, 0);
+}
+
+/** Lucas left by the neighbours since `save.lastSeen` (max 8 h, max 30 % of a good run). */
+export function idleEarnings(save: SaveData, now: number): { lucas: number; hours: number } {
+  const hours = Math.min(IDLE.maxHours, Math.max(0, (now - save.lastSeen) / 3_600_000));
+  const goodRun = Math.max(300, save.bestRunLucas);
+  const lucas = Math.floor(Math.min(hours * lucasPerHour(save), goodRun * IDLE.maxFractionOfGoodRun));
+  return { lucas, hours };
+}
+
+export function collectIdle(save: SaveData, now: number): number {
+  const { lucas } = idleEarnings(save, now);
+  save.lucas += lucas;
+  save.lastSeen = now;
+  return lucas;
+}
+
+export function befriend(save: SaveData, id: string): boolean {
+  const v = VECINOS.find((n) => n.id === id);
+  if (!v || save.vecinos.includes(id) || save.lucas < v.cost) return false;
+  save.lucas -= v.cost;
+  save.vecinos.push(id);
+  return true;
+}
+
+/** The befriended neighbour with the biggest production (for the "te dejó" line). */
+export function mainNeighbour(save: SaveData): string {
+  const owned = VECINOS.filter((v) => save.vecinos.includes(v.id));
+  return [...owned].sort((a, b) => b.lucasPerHour - a.lucasPerHour)[0]?.nameKey ?? 'vecinos.almacen';
+}
