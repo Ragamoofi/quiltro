@@ -19,7 +19,7 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-const layout = layoutSheet(SPRITES);
+const layout = layoutSheet(SPRITES, 512);
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'sprites.png'), encodePng(layout.width, layout.height, rasterize(layout)));
 writeFileSync(join(outDir, 'sprites.json'), JSON.stringify(spritesheetJson(layout, 'sprites.png')));

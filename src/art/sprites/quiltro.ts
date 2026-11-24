@@ -1,4 +1,4 @@
-import { shiftY, withRows, type Frame, type SpriteDef } from '../types.ts';
+import { shiftY, silhouette, withRows, type Frame, type SpriteDef } from '../types.ts';
 
 /*
  * El Quiltro: caramelo, pañoleta azul, mirando a la derecha (se espeja en el juego).
@@ -134,5 +134,7 @@ export const quiltro: SpriteDef = {
     ladrar: { fps: 10, frames: [F.barkA, F.barkB, F.stand], loop: false },
     dano: { fps: 8, frames: [F.hurt], loop: false },
     muerte: { fps: 6, frames: [F.hurt, F.crouchA, F.deadA, F.deadB], loop: false },
+    /** Dark silhouette howling at the moon (Aullido de las 12). */
+    silueta: { fps: 1, frames: [silhouette(F.barkA, 'K')] },
   },
 };

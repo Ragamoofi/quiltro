@@ -16,8 +16,9 @@ export class Pix {
   }
 
   set(x: number, y: number, ch: string): this {
+    const rx = Math.round(x);
     const row = this.px[Math.round(y)];
-    if (row && x >= 0 && x < this.w) row[Math.round(x)] = ch;
+    if (row && rx >= 0 && rx < this.w) row[rx] = ch;
     return this;
   }
 
