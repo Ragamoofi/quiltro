@@ -4,6 +4,21 @@
  */
 import { KM_PER_MINUTE } from './zonas.ts';
 
+/**
+ * The GDD's pixel distances and speeds read like a ~800×450 view; the game
+ * renders at 480×270. Every px value from the data files (speeds, radii,
+ * orbits) is multiplied by this so proportions match the design.
+ * Tunable live from the F1 panel.
+ */
+export const TUNING = {
+  worldScale: 0.6,
+};
+
+/** px value from the GDD → native pixels. */
+export function px(value: number): number {
+  return value * TUNING.worldScale;
+}
+
 /** XP needed to go from `level` to `level + 1`: 5 + nivel × 10 + nivel² × 0,6. */
 export function xpToNext(level: number): number {
   return Math.round(5 + level * 10 + level * level * 0.6);
