@@ -1,5 +1,9 @@
 # Pendientes para revisar
 
+## Curva de experiencia a mitad de partida (Fase 2 → Fase 3)
+
+Con solo zancudos y palomas (1 XP cada sopaipilla), un bot que junta comida llega a nivel 3 en el minuto 1 (el GDD pide ~4) pero a nivel ~10 en el minuto 4. El GDD apunta a ~40 subidas en 12 minutos. Eso depende de los enemigos de la Fase 3 que sueltan completos (5 XP) y chorrillanas (25 XP). Revisar con la simulación en la Fase 3 antes de tocar la fórmula.
+
 Cosas que funcionan pero que hay que volver a mirar antes del lanzamiento (Fase 8).
 
 ## El ataque del volantín no convence del todo (Fase 1, 2026-11-24)

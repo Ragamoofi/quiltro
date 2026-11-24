@@ -130,6 +130,24 @@ export class DebugPanel {
     this.section(section).append(b);
   }
 
+  select(section: string, label: string, options: readonly string[], onPick: (v: string) => void): void {
+    const wrap = document.createElement('div');
+    const sel = document.createElement('select');
+    sel.style.font = 'inherit';
+    for (const o of ['', ...options]) {
+      const opt = document.createElement('option');
+      opt.value = o;
+      opt.textContent = o || label;
+      sel.append(opt);
+    }
+    sel.addEventListener('change', () => {
+      if (sel.value) onPick(sel.value);
+      sel.value = '';
+    });
+    wrap.append(sel);
+    this.section(section).append(wrap);
+  }
+
   note(section: string, text: string): void {
     const el = document.createElement('div');
     el.textContent = text;

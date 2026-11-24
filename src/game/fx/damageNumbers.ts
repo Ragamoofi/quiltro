@@ -26,11 +26,13 @@ export class DamageNumbers {
   private readonly white: Anim;
   private readonly gold: Anim;
   private readonly red: Anim;
+  private readonly green: Anim;
 
   constructor(size = 96) {
     this.white = anim('digitos', 'blanco');
     this.gold = anim('digitos', 'oro');
     this.red = anim('digitos', 'rojo');
+    this.green = anim('digitos', 'verde');
     for (let i = 0; i < size; i++) {
       const root = new Container();
       root.visible = false;
@@ -45,13 +47,14 @@ export class DamageNumbers {
     }
   }
 
-  spawn(x: number, y: number, value: number, style: 'normal' | 'crit' | 'player'): void {
-    if (!this.enabled && style !== 'player') return;
+  spawn(x: number, y: number, value: number, style: 'normal' | 'crit' | 'player' | 'heal'): void {
+    if (!this.enabled && (style === 'normal' || style === 'crit')) return;
     const n = this.pool[this.next];
     this.next = (this.next + 1) % this.pool.length;
     if (!n) return;
     const text = String(Math.max(1, Math.round(value))).slice(0, MAX_DIGITS);
-    const set = style === 'crit' ? this.gold : style === 'player' ? this.red : this.white;
+    const set =
+      style === 'crit' ? this.gold : style === 'player' ? this.red : style === 'heal' ? this.green : this.white;
     n.digits.forEach((s, i) => {
       const ch = text[i];
       if (ch === undefined) {

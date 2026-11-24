@@ -7,7 +7,10 @@ import { Emitter, type GameEvents } from './core/events.ts';
 import { Input } from './core/input.ts';
 import { GameLoop } from './core/loop.ts';
 import { SceneManager } from './core/scene.ts';
-import { spawnPerSecond, TUNING } from './data/balance.ts';
+import { ARMAS } from './data/armas.ts';
+import { spawnPerSecond, TUNING, xpToNext } from './data/balance.ts';
+import { RASGOS } from './data/rasgos.ts';
+import type { Volantin } from './game/weapons/volantin.ts';
 import { DebugPanel } from './debug/panel.ts';
 import { RunScene } from './game/runScene.ts';
 
@@ -63,7 +66,20 @@ async function boot(): Promise<void> {
     events.emit('resize', { width: fit.width, height: fit.height, scale: fit.scale, portrait: fit.portrait });
   };
 
-  let run = new RunScene(input, sfx, Date.now() >>> 0, isMobile());
+  const makeRun = (): RunScene =>
+    new RunScene(input, sfx, {
+      seed: Date.now() >>> 0,
+      mobile: isMobile(),
+      setTimeScale: (v) => {
+        loop.timeScale = v;
+      },
+      onRestart: () => restart(),
+    });
+  let run = makeRun();
+  const restart = (): void => {
+    run = makeRun();
+    scenes.change(run, fit.width, fit.height);
+  };
   scenes.change(run, fit.width, fit.height);
   applyFit();
   window.addEventListener('resize', applyFit);
@@ -118,14 +134,38 @@ async function boot(): Promise<void> {
   debug.button('Partida', 'Saltar +1 min', () => {
     ctx().time += 60;
   });
-  debug.button('Partida', 'Reiniciar', () => {
-    run = new RunScene(input, sfx, Date.now() >>> 0, isMobile());
-    scenes.change(run, fit.width, fit.height);
+  debug.button('Partida', '+1 nivel', () => {
+    ctx().progress.xp += xpToNext(ctx().progress.level);
   });
-  debug.button('Partida', 'Dar arma o rasgo', () => {}, false);
+  debug.button('Partida', 'Élite', () => {
+    const c = ctx();
+    c.enemies.spawn('zancudo', c.player.x + 120, c.player.y, c.time / 60, c, true);
+  });
+  debug.button('Partida', 'Caja', () => ctx().food.drop('caja', ctx().player.x + 30, ctx().player.y, ctx()));
+  debug.button('Partida', 'Temblor', () => ctx().food.drop('temblor', ctx().player.x + 30, ctx().player.y, ctx()));
+  debug.button('Partida', 'Reiniciar', () => restart());
+  debug.select(
+    'Partida',
+    'Dar arma o rasgo',
+    [...ARMAS.map((a) => `arma:${a.id}`), ...RASGOS.map((r) => `rasgo:${r.id}`)],
+    (v) => {
+      const [kind, id] = v.split(':');
+      const c = ctx();
+      if (!id) return;
+      const owned = kind === 'arma' ? c.build.weapon(id) : c.build.trait(id);
+      c.build.apply({
+        kind: kind === 'arma' ? 'weapon' : 'trait',
+        id,
+        rarity: 'comun',
+        toLevel: owned ? owned.level + 1 : 1,
+      });
+      c.refreshMods();
+    },
+  );
   debug.button('Partida', 'Invocar jefe', () => {}, false);
-  debug.slider('Volantín', 'volantines', { min: 1, max: 8, step: 1 }, () => ctx().kites.count, (v) => {
-    ctx().kites.setCount(v);
+  debug.slider('Volantín', 'volantines (0 = build)', { min: 0, max: 8, step: 1 }, () => 0, (v) => {
+    const k = run.weapons.get<Volantin>('volantin');
+    if (k) k.forceCount = v;
   });
   debug.slider('Ajustes', 'escala de tiempo', { min: 0, max: 2, step: 0.05 }, () => loop.timeScale, (v) => {
     loop.timeScale = v;

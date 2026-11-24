@@ -108,7 +108,7 @@ export class Input {
   }
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
-    if (GAME_KEYS.has(e.code) || e.code === 'F1') e.preventDefault();
+    if (GAME_KEYS.has(e.code) || e.code === 'F1' || e.code === 'Escape') e.preventDefault();
     if (!e.repeat) this.pressedListeners.get(e.code)?.();
     this.down.add(e.code);
   };
@@ -116,6 +116,11 @@ export class Input {
   private readonly onKeyUp = (e: KeyboardEvent): void => {
     this.down.delete(e.code);
   };
+
+  /** Forgets held buttons (call when a menu opens or closes). */
+  clear(): void {
+    this.reset();
+  }
 
   private readonly reset = (): void => {
     this.down.clear();

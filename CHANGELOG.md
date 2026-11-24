@@ -4,6 +4,28 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 2 — La partida
+
+#### Agregado
+- Experiencia y niveles con la fórmula del GDD; barra dorada arriba con el nivel.
+- Subida de nivel: cámara lenta 0,3× por 0,4 s, columna de luz pixel, cartel al azar ("¡Wena!", "¡Esa!"...), y luego 3 cartas tipo naipe que suben con rebote y 80 ms de diferencia. Se eligen con toque, clic o teclas 1-2-3, bloqueadas los primeros 0,4 s. En vertical las cartas se apilan.
+- Botones de las cartas: Otra mano (2 por partida), Ni ahí (2 por partida, destierra la opción y la reemplaza) y Paso (+5 lucas).
+- Rareza común/rara/épica/"¡Bacán!" (70/22/7/1 %) que multiplica el efecto ×1/×1,5/×2/×3 y cambia el borde de la carta.
+- Las 6 armas: Volantín, Trompo (rebota entre enemigos), Maraña de cables (chispazo desde los cables que salta), Chaya (estela de confeti que daña y ralentiza 40 %), Fuegos artificiales (cohetes en arco que explotan sobre el grupo más denso) y Rayuela (tejo en línea recta que atraviesa todo). Mejoras del ¡GUAU! por nivel.
+- Los 8 rasgos con su efecto por nivel; La jauría suma proyectiles a todas las armas en nivel 2 y 4. Máximo 4 armas y 4 rasgos.
+- Director con la curva de aparición del GDD, élites cada 60 s (borde dorado, ×5 vida) que sueltan la Caja del Almacén, y anillos "¡Te rodearon!" en los minutos 2, 5, 8 y 11.
+- Caja del Almacén: la caja tiembla, una ruleta de íconos gira 2,5 s y entrega 1, 3 o 5 mejoras (70/25/5 %).
+- Objetos raros: Mote con huesillo (cura 30), Silbido de la vecina (atrae toda la comida) y ¡Temblor! (destruye a los enemigos normales, cartel "Fue un 6,2. Nadie se movió."). Completo y chorrillana listos para la Fase 3.
+- Muerte y pantalla de fin "Se te fue la micro" (o "¡De Arica a Punta Arenas!" al llegar al minuto 12): km y ciudad, tiempo, enemigos, nivel, daño por arma en barras, lucas contando y botón "¡Otra, al tiro!" (R).
+- Pausa "Pa'l tecito" (Esc/P o botón): build con niveles, Seguir y Pa' la casa con confirmación.
+- HUD completo de la partida: km y ciudad al centro, tiempo y enemigos a la derecha, armas y rasgos con puntos de nivel abajo a la izquierda.
+- Fuente pixel propia con tildes, Ñ, ¡ y ¿; texto en pantalla generado con la paleta.
+- 15 íconos de cartas de 16×16 y sprites de trompo, tejo, cohete, confeti, completo, chorrillana, mote, silbido, temblor y caja.
+- Panel F1: +1 nivel, élite, caja, temblor, dar cualquier arma o rasgo.
+
+#### Corregido
+- La vibración solo se pide después de que el jugador tocó la página (el navegador la bloqueaba con error en consola).
+
 ### Fase 1 — Que se sienta bien
 
 #### Agregado

@@ -31,6 +31,10 @@ export class ScreenFx {
   private ringX = 0;
   private ringY = 0;
   private ringT = -1;
+  private ringR = 100;
+  private columnX = 0;
+  private columnY = 0;
+  private columnT = 0;
   private balloonT = -1;
   private invertFrames = 0;
   private borderFrames = 0;
@@ -60,16 +64,29 @@ export class ScreenFx {
     this.vignetteB.texture = ditherVignette(w, h, 8, 24);
   }
 
+  /** Pixel column of light on the dog when levelling up. */
+  levelUp(x: number, y: number): void {
+    this.columnX = x;
+    this.columnY = y;
+    this.columnT = 0.5;
+  }
+
   damageFlash(): void {
     this.borderFrames = 2;
   }
 
-  guau(x: number, y: number): void {
+  guau(x: number, y: number, radius: number = px(GUAU.radius)): void {
+    this.ringR = radius;
     this.ringX = x;
     this.ringY = y - 8;
     this.ringT = 0;
     this.balloonT = 0;
     if (!this.reduceFlashes) this.invertFrames = 2;
+  }
+
+  /** Real seconds (keeps animating in slow motion). */
+  updateReal(dt: number): void {
+    this.columnT = Math.max(0, this.columnT - dt);
   }
 
   update(dt: number): void {
@@ -91,6 +108,7 @@ export class ScreenFx {
     charge: number;
     holding: boolean;
     guauCooldown: number;
+    guauCooldownMax: number;
     hpRatio: number;
     dead: boolean;
   }): void {
@@ -100,10 +118,24 @@ export class ScreenFx {
     // Shock ring: fast ease-out expansion, white then sky blue, 2 px thick.
     if (this.ringT >= 0) {
       const k = Math.min(1, this.ringT / RING_TIME);
-      const r = Math.round(px(GUAU.radius) * (1 - (1 - k) ** 3));
+      const r = Math.round(this.ringR * (1 - (1 - k) ** 3));
       const color = k < 0.6 ? C('W') : C('s');
       g.circle(this.ringX, this.ringY, r).stroke({ width: 2, color });
       if (r > 14) g.circle(this.ringX, this.ringY, r - 8).stroke({ width: 1, color: C('b') });
+    }
+
+    // Level-up column of light: white core, yellow edges, narrowing as it fades.
+    if (this.columnT > 0) {
+      const w = Math.max(2, Math.round(this.columnT * 20));
+      const x = Math.round(this.columnX - w / 2);
+      const top = this.columnY - 400;
+      g.rect(x - 1, top, w + 2, 400).fill(C('y'));
+      g.rect(x, top, w, 400).fill(C('W'));
+      for (let i = 0; i < 6; i++) {
+        const sx = this.columnX + Math.round(Math.sin(this.time * 9 + i * 2) * 10);
+        const sy = this.columnY - ((this.time * 120 + i * 30) % 120);
+        g.rect(Math.round(sx), Math.round(sy), 1, 1).fill(C('a'));
+      }
     }
 
     // Balloon pops above the head with a 2 px bounce.
@@ -133,7 +165,7 @@ export class ScreenFx {
       // Cooldown bar under the dog.
       if (p.guauCooldown > 0) {
         const w = 14;
-        const fill = Math.round(w * (1 - p.guauCooldown / GUAU.cooldown));
+        const fill = Math.round(w * (1 - p.guauCooldown / p.guauCooldownMax));
         const x = p.x - w / 2;
         const y = p.y + 3;
         g.rect(x - 1, y - 1, w + 2, 4).fill(C('k'));

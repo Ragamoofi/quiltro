@@ -56,7 +56,12 @@ describe('pixel helpers and font', () => {
     expect(f).toHaveLength(7);
     expect(f.join('')).toContain('k');
     expect(f.join('')).toContain('r');
-    expect(textRows('A', 'w')[0]).toBe('.w.');
+    expect(textRows('A', 'w', true)[0]).toBe('.w.');
+    // Accent row + gap + letter.
+    const acc = textRows('Á', 'w');
+    expect(acc).toHaveLength(7);
+    expect(acc[0]).toBe('..w');
+    expect(textRows('ñ', 'w')[0]).toBe('.ww.');
   });
 
   it('outlined, silhouette and recolor keep sizes', () => {
