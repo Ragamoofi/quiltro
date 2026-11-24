@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../../art/assets.ts';
 import { colorOf, hexToNumber } from '../../art/palette.ts';
+import { DECO_ZONA } from '../../art/sprites/decoracion2.ts';
 import { POSTE_AISLADORES } from '../../art/sprites/decoracion.ts';
 import { hash2 } from '../../core/rng.ts';
 
@@ -8,20 +9,17 @@ const CHUNK = 96;
 const INK = hexToNumber(colorOf('k')?.hex ?? '#2A2233');
 const INK_LIGHT = hexToNumber(colorOf('K')?.hex ?? '#4A3F5C');
 
-interface Item {
-  sprite: Sprite;
-}
 interface Chunk {
-  items: Item[];
+  items: Sprite[];
   /** World position of this chunk's pole base, if it has one. */
   pole: { x: number; y: number } | null;
 }
 
 /**
- * Procedural decoration for the Centro: lines of poles along some "streets"
- * joined by sagging cables (drawn overhead, so the dog walks under them),
- * plus kiosks, sopaipilla carts and hydrants. Everything is a pure function of
- * the chunk coordinates, so the same street always looks the same.
+ * Procedural decoration, different per zone. Centro: lines of poles along some
+ * "streets" joined by sagging cables (drawn overhead, so the dog walks under
+ * them), kiosks, sopaipilla carts and hydrants. Other zones scatter their own
+ * big/medium/small props. Pure function of chunk coordinates + zone.
  */
 export class Decor {
   /** Cables drawn above every entity. */
@@ -29,6 +27,7 @@ export class Decor {
   private readonly chunks = new Map<string, Chunk>();
   private readonly world: Container;
   private readonly seed: number;
+  private zone = 'centro';
   private time = 0;
 
   constructor(world: Container, seed = 7) {
@@ -36,8 +35,16 @@ export class Decor {
     this.seed = seed;
   }
 
+  setZone(zone: string): void {
+    if (zone === this.zone) return;
+    this.zone = zone;
+    for (const c of this.chunks.values()) for (const s of c.items) s.destroy();
+    this.chunks.clear();
+    this.overhead.clear();
+  }
+
   private isStreet(cy: number): boolean {
-    return ((cy % 3) + 3) % 3 === 1;
+    return this.zone === 'centro' && ((cy % 3) + 3) % 3 === 1;
   }
 
   private build(cx: number, cy: number): Chunk {
@@ -53,24 +60,36 @@ export class Decor {
       s.position.set(Math.round(x), Math.round(y));
       s.zIndex = Math.round(y);
       this.world.addChild(s);
-      chunk.items.push({ sprite: s });
+      chunk.items.push(s);
     };
-
-    if (this.isStreet(cy)) {
-      const x = x0 + CHUNK / 2 + Math.round((hash2(cx, cy, this.seed + 1) - 0.5) * 16);
-      const y = y0 + 24;
-      chunk.pole = { x, y };
-      add('poste', x, y);
-      if (hash2(cx, cy, this.seed + 2) < 0.25) add('grifo', x + 14, y + 4);
-      return chunk;
-    }
-    if (nearOrigin) return chunk;
     const h = hash2(cx, cy, this.seed);
     const ox = x0 + 20 + hash2(cx, cy, this.seed + 3) * (CHUNK - 40);
     const oy = y0 + 30 + hash2(cx, cy, this.seed + 4) * (CHUNK - 40);
-    if (h < 0.07) add('quiosco', ox, oy);
-    else if (h < 0.13) add('carro_sopaipillas', ox, oy);
-    else if (h < 0.24) add('grifo', ox, oy);
+
+    if (this.zone === 'centro') {
+      if (this.isStreet(cy)) {
+        const x = x0 + CHUNK / 2 + Math.round((hash2(cx, cy, this.seed + 1) - 0.5) * 16);
+        const y = y0 + 24;
+        chunk.pole = { x, y };
+        add('poste', x, y);
+        if (hash2(cx, cy, this.seed + 2) < 0.25) add('grifo', x + 14, y + 4);
+        return chunk;
+      }
+      if (nearOrigin) return chunk;
+      if (h < 0.07) add('quiosco', ox, oy);
+      else if (h < 0.13) add('carro_sopaipillas', ox, oy);
+      else if (h < 0.24) add('grifo', ox, oy);
+      return chunk;
+    }
+
+    const [big, medium, small] = DECO_ZONA[this.zone] ?? [];
+    if (nearOrigin) return chunk;
+    if (big && h < 0.06) add(big, ox, oy);
+    else if (medium && h < 0.2) add(medium, ox, oy);
+    else if (small && h < 0.42) {
+      add(small, ox, oy);
+      if (hash2(cx, cy, this.seed + 5) < 0.5) add(small, ox + 12, oy + 7);
+    }
     return chunk;
   }
 
@@ -91,13 +110,13 @@ export class Decor {
     }
     for (const [key, chunk] of this.chunks) {
       if (keep.has(key)) continue;
-      for (const it of chunk.items) it.sprite.destroy();
+      for (const s of chunk.items) s.destroy();
       this.chunks.delete(key);
     }
 
-    // Cables between neighbouring poles of the same street.
     const g = this.overhead;
     g.clear();
+    if (this.zone !== 'centro') return;
     for (let cy = cy0; cy <= cy1; cy++) {
       if (!this.isStreet(cy)) continue;
       for (let cx = cx0; cx < cx1; cx++) {
@@ -108,7 +127,6 @@ export class Decor {
           const sway = Math.sin(this.time * 1.4 + cx * 0.9 + i) * 1.2;
           this.cable(a.x + ins.x, a.y + ins.y, b.x + ins.x, b.y + ins.y, 7 + i * 3 + sway, i === 1 ? INK_LIGHT : INK);
         });
-        // The "maraña": a couple of extra loose wires on some spans.
         if (hash2(cx, cy, this.seed + 9) < 0.5) {
           const sway = Math.sin(this.time * 1.1 + cx) * 1.5;
           this.cable(a.x - 6, a.y - 36, b.x + 6, b.y - 36, 16 + sway, INK);

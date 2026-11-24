@@ -16,16 +16,23 @@ export class FloorLayer {
   private rows = 0;
   private lastTx = Number.NaN;
   private lastTy = Number.NaN;
-  private readonly variants: Anim;
-  private readonly cumulative: number[];
+  private variants: Anim;
+  private cumulative: number[] = [];
 
   private readonly seed: number;
 
   constructor(floorSprite: string, weights: readonly number[], seed = 0) {
     this.seed = seed;
     this.variants = anim(floorSprite, 'variantes');
+    this.setFloor(floorSprite, weights);
+  }
+
+  /** Switches to another zone's tiles (redrawn on the next update). */
+  setFloor(floorSprite: string, weights: readonly number[]): void {
+    this.variants = anim(floorSprite, 'variantes');
     let acc = 0;
     this.cumulative = weights.map((w) => (acc += w));
+    this.lastTx = Number.NaN;
   }
 
   resize(viewW: number, viewH: number): void {
