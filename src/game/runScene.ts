@@ -1,11 +1,12 @@
-import { Container } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
+import { anim, frameAt } from '../art/assets.ts';
 import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
 import type { Sfx } from '../audio/sfx.ts';
 import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
 import { Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
-import { CAJA, ENEMY_CAP, LEVEL_UP, lucasForRun, PICKUPS, xpToNext } from '../data/balance.ts';
+import { CAJA, ENEMY_CAP, LEVEL_UP, PICKUPS, xpToNext } from '../data/balance.ts';
 import { CIUDADES } from '../data/zonas.ts';
 import { t, tList } from '../i18n/index.ts';
 import { Banner } from '../ui/banner.ts';
@@ -15,7 +16,10 @@ import { EndScreen } from '../ui/endScreen.ts';
 import { Hud } from '../ui/hud.ts';
 import { LevelUpView } from '../ui/levelUp.ts';
 import { PauseView } from '../ui/pauseView.ts';
+import { LOGROS } from '../data/logros.ts';
+import type { RunResult, RunRewards } from '../meta/progress.ts';
 import { Build, type Offer } from './build.ts';
+import { baseMods, type Loadout } from './loadout.ts';
 import type { RunContext } from './context.ts';
 import { Enemies } from './entities/enemies.ts';
 import { Food } from './entities/food.ts';
@@ -38,6 +42,26 @@ import { Horizon } from './world/horizon.ts';
 import { Weather } from './world/weather.ts';
 
 const ENEMY_POOL = 320;
+
+/** A friendly moai whose eyes glow (Guardianes). */
+class AnimatedMoai {
+  readonly sprite: Sprite;
+  private t = 0;
+  private readonly a = anim('moai', 'saludo');
+
+  constructor(x: number, y: number) {
+    this.sprite = new Sprite(this.a.textures[0]);
+    this.sprite.anchor.set(0.5, 1);
+    this.sprite.position.set(Math.round(x), Math.round(y));
+    this.sprite.zIndex = y;
+  }
+
+  update(dt: number): void {
+    this.t += dt;
+    const tex = this.a.textures[frameAt(this.a, this.t)];
+    if (tex) this.sprite.texture = tex;
+  }
+}
 /** Seconds of the death animation before the end screen. */
 const DEATH_DELAY = 1.6;
 
@@ -46,8 +70,13 @@ type Mode = 'playing' | 'slowmo' | 'cards' | 'caja' | 'paused' | 'end';
 export interface RunOptions {
   seed: number;
   mobile: boolean;
+  loadout: Loadout;
   setTimeScale: (v: number) => void;
   onRestart: () => void;
+  /** Saves the run and returns what it earned (lucas, achievements...). */
+  onFinish: (result: RunResult) => RunRewards;
+  /** Go to La Cucha (null hides the button). */
+  onCucha: (() => void) | null;
 }
 
 /**
@@ -93,6 +122,11 @@ export class RunScene implements Scene {
   private readonly hazards = new Hazards();
   private timeScale = 1;
   private worldTime = 0;
+  private cards: number = LEVEL_UP.cards;
+  private revives = 0;
+  /** Achievements earned this run. */
+  private readonly earned = new Set<string>();
+  private readonly moais: AnimatedMoai[] = [];
 
   constructor(input: Input, sfx: Sfx, opts: RunOptions) {
     this.input = input;
@@ -101,13 +135,24 @@ export class RunScene implements Scene {
     this.decor = new Decor(this.sorted);
     this.hud = new Hud(() => this.openPause());
 
-    const player = new Player();
+    const lo = opts.loadout;
+    const player = new Player(lo.character.sprite, lo.bandana);
+    player.radius *= lo.character.mods.hitboxMult ?? 1;
+    player.slides = lo.character.mods.slides ?? false;
+    player.hazardProof = lo.character.mods.ignoresHazards ?? false;
     const enemies = new Enemies(ENEMY_POOL, this.shadows, this.sorted);
     const food = new Food();
     const particles = new Particles();
     const numbers = new DamageNumbers();
     const screen = new ScreenFx();
-    const build = new Build('volantin');
+    const build = new Build(lo.character.startingWeapon, baseMods(lo));
+    build.luck = lo.meta.luck;
+    for (const st of lo.character.mods.startingTraits ?? []) {
+      for (let l = 1; l <= st.level; l++) build.apply({ kind: 'trait', id: st.id, rarity: 'comun', toLevel: l });
+    }
+    this.rerolls = LEVEL_UP.startingRerolls + lo.meta.rerolls;
+    this.cards = LEVEL_UP.cards + lo.meta.cards;
+    this.revives = lo.meta.revives;
     player.addTo(this.shadows, this.sorted);
 
     const ctx: RunContext = {
@@ -135,10 +180,13 @@ export class RunScene implements Scene {
       time: 0,
       stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
-      onKill: (_e, source) => {
+      onKill: (e, source) => {
         // Cielo del Dieciocho: every enemy cut by a kite heals 1.
         if (source === 'volantin' && build.evolved.has('volantin')) player.heal(1, ctx);
+        // "La micro sí paró": a micro taken down before it charged.
+        if (e.def.id === 'micro' && e.state !== 'carga' && e.state !== 'descanso') ctx.achieve('laMicroSiParo');
       },
+      achieve: (id) => this.achieve(id),
       hitstop: (s) => {
         this.freeze = Math.max(this.freeze, s);
       },
@@ -170,6 +218,14 @@ export class RunScene implements Scene {
       addBoss: (root) => this.sorted.addChild(root),
       setHalfFog: (side) => {
         this.hazards.halfFogSide = side;
+      },
+      addMoais: (x, y) => {
+        // Five guardians in an arc, looking out to sea; their eyes light up to greet the dog.
+        for (let i = 0; i < 5; i++) {
+          const s = new AnimatedMoai(x - 48 + i * 24, y - 20 + Math.abs(i - 2) * 6);
+          this.moais.push(s);
+          this.sorted.addChild(s.sprite);
+        }
       },
     });
 
@@ -293,9 +349,30 @@ export class RunScene implements Scene {
       this.startLevelUp();
       return;
     }
-    // End of the road (victory comes from beating El Gran Temblor).
+    // Achievements that depend on the state of the run.
     const p = ctx.player;
-    if (p.dead && p.deadFor > DEATH_DELAY) this.finish(false);
+    if (ctx.stats.temblorQuieto) this.achieve('niSeInmuto');
+    if (ctx.build.evolved.has('volantin')) this.achieve('dieciochero');
+    if (p.sinceHurt >= 300) this.achieve('puroAguante');
+    if (ctx.enemies.activeCount >= 300) this.achieve('paLaFoto');
+
+    // Segunda vida, or the end of the road (victory comes from beating El Gran Temblor).
+    if (p.dead && p.deadFor > DEATH_DELAY * 0.7 && this.revives > 0) {
+      this.revives--;
+      p.revive(ctx, 0.5);
+      ctx.shake.add(0.5);
+      ctx.particles.burst(ctx.rng, p.x, p.y - 10, 24, ['a', 'y', 'W'], 120, 0.6);
+      this.banner.show(t('meta.segundaVida'), 'a');
+      ctx.sfx.play('guau', { pitch: 1.2 });
+    } else if (p.dead && p.deadFor > DEATH_DELAY) this.finish(false);
+  }
+
+  private achieve(id: string): void {
+    if (this.earned.has(id) || this.opts.loadout.known.includes(id)) return;
+    this.earned.add(id);
+    const def = LOGROS.find((l) => l.id === id);
+    this.banner.show(t('meta.logro', { nombre: t(`${def?.i18n ?? 'logros.' + id}.nombre`) }), 'a');
+    this.ctx.sfx.play('campana', { pitch: 1.3 });
   }
 
   private simulate(dt: number, real: number): void {
@@ -343,7 +420,7 @@ export class RunScene implements Scene {
   }
 
   private showCards(fresh: boolean): void {
-    if (fresh) this.offers = this.ctx.build.offers(this.ctx.rng, LEVEL_UP.cards);
+    if (fresh) this.offers = this.ctx.build.offers(this.ctx.rng, this.cards);
     this.mode = 'cards';
     this.input.clear();
     this.ctx.sfx.setBuzz(0);
@@ -481,11 +558,38 @@ export class RunScene implements Scene {
 
   private finish(victory: boolean): void {
     const ctx = this.ctx;
+    if (victory) this.achieve('deAricaAPuntaArenas');
     this.victory = victory;
     this.mode = 'end';
     this.setTimeScale(1);
     ctx.sfx.setBuzz(0);
     const km = this.journey.km(ctx.time);
+    // Only what is new since the last report counts (a run that continued into Antarctica reports twice).
+    const r = this.reported;
+    const killsBy: Record<string, number> = {};
+    for (const [k, v] of Object.entries(ctx.stats.killsBy)) killsBy[k] = v - (r.killsBy[k] ?? 0);
+    const rewards = this.opts.onFinish({
+      km: km - r.km,
+      bestKm: km,
+      kills: ctx.stats.kills - r.kills,
+      bosses: ctx.progress.bosses - r.bosses,
+      bossesBeaten: ctx.stats.bossesBeaten,
+      zones: this.journey.visited,
+      killsBy,
+      sopaipillas: ctx.stats.food - r.food,
+      lucasInRun: ctx.progress.lucas - r.lucas,
+      victory,
+      achievements: [...this.earned],
+      continued: r.km > 0,
+    });
+    this.reported = {
+      km,
+      kills: ctx.stats.kills,
+      bosses: ctx.progress.bosses,
+      food: ctx.stats.food,
+      lucas: ctx.progress.lucas,
+      killsBy: { ...ctx.stats.killsBy },
+    };
     this.end.show(
       {
         victory,
@@ -494,16 +598,20 @@ export class RunScene implements Scene {
         seconds: ctx.time,
         kills: ctx.stats.kills,
         level: ctx.progress.level,
-        lucas: lucasForRun(km, ctx.stats.kills, ctx.progress.bosses) + ctx.progress.lucas,
+        lucas: rewards.lucas,
         damageBy: ctx.stats.damageBy,
+        rewards,
       },
       this.viewW,
       this.viewH,
       () => this.opts.onRestart(),
       () => ctx.sfx.play('comida', { pitch: 1.5 + ctx.rng.range(0, 0.3) }),
       victory && !this.journey.antartica ? () => this.continueToAntarctica() : undefined,
+      this.opts.onCucha ?? undefined,
     );
   }
+
+  private reported = { km: 0, kills: 0, bosses: 0, food: 0, lucas: 0, killsBy: {} as Record<string, number> };
 
   /** After beating El Gran Temblor: keep going into the endless south. */
   private continueToAntarctica(): void {
@@ -548,6 +656,7 @@ export class RunScene implements Scene {
     const px = Math.round(p.prevX + (p.x - p.prevX) * a);
     const py = Math.round(p.prevY + (p.y - p.prevY) * a);
     this.horizon.update(origin.x, this.worldTime);
+    for (const m of this.moais) m.update(1 / 60);
     this.weather.render();
     this.hazards.render(px - origin.x + ctx.shake.x, py - 8 - origin.y + ctx.shake.y);
     ctx.screen.render({
@@ -577,6 +686,21 @@ export class RunScene implements Scene {
       ctx.build,
       this.mode === 'playing' ? this.input.stickNative(this.viewW, this.viewH) : null,
       this.journey.bar(),
+      this.pointerTo(origin.x, origin.y),
     );
+  }
+
+  /** Screen-edge arrow toward the secret island while it is off screen. */
+  private pointerTo(ox: number, oy: number): { x: number; y: number; angle: number } | null {
+    const r = this.journey.rapaNui;
+    if (!r || r.found) return null;
+    const sx = r.x - ox;
+    const sy = r.y - oy;
+    if (sx > 0 && sx < this.viewW && sy > 0 && sy < this.viewH) return null;
+    const cx = this.viewW / 2;
+    const cy = this.viewH / 2;
+    const angle = Math.atan2(sy - cy, sx - cx);
+    const k = Math.min((cx - 14) / Math.abs(Math.cos(angle) || 1e-6), (cy - 14) / Math.abs(Math.sin(angle) || 1e-6));
+    return { x: cx + Math.cos(angle) * k, y: cy + Math.sin(angle) * k, angle };
   }
 }

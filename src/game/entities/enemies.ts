@@ -575,7 +575,7 @@ export class Enemies {
 
   /** A weapon hit: rolls the critical, then applies damage. */
   hit(e: Enemy, base: number, fromX: number, fromY: number, knock: number, ctx: RunContext, source: string): void {
-    const crit = ctx.rng.chance(PLAYER_BASE.critChance);
+    const crit = ctx.rng.chance(ctx.mods.critChance);
     this.damage(e, base * (crit ? PLAYER_BASE.critMultiplier : 1), crit, fromX, fromY, knock, ctx, source);
   }
 

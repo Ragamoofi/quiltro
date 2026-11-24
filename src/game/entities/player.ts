@@ -27,8 +27,12 @@ const HURT_ANIM = 0.2;
 export class Player {
   readonly sprite = new Sprite();
   readonly shadow = new Sprite();
-  /** Collision radius (native px). */
-  readonly radius = 6;
+  /** Collision radius (native px); the Pudú is smaller. */
+  radius = 6;
+  /** Pingüino: slides (much softer acceleration and braking). */
+  slides = false;
+  /** Paloma Rebelde: flies over the environmental hazards. */
+  hazardProof = false;
 
   x = 0;
   y = 0;
@@ -62,10 +66,15 @@ export class Player {
   private readonly anims: Record<AnimName, Anim>;
   private readonly flashAnims: Record<AnimName, Anim>;
 
-  constructor() {
+  /**
+   * sprite: the character's sprite sheet name ('quiltro', 'gato'...);
+   * bandana: palette char of the quiltro's bandana ('b' = the default blue).
+   */
+  constructor(sprite = 'quiltro', bandana = 'b') {
     const names: AnimName[] = ['quieto', 'parpadeo', 'trotar', 'cargar', 'ladrar', 'dano', 'muerte'];
-    this.anims = Object.fromEntries(names.map((n) => [n, anim('quiltro', n)])) as Record<AnimName, Anim>;
-    this.flashAnims = Object.fromEntries(names.map((n) => [n, anim('quiltro', `${n}_blanco`)])) as Record<
+    const suffix = sprite === 'quiltro' && bandana !== 'b' ? `@${bandana}` : '';
+    this.anims = Object.fromEntries(names.map((n) => [n, anim(sprite, `${n}${suffix}`)])) as Record<AnimName, Anim>;
+    this.flashAnims = Object.fromEntries(names.map((n) => [n, anim(sprite, `${n}_blanco`)])) as Record<
       AnimName,
       Anim
     >;
@@ -124,6 +133,9 @@ export class Player {
     this.invulnerable = Math.max(this.invulnerable, seconds + 0.05);
   }
 
+  /** Seconds since the dog was last hurt ("Puro aguante"). */
+  sinceHurt = 0;
+
   /** Applies passives; raising max HP also heals by the same amount. */
   applyMods(ctx: RunContext): void {
     const m = ctx.mods;
@@ -167,12 +179,13 @@ export class Player {
       return;
     }
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
+    this.sinceHurt += dt;
 
     // Movement with soft inertia (exponential approach to the target velocity).
     const tx = input.moveX * this.speed;
     const ty = input.moveY * this.speed;
     const moving = Math.hypot(input.moveX, input.moveY) > 0.05;
-    const k = 1 - Math.exp(-dt / (moving ? ACCEL_TIME : DECEL_TIME));
+    const k = 1 - Math.exp(-dt / ((moving ? ACCEL_TIME : DECEL_TIME) * (this.slides ? 4 : 1)));
     this.vx += (tx - this.vx) * k;
     this.vy += (ty - this.vy) * k;
     this.slowTime = Math.max(0, this.slowTime - dt);
@@ -180,8 +193,9 @@ export class Player {
     const pd = Math.exp(-dt / 0.25);
     this.pushX *= pd;
     this.pushY *= pd;
-    let mx = this.vx + this.pushX + ctx.wind.x;
-    let my = this.vy + this.pushY + ctx.wind.y;
+    const windK = this.hazardProof ? 0 : 1;
+    let mx = this.vx + (this.pushX + ctx.wind.x) * windK;
+    let my = this.vy + (this.pushY + ctx.wind.y) * windK;
     if (this.dashTime > 0) {
       this.dashTime -= dt;
       mx = this.dashX;
@@ -233,6 +247,7 @@ export class Player {
     }
     const dmg = Math.max(1, amount - this.armor);
     this.hp -= dmg;
+    this.sinceHurt = 0;
     ctx.stats.damageTaken += dmg;
     this.invulnerable = PLAYER_BASE.invulnerability;
     this.hurtTime = HURT_ANIM;

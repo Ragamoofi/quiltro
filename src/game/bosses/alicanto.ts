@@ -20,6 +20,7 @@ export class Alicanto extends Boss {
   private angle = 0;
   private shotT = 2;
   private nuggetT = 0;
+  private swoopT = 4;
 
   constructor(def: BossDef, minutes: number, returns: number) {
     super(def, minutes, returns);
@@ -46,25 +47,31 @@ export class Alicanto extends Boss {
 
   protected think(dt: number, ctx: RunContext): void {
     const p = ctx.player;
-    // Circle the dog, a bit faster in phase 2.
+    // Circle the dog close enough for the kites on a long line, a bit faster in phase 2;
+    // every few seconds it swoops through the short-line orbit.
     this.angle += (this.phase === 1 ? 0.55 : 0.85) * dt;
-    const tx = p.x + Math.cos(this.angle) * 110;
-    const ty = p.y - 20 + Math.sin(this.angle) * 70;
-    const k = 1 - Math.exp(-dt / 0.6);
+    this.swoopT -= dt;
+    if (this.swoopT <= 0) this.swoopT = this.phase === 1 ? 6 : 4.5;
+    const swooping = this.swoopT < 1.2;
+    const r = swooping ? 22 + Math.abs(this.swoopT - 0.6) * 90 : 80;
+    const tx = p.x + Math.cos(this.angle) * r;
+    const ty = p.y - 20 + Math.sin(this.angle) * r * 0.65;
+    const k = 1 - Math.exp(-dt / (swooping ? 0.25 : 0.6));
     this.x += (tx - this.x) * k;
     this.y += (ty - this.y) * k;
 
     this.shotT -= dt;
     if (this.shotT <= 0) {
-      this.shotT = this.phase === 1 ? 2.2 : 3;
+      this.shotT = this.phase === 1 ? 2.4 : 3.2;
       const a = Math.atan2(p.y - 8 - this.y, p.x - this.x);
-      ctx.shots.fan(this.x, this.y, a, this.phase === 1 ? 7 : 5, 1.1, px(190), 10 * this.dmg);
+      // A fan with clear gaps: the first boss should be readable for a new player.
+      ctx.shots.fan(this.x, this.y, a, this.phase === 1 ? 5 : 4, 1.2, px(150), 8 * this.dmg);
       ctx.sfx.play('golpe', { pitch: 2.5 });
     }
     if (this.phase === 2) {
       this.nuggetT -= dt;
       if (this.nuggetT <= 0) {
-        this.nuggetT = 0.45;
+        this.nuggetT = 0.7;
         const nx = this.x;
         const ny = this.y + 16;
         ctx.telegraphs.circle(nx, ny, 14, 1.3, () => {

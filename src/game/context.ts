@@ -50,6 +50,8 @@ export interface RunContext {
   readonly progress: { level: number; xp: number; lucas: number; bosses: number };
   /** Called for every enemy killed, with the weapon that did it. */
   onKill(e: Enemy, source: string): void;
+  /** An achievement was earned (announced once). */
+  achieve(id: string): void;
   /** Freeze the simulation for a few milliseconds (hit-stop). */
   hitstop(seconds: number): void;
   /** Show a big banner text (and an optional smaller line) for a moment. */

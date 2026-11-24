@@ -46,8 +46,8 @@ export class Caleuche extends Boss {
     const p = ctx.player;
     this.angle += 0.28 * dt;
     // Close enough for the kites on a long line to reach its hull.
-    const tx = p.x + Math.cos(this.angle) * 120;
-    const ty = p.y + Math.sin(this.angle) * 80;
+    const tx = p.x + Math.cos(this.angle) * 100;
+    const ty = p.y + Math.sin(this.angle) * 70;
     const k = 1 - Math.exp(-dt / 0.9);
     const nx = this.x + (tx - this.x) * k;
     if (Math.abs(nx - this.x) > 0.05) this.facing = Math.sign(nx - this.x);

@@ -163,7 +163,7 @@ export class Hazards {
       if (b.life > 0) continue;
       b.x += b.dx * busSpeed * dt;
       b.y += b.dy * busSpeed * dt;
-      if (!b.hitDog && (p.x - b.x) ** 2 + (p.y - 8 - b.y) ** 2 < 16 ** 2) {
+      if (!b.hitDog && !p.hazardProof && (p.x - b.x) ** 2 + (p.y - 8 - b.y) ** 2 < 16 ** 2) {
         b.hitDog = true;
         p.takeDamage(MICRO?.damage ?? 18, b.x, b.y, ctx);
       }

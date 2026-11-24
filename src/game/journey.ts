@@ -16,6 +16,8 @@ export interface JourneyHooks {
   setTimeScale(v: number): void;
   addBoss(root: Container): void;
   setHalfFog(side: number): void;
+  /** Places the friendly moais (secret achievement). */
+  addMoais(x: number, y: number): void;
 }
 
 const BOSS_DEATH_SLOWMO = 1;
@@ -73,10 +75,16 @@ export class Journey {
     return Math.round(kmAt(z.startMin + elapsed));
   }
 
+  /** Zone ids entered in this run, in order. */
+  readonly visited: string[] = [];
+  /** Secret route to Rapa Nui (La Antártica only). */
+  rapaNui: { x: number; y: number; found: boolean } | null = null;
+
   private enterZone(index: number, ctx: RunContext): void {
     this.zoneIndex = index;
     this.zoneStart = ctx.time;
     const z = this.zone;
+    if (!this.visited.includes(z.id)) this.visited.push(z.id);
     this.antartica = z.id === 'antartica';
     this.hooks.onZone(z);
     ctx.banner(t(`${z.i18n}.titulo`), 'w', t(`${z.i18n}.subtitulo`));
@@ -128,6 +136,19 @@ export class Journey {
         ctx.sfx.play('puf', { pitch: 0.6 + ctx.rng.range(0, 0.4), gain: 1.2 });
       }
       if (this.deathT < 0) this.finishBoss(ctx);
+    }
+
+    // Secret: after 2 minutes on the ice, a hint points west, to the island of the guardians.
+    if (this.antartica && !this.rapaNui && ctx.time - this.zoneStart > 120) {
+      this.rapaNui = { x: p.x - 900, y: p.y + ctx.rng.range(-200, 200), found: false };
+      ctx.banner(t('meta.rapaNuiPista'), 'i');
+    }
+    if (this.rapaNui && !this.rapaNui.found && (p.x - this.rapaNui.x) ** 2 + (p.y - this.rapaNui.y) ** 2 < 70 ** 2) {
+      this.rapaNui.found = true;
+      this.hooks.addMoais(this.rapaNui.x, this.rapaNui.y);
+      ctx.enemies.clearAround(this.rapaNui.x, this.rapaNui.y, 160);
+      ctx.achieve('guardianes');
+      ctx.banner(t('meta.rapaNuiLlegada'), 'a');
     }
 
     // Temblor event: once per run, everybody freezes but the dog.

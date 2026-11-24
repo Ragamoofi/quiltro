@@ -37,6 +37,8 @@ export interface CharacterDef {
   readonly id: string;
   /** i18n key under `personajes.` */
   readonly nameKey: string;
+  /** Sprite sheet name. */
+  readonly sprite: string;
   readonly unlock: UnlockCondition;
   readonly startingWeapon: string;
   /** Changes relative to PLAYER_BASE (multipliers unless stated). */
@@ -54,10 +56,11 @@ export interface CharacterDef {
 }
 
 export const PERSONAJES: readonly CharacterDef[] = [
-  { id: 'quiltro', nameKey: 'personajes.quiltro', unlock: { kind: 'inicio' }, startingWeapon: 'volantin', mods: {} },
+  { id: 'quiltro', nameKey: 'personajes.quiltro', sprite: 'quiltro', unlock: { kind: 'inicio' }, startingWeapon: 'volantin', mods: {} },
   {
     id: 'quiltra',
     nameKey: 'personajes.quiltra',
+    sprite: 'quiltra',
     unlock: { kind: 'llegarA', ciudad: 'santiago' },
     startingWeapon: 'volantin',
     mods: { speedMult: 0.9, startingTraits: [{ id: 'chalequito', level: 2 }] },
@@ -65,6 +68,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'gato',
     nameKey: 'personajes.gato',
+    sprite: 'gato',
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
     startingWeapon: 'cables',
     mods: { critBonus: 0.15, maxHp: 70 },
@@ -72,6 +76,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'pudu',
     nameKey: 'personajes.pudu',
+    sprite: 'pudu',
     unlock: { kind: 'llegarA', ciudad: 'chiloe' },
     startingWeapon: 'rayuela',
     mods: { speedMult: 1.25, hitboxMult: 0.75 },
@@ -79,6 +84,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'pinguino',
     nameKey: 'personajes.pinguino',
+    sprite: 'pinguino',
     unlock: { kind: 'vencer', jefe: 'caleuche' },
     startingWeapon: 'chaya',
     mods: { areaMult: 1.3, slides: true },
@@ -86,6 +92,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'paloma',
     nameKey: 'personajes.paloma',
+    sprite: 'palomaRebelde',
     unlock: { kind: 'total', stat: 'palomas', cantidad: 10000 },
     startingWeapon: 'fuegos',
     mods: { ignoresHazards: true },

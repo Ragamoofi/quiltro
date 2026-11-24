@@ -43,9 +43,16 @@ export function kmAt(t: number): number {
   return t * KM_PER_MINUTE;
 }
 
-/** Lucas at the end of a run: km/20 + enemigos/30 + 50 por jefe, × Cuenta RUT. */
+/**
+ * Lucas at the end of a run: GDD formula (km/20 + enemigos/30 + 50 por jefe,
+ * × Cuenta RUT) times LUCAS_SCALE. With the GDD values a run bought ~1
+ * upgrade and 10 simulated runs never reached the final boss, so rewards are
+ * doubled (Phase 4 balance).
+ */
+export const LUCAS_SCALE = 2;
+
 export function lucasForRun(km: number, kills: number, bosses: number, lucasMult = 1): number {
-  return Math.floor((km / 20 + kills / 30 + 50 * bosses) * lucasMult);
+  return Math.floor((km / 20 + kills / 30 + 50 * bosses) * lucasMult * LUCAS_SCALE);
 }
 
 /** Upgrade cost: base × 1,6^nivel, rounded to the nearest 5. */

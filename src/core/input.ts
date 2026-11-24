@@ -117,6 +117,11 @@ export class Input {
     this.down.delete(e.code);
   };
 
+  /** Drops every key-press handler (scene change). */
+  clearPresses(): void {
+    this.pressedListeners.clear();
+  }
+
   /** Forgets held buttons (call when a menu opens or closes). */
   clear(): void {
     this.reset();

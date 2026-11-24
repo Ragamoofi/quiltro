@@ -2,6 +2,7 @@ import type { Rng } from '../core/rng.ts';
 import { ARMAS, MAX_WEAPONS, type WeaponDef, type WeaponLevelUp } from '../data/armas.ts';
 import { RARITY } from '../data/balance.ts';
 import { EVOLUCIONES, type EvolutionDef } from '../data/evoluciones.ts';
+import { PLAYER_BASE } from '../data/personajes.ts';
 import { MAX_TRAITS, RASGOS, type TraitDef } from '../data/rasgos.ts';
 
 export type Rarity = (typeof RARITY)[number]['id'];
@@ -18,7 +19,38 @@ export interface Stats {
   pickupMult: number;
   /** Extra projectiles for every weapon (La jauría). */
   projectiles: number;
+  /** 0..1 */
+  critChance: number;
 }
+
+/**
+ * Bonuses that exist before the first card: La Cucha's upgrades and the
+ * character's own traits. Fractions are added to the base 1.
+ */
+export interface BaseMods {
+  speedMult: number;
+  armor: number;
+  maxHp: number;
+  areaMult: number;
+  damageMult: number;
+  cooldownMult: number;
+  pickupMult: number;
+  critChance: number;
+  /** Extra kites from "Volantín extra". */
+  startingKites: number;
+}
+
+export const NO_BASE_MODS: BaseMods = {
+  speedMult: 0,
+  armor: 0,
+  maxHp: 0,
+  areaMult: 0,
+  damageMult: 0,
+  cooldownMult: 0,
+  pickupMult: 0,
+  critChance: 0,
+  startingKites: 0,
+};
 
 /** A weapon's numbers after its levels and the dog's passives. */
 export interface WeaponNumbers {
@@ -84,7 +116,10 @@ export class Build {
   /** "Buena onda": each point moves rarity odds toward the rare side. */
   luck = 0;
 
-  constructor(startingWeapon = 'volantin') {
+  readonly base: BaseMods;
+
+  constructor(startingWeapon = 'volantin', base: BaseMods = NO_BASE_MODS) {
+    this.base = base;
     this.addWeapon('guau');
     this.addWeapon(startingWeapon);
   }
@@ -110,16 +145,18 @@ export class Build {
   }
 
   stats(): Stats {
+    const b = this.base;
     const s: Stats = {
-      speedMult: 1,
-      armor: 0,
-      maxHp: 0,
+      speedMult: 1 + b.speedMult,
+      armor: b.armor,
+      maxHp: b.maxHp,
       regen: 0,
-      areaMult: 1,
-      damageMult: 1,
-      cooldownMult: 1,
-      pickupMult: 1,
+      areaMult: 1 + b.areaMult,
+      damageMult: 1 + b.damageMult,
+      cooldownMult: 1 + b.cooldownMult,
+      pickupMult: 1 + b.pickupMult,
       projectiles: 0,
+      critChance: PLAYER_BASE.critChance + b.critChance,
     };
     for (const t of this.traits) {
       s.speedMult += t.totals.speedMult;
@@ -160,6 +197,7 @@ export class Build {
     n.cooldown *= stats.cooldownMult;
     n.area *= stats.areaMult;
     if (def.takesSlot && b.count !== undefined) n.count += stats.projectiles;
+    if (id === 'volantin') n.count += this.base.startingKites;
     return n;
   }
 
