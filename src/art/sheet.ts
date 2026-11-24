@@ -1,5 +1,5 @@
 import { colorOf, hexToRgb, TRANSPARENT } from './palette.ts';
-import { animKey, frameKey, type SpriteDef } from './types.ts';
+import { animKey, frameKey, silhouette, type Animation, type SpriteDef } from './types.ts';
 
 /** Problems found in sprite matrices. Empty means every sprite is valid. */
 export function validateSprites(sprites: readonly SpriteDef[]): string[] {
@@ -61,7 +61,13 @@ export function layoutSheet(sprites: readonly SpriteDef[], sheetWidth = 256): Sh
 
   for (const s of sprites) {
     const anchor = s.anchor ?? { x: 0.5, y: 1 };
-    for (const [anim, a] of Object.entries(s.animations)) {
+    const anims: [string, Animation][] = Object.entries(s.animations);
+    if (s.flash) {
+      for (const [anim, a] of Object.entries(s.animations)) {
+        anims.push([`${anim}_blanco`, { ...a, frames: a.frames.map((f) => silhouette(f, 'W')) }]);
+      }
+    }
+    for (const [anim, a] of anims) {
       const keys: string[] = [];
       a.frames.forEach((rows, i) => {
         const key = frameKey(s.name, anim, i);
