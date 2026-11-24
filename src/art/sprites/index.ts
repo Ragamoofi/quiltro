@@ -5,6 +5,8 @@ import { iconos } from './iconos.ts';
 import { decoAntartica, decoNorte, decoPatagonia, decoSur } from './decoracion2.ts';
 import { enemigosFase3, nubeToxica, proyectiles, remolinoDef, roca } from './enemigos2.ts';
 import { jefesSprites } from './jefes.ts';
+import { cuchaDef, moaiDef, objetosCucha, vecinosDef } from './cucha.ts';
+import { personajesSprites } from './personajes.ts';
 import { sueloAntartica, sueloNorte, sueloPatagonia, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
 import { carro, grifo, poste, quiosco } from './decoracion.ts';
@@ -54,4 +56,9 @@ export const SPRITES: readonly SpriteDef[] = [
   nubeToxica,
   remolinoDef,
   ...jefesSprites,
+  ...personajesSprites,
+  objetosCucha,
+  cuchaDef,
+  vecinosDef,
+  moaiDef,
 ];

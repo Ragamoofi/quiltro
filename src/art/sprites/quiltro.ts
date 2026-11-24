@@ -1,4 +1,4 @@
-import { shiftY, silhouette, withRows, type Frame, type SpriteDef } from '../types.ts';
+import { recolor, shiftY, silhouette, withRows, type Frame, type SpriteDef } from '../types.ts';
 
 /*
  * El Quiltro: caramelo, pañoleta azul, mirando a la derecha (se espeja en el juego).
@@ -114,9 +114,41 @@ const RAW = {
   ),
 };
 
-const F = Object.fromEntries(
+export const QUILTRO_FRAMES = Object.fromEntries(
   Object.entries(RAW).map(([k, frame]) => [k, shiftY(frame, 1)]),
 ) as Record<keyof typeof RAW, Frame>;
+const F = QUILTRO_FRAMES;
+
+type Anims = SpriteDef['animations'];
+
+/** The animation set every playable character must have (the player code uses these names). */
+export function characterAnims(f: Record<keyof typeof RAW, Frame>): Anims {
+  return {
+    quieto: { fps: 3, frames: [f.stand, f.wag] },
+    parpadeo: { fps: 8, frames: [f.blink], loop: false },
+    trotar: { fps: 10, frames: [f.strideA, f.passing, f.strideB, f.passing] },
+    /** Charging the ¡GUAU!: crouched, ears vibrating. */
+    cargar: { fps: 12, frames: [f.crouchA, f.crouchB] },
+    ladrar: { fps: 10, frames: [f.barkA, f.barkB, f.stand], loop: false },
+    dano: { fps: 8, frames: [f.hurt], loop: false },
+    muerte: { fps: 6, frames: [f.hurt, f.crouchA, f.deadA, f.deadB], loop: false },
+    /** Dark silhouette howling at the moon (Aullido de las 12). */
+    silueta: { fps: 1, frames: [silhouette(f.barkA, 'K')] },
+  };
+}
+
+/** Bandana colours unlocked by achievements: palette char → its shade. */
+export const PAÑOLETAS: Readonly<Record<string, string>> = { b: 'B', r: 'R', y: 'A', w: 'G', a: 'A', f: 'F', p: 'r', t: 'T' };
+
+const base = characterAnims(F);
+const bandanas: Record<string, Anims[string]> = {};
+for (const [c, shade] of Object.entries(PAÑOLETAS)) {
+  if (c === 'b') continue;
+  for (const [name, a] of Object.entries(base)) {
+    if (name === 'silueta') continue;
+    bandanas[`${name}@${c}`] = { ...a, frames: a.frames.map((fr) => recolor(fr, { b: c, B: shade })) };
+  }
+}
 
 export const quiltro: SpriteDef = {
   name: 'quiltro',
@@ -125,16 +157,5 @@ export const quiltro: SpriteDef = {
   height: 24,
   anchor: { x: 0.5, y: 22 / 24 },
   flash: true,
-  animations: {
-    quieto: { fps: 3, frames: [F.stand, F.wag] },
-    parpadeo: { fps: 8, frames: [F.blink], loop: false },
-    trotar: { fps: 10, frames: [F.strideA, F.passing, F.strideB, F.passing] },
-    /** Charging the ¡GUAU!: crouched, ears vibrating. */
-    cargar: { fps: 12, frames: [F.crouchA, F.crouchB] },
-    ladrar: { fps: 10, frames: [F.barkA, F.barkB, F.stand], loop: false },
-    dano: { fps: 8, frames: [F.hurt], loop: false },
-    muerte: { fps: 6, frames: [F.hurt, F.crouchA, F.deadA, F.deadB], loop: false },
-    /** Dark silhouette howling at the moon (Aullido de las 12). */
-    silueta: { fps: 1, frames: [silhouette(F.barkA, 'K')] },
-  },
+  animations: { ...base, ...bandanas },
 };
