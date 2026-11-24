@@ -34,6 +34,7 @@ export class Trompo implements Weapon {
   private readonly spin: Anim;
   private readonly near: number[] = [];
   private time = 0;
+  private tornado = false;
 
   constructor() {
     this.spin = anim('trompo', 'girar');
@@ -58,6 +59,10 @@ export class Trompo implements Weapon {
       }
     }
     const speed = px(SPEED);
+    // Trompo Tornado: giant tops that drag enemies around them in a spiral.
+    const tornado = ctx.build.evolved.has(this.id);
+    this.tornado = tornado;
+    const radius = tornado ? RADIUS * 2 : RADIUS;
     for (const t of this.pool) {
       if (!t.active) continue;
       t.prevX = t.x;
@@ -67,14 +72,33 @@ export class Trompo implements Weapon {
         this.end(t, ctx);
         continue;
       }
-      t.x += t.vx * dt;
-      t.y += t.vy * dt;
-      ctx.grid.query(t.x, t.y, RADIUS + 12, this.near);
+      t.x += (t.vx + ctx.wind.x * 0.4) * dt;
+      t.y += (t.vy + ctx.wind.y * 0.4) * dt;
+      if (tornado) {
+        ctx.grid.query(t.x, t.y, 48, this.near);
+        for (const id of this.near) {
+          const e = ctx.enemies.get(id);
+          if (!e?.active || e.boss || e.elite) continue;
+          const dx = t.x - e.x;
+          const dy = t.y - e.y;
+          const d = Math.hypot(dx, dy) || 1;
+          if (d > 48) continue;
+          e.kx += ((dx / d) * 120 - (dy / d) * 160) * dt * 6;
+          e.ky += ((dy / d) * 120 + (dx / d) * 160) * dt * 6;
+        }
+      }
+      ctx.grid.query(t.x, t.y, radius + 12, this.near);
       for (const id of this.near) {
         const e = ctx.enemies.get(id);
         if (!e?.active || id === t.lastHit) continue;
-        const rr = RADIUS + e.radius;
+        const rr = radius + e.radius;
         if ((e.x - t.x) ** 2 + (e.y - t.y) ** 2 > rr * rr) continue;
+        // A charging camahueto smashes the top.
+        if (e.def.behavior === 'cargar' && e.state === 'carga' && !tornado) {
+          this.end(t, ctx);
+          ctx.sfx.play('puf', { pitch: 1.6 });
+          break;
+        }
         ctx.enemies.hit(e, n.damage, t.x, t.y, 90, ctx, this.id);
         ctx.sfx.play('golpe', { pitch: 1.3 + ctx.rng.range(0, 0.2) });
         t.lastHit = id;
@@ -98,8 +122,9 @@ export class Trompo implements Weapon {
     t.y = t.prevY = y;
     t.vx = Math.cos(a) * s;
     t.vy = Math.sin(a) * s;
-    t.life = LIFE;
+    t.life = this.tornado ? LIFE * 1.6 : LIFE;
     t.bounces = bounces;
+    t.sprite.scale.set(this.tornado ? 2 : 1);
     t.lastHit = -1;
     t.sprite.visible = true;
   }

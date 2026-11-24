@@ -1,6 +1,7 @@
 import type { Rng } from '../core/rng.ts';
 import { ARMAS, MAX_WEAPONS, type WeaponDef, type WeaponLevelUp } from '../data/armas.ts';
 import { RARITY } from '../data/balance.ts';
+import { EVOLUCIONES, type EvolutionDef } from '../data/evoluciones.ts';
 import { MAX_TRAITS, RASGOS, type TraitDef } from '../data/rasgos.ts';
 
 export type Rarity = (typeof RARITY)[number]['id'];
@@ -56,6 +57,7 @@ export interface OwnedTrait {
 }
 
 export type Offer =
+  | { kind: 'evolution'; id: string; evolution: string; rarity: Rarity }
   | { kind: 'weapon'; id: string; rarity: Rarity; toLevel: number }
   | { kind: 'trait'; id: string; rarity: Rarity; toLevel: number }
   | { kind: 'heal'; rarity: Rarity }
@@ -77,6 +79,8 @@ export class Build {
   readonly weapons: OwnedWeapon[] = [];
   readonly traits: OwnedTrait[] = [];
   readonly banished = new Set<string>();
+  /** Weapon ids that have evolved. */
+  readonly evolved = new Set<string>();
   /** "Buena onda": each point moves rarity odds toward the rare side. */
   luck = 0;
 
@@ -204,9 +208,35 @@ export class Build {
     return RARITY[rng.weighted(weights)]?.id ?? 'comun';
   }
 
-  /** Applies a weapon/trait card. Heal and lucas are handled by the run. */
+  /** An evolution ready to happen: weapon at max level + its paired trait (any level). */
+  evolutionReady(): EvolutionDef | undefined {
+    return EVOLUCIONES.find((ev) => {
+      const w = this.weapon(ev.weapon);
+      return w && w.level >= w.def.maxLevel && this.trait(ev.trait) && !this.evolved.has(ev.weapon);
+    });
+  }
+
+  /** Would taking this card make an evolution ready? (for the "¡Evoluciona!" stamp) */
+  completesEvolution(offer: Offer): boolean {
+    if (offer.kind !== 'weapon' && offer.kind !== 'trait') return false;
+    return EVOLUCIONES.some((ev) => {
+      if (this.evolved.has(ev.weapon)) return false;
+      const w = this.weapon(ev.weapon);
+      const maxAfter = offer.kind === 'weapon' && offer.id === ev.weapon ? offer.toLevel : (w?.level ?? 0);
+      const hasTrait = !!this.trait(ev.trait) || (offer.kind === 'trait' && offer.id === ev.trait);
+      const max = w?.def.maxLevel ?? 5;
+      const readyBefore = (w?.level ?? 0) >= max && !!this.trait(ev.trait);
+      return !readyBefore && maxAfter >= max && hasTrait;
+    });
+  }
+
+  /** Applies a weapon/trait/evolution card. Heal and lucas are handled by the run. */
   apply(offer: Offer): void {
     const mult = RARITY_MULT[offer.rarity];
+    if (offer.kind === 'evolution') {
+      this.evolved.add(offer.id);
+      return;
+    }
     if (offer.kind === 'weapon') {
       const w = this.weapon(offer.id) ?? (offer.toLevel === 1 ? this.addWeapon(offer.id) : undefined);
       if (!w) return;

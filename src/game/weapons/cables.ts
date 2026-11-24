@@ -37,6 +37,19 @@ export class Cables implements Weapon {
     const n = ctx.build.numbers(this.id, ctx.mods);
     if (p.dead || !this.cd.tick(dt, n.cooldown)) return;
 
+    // Apagón: the lights go out and lightning falls on everything on screen.
+    if (ctx.build.evolved.has(this.id)) {
+      if (!ctx.screen.reduceFlashes) ctx.screen.blackout(0.18);
+      const targets = ctx.enemies.visible(p.x, p.y, 250, 150).slice(0, 60);
+      for (const e of targets) {
+        this.bolts.push({ life: SHOW, points: [{ x: e.x + ctx.rng.range(-4, 4), y: e.y - 120 }, { x: e.x, y: e.y }], seed: ctx.rng.int(0, 9999) });
+        ctx.enemies.hit(e, n.damage, e.x, e.y - 10, 20, ctx, this.id);
+      }
+      ctx.shake.add(0.3);
+      ctx.sfx.play('retumbo', { pitch: 3 });
+      return;
+    }
+
     // One strike per extra projectile (La jauría), each starting on a different enemy.
     const strikes = Math.max(1, n.count);
     const used = new Set<number>();

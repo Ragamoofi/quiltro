@@ -28,6 +28,8 @@ export class Chaya implements Weapon {
   private tickT = 0;
   private idleT = 0;
   private next = 0;
+  private shieldCd = 0;
+  private big = false;
   private readonly near: number[] = [];
   private readonly hitThisTick = new Set<number>();
 
@@ -45,7 +47,16 @@ export class Chaya implements Weapon {
   update(dt: number, ctx: RunContext): void {
     const p = ctx.player;
     const n = ctx.build.numbers(this.id, ctx.mods);
-    const scale = Math.max(1, ctx.mods.areaMult);
+    // Carnaval: a wide trail that stops the small fry and shields the dog.
+    const carnaval = ctx.build.evolved.has(this.id);
+    this.big = carnaval;
+    const scale = Math.max(1, ctx.mods.areaMult) * (carnaval ? 2 : 1);
+    this.shieldCd = Math.max(0, this.shieldCd - dt);
+    if (carnaval && !p.shield && this.shieldCd <= 0 && this.onPatch(p.x, p.y, PATCH_RADIUS * scale)) {
+      p.shield = true;
+      this.shieldCd = 5;
+      ctx.particles.burst(ctx.rng, p.x, p.y - 10, 10, ['p', 't', 'y'], 50, 0.4);
+    }
     if (!p.dead) {
       if (Number.isNaN(this.lastX)) {
         this.lastX = p.x;
@@ -90,12 +101,17 @@ export class Chaya implements Weapon {
         if ((e.x - patch.x) ** 2 + (e.y + e.look.hover - patch.y) ** 2 > (r + e.radius) ** 2) continue;
         e.slow = n.slow;
         e.slowTime = 0.2;
+        if (carnaval && !e.boss && !e.elite && e.radius <= 5) e.stun = Math.max(e.stun, 0.2);
         if (doTick && !this.hitThisTick.has(id)) {
           this.hitThisTick.add(id);
           ctx.enemies.hit(e, n.damage, e.x, e.y, 0, ctx, this.id);
         }
       }
     }
+  }
+
+  private onPatch(x: number, y: number, r: number): boolean {
+    return this.pool.some((p) => p.active && (p.x - x) ** 2 + (p.y - y) ** 2 < r * r);
   }
 
   private drop(x: number, y: number, duration: number): void {
@@ -107,6 +123,7 @@ export class Chaya implements Weapon {
     patch.y = y;
     patch.life = duration;
     patch.sprite.visible = true;
+    patch.sprite.scale.set(this.big ? 2 : 1);
     patch.sprite.position.set(Math.round(x), Math.round(y));
   }
 

@@ -32,6 +32,8 @@ export class Rayuela implements Weapon {
   private readonly spin: Anim;
   private readonly near: number[] = [];
   private time = 0;
+  private readonly dashCd = new Cooldown();
+  private readonly dashHits = new Set<number>();
   private aimX = 1;
   private aimY = 0;
 
@@ -55,6 +57,24 @@ export class Rayuela implements Weapon {
       this.aimY = p.vy / sp;
     }
     const n = ctx.build.numbers(this.id, ctx.mods);
+    // Persigue autos: the dog throws itself forward like a bullet (invulnerable).
+    const chase = ctx.build.evolved.has(this.id);
+    if (chase && p.dashTime > 0) {
+      ctx.grid.query(p.x, p.y - 8, 24, this.near);
+      for (const id of this.near) {
+        const e = ctx.enemies.get(id);
+        if (!e?.active || this.dashHits.has(id)) continue;
+        if ((e.x - p.x) ** 2 + (e.y - (p.y - 8)) ** 2 > (10 + e.radius) ** 2) continue;
+        this.dashHits.add(id);
+        ctx.enemies.hit(e, n.damage * 1.5, p.x, p.y - 8, 200, ctx, this.id);
+      }
+      if (ctx.rng.chance(0.7)) ctx.particles.burst(ctx.rng, p.x, p.y - 4, 2, ['w', 'G'], 20, 0.25);
+    }
+    if (chase && !p.dead && sp > 20 && this.dashCd.tick(dt, n.cooldown * 1.5)) {
+      this.dashHits.clear();
+      p.dash(0.25, px(560));
+      ctx.sfx.play('golpe', { pitch: 0.5, gain: 1.5 });
+    }
     if (!p.dead && this.cd.tick(dt, n.cooldown)) {
       const base = Math.atan2(this.aimY, this.aimX);
       for (let i = 0; i < n.count; i++) this.launch(p.x, p.y - 8, base + (i - (n.count - 1) / 2) * FAN);
@@ -65,8 +85,8 @@ export class Rayuela implements Weapon {
       if (!tj.active) continue;
       tj.prevX = tj.x;
       tj.prevY = tj.y;
-      tj.x += tj.vx * speed * dt;
-      tj.y += tj.vy * speed * dt;
+      tj.x += (tj.vx * speed + ctx.wind.x * 0.4) * dt;
+      tj.y += (tj.vy * speed + ctx.wind.y * 0.4) * dt;
       tj.travelled += speed * dt;
       if (tj.travelled > px(RANGE)) {
         tj.active = false;

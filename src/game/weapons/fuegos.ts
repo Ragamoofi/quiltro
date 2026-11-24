@@ -22,6 +22,7 @@ interface Rocket {
   prevX: number;
   prevY: number;
   palette: number;
+  generation: number;
   sprite: Sprite;
 }
 
@@ -53,7 +54,7 @@ export class Fuegos implements Weapon {
       sprite.anchor.set(0.5);
       sprite.visible = false;
       this.root.addChild(sprite);
-      this.pool.push({ active: false, sx: 0, sy: 0, tx: 0, ty: 0, t: 0, x: 0, y: 0, prevX: 0, prevY: 0, palette: 0, sprite });
+      this.pool.push({ active: false, sx: 0, sy: 0, tx: 0, ty: 0, t: 0, x: 0, y: 0, prevX: 0, prevY: 0, palette: 0, generation: 0, sprite });
     }
   }
 
@@ -83,21 +84,32 @@ export class Fuegos implements Weapon {
         r.active = false;
         r.sprite.visible = false;
         this.explode(r.tx, r.ty, radius, n.damage, r.palette, ctx);
+        // Año Nuevo en Valpo: every first-generation burst fires 3 more rockets.
+        if (ctx.build.evolved.has(this.id) && r.generation === 0) {
+          for (let i = 0; i < 3; i++) {
+            const a = ctx.rng.range(0, Math.PI * 2);
+            const target = ctx.enemies.nearest(r.tx + Math.cos(a) * 50, r.ty + Math.sin(a) * 50, 60, 0);
+            const tx = target ? target.x : r.tx + Math.cos(a) * 50;
+            const ty = target ? target.y : r.ty + Math.sin(a) * 50;
+            this.launch(r.tx, r.ty, tx, ty, ctx.rng.int(0, 3), 1);
+          }
+          ctx.sfx.play('carga', { pitch: 3 });
+        }
       }
     }
     for (const b of this.blasts) b.life -= dt;
     this.blasts = this.blasts.filter((b) => b.life > 0);
   }
 
-  private launch(sx: number, sy: number, tx: number, ty: number, palette: number): void {
+  private launch(sx: number, sy: number, tx: number, ty: number, palette: number, generation = 0): void {
     const r = this.pool.find((it) => !it.active);
     if (!r) return;
-    Object.assign(r, { active: true, sx, sy, tx, ty, t: 0, x: sx, y: sy, prevX: sx, prevY: sy, palette });
+    Object.assign(r, { active: true, sx, sy, tx, ty, t: 0, x: sx, y: sy, prevX: sx, prevY: sy, palette, generation });
     r.sprite.visible = true;
   }
 
   private explode(x: number, y: number, radius: number, damage: number, palette: number, ctx: RunContext): void {
-    ctx.grid.query(x, y, radius + 8, this.near);
+    ctx.grid.query(x, y, radius + 30, this.near);
     for (const id of this.near) {
       const e = ctx.enemies.get(id);
       if (!e?.active) continue;

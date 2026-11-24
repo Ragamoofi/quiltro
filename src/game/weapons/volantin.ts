@@ -14,6 +14,7 @@ const TAIL = 10;
 /** Height of the line's anchor on the dog (its back). */
 const HAND_Y = 12;
 const LINE = hexToNumber(colorOf('w')?.hex ?? '#FBF3E4');
+const RAINBOW = ['r', 'y', 'b', 'p', 't', 'a'].map((c) => hexToNumber(colorOf(c)?.hex ?? '#FFFFFF'));
 
 interface Kite {
   x: number;
@@ -44,6 +45,7 @@ export class Volantin implements Weapon {
   private count = 0;
   /** Debug override for the number of kites (0 = use the build). */
   forceCount = 0;
+  private evolved = false;
 
   constructor() {
     this.root.addChild(this.lines);
@@ -90,7 +92,10 @@ export class Volantin implements Weapon {
   update(dt: number, ctx: RunContext): void {
     const p = ctx.player;
     const n = ctx.build.numbers('volantin', ctx.mods);
-    this.ensure(this.forceCount || n.count);
+    // Cielo del Dieciocho: 8 kites of every colour with long trails.
+    this.evolved = ctx.build.evolved.has('volantin');
+    const count = this.evolved ? Math.max(8, n.count + 3) : n.count;
+    this.ensure(this.forceCount || count);
     this.time += dt;
     const giving = p.holding && !p.dead;
     // Open smoothly while holding; reel in fast on release ("recoge el hilo de golpe").
@@ -115,9 +120,10 @@ export class Volantin implements Weapon {
       k.y = cy + Math.sin(a) * r;
       k.tailX.unshift(k.x);
       k.tailY.unshift(k.y);
-      if (k.tailX.length > TAIL) {
-        k.tailX.length = TAIL;
-        k.tailY.length = TAIL;
+      const tail = this.evolved ? TAIL * 2 : TAIL;
+      if (k.tailX.length > tail) {
+        k.tailX.length = tail;
+        k.tailY.length = tail;
       }
       if (p.dead) continue;
       // Two samples per step so fast kites do not tunnel through small enemies.
@@ -160,7 +166,8 @@ export class Volantin implements Weapon {
         const tx = k.tailX[t];
         const ty = k.tailY[t];
         if (tx === undefined || ty === undefined) continue;
-        g.rect(Math.round(tx), Math.round(ty) + 4, 1, 1).fill(t % 4 === 0 ? k.tailColor : LINE);
+        const color = this.evolved ? (RAINBOW[(t / 2 + i) % RAINBOW.length] ?? LINE) : t % 4 === 0 ? k.tailColor : LINE;
+        g.rect(Math.round(tx), Math.round(ty) + 4, this.evolved ? 2 : 1, 1).fill(color);
       }
       const tex = k.anim.textures[frameAt(k.anim, this.time + i * 0.3)];
       if (tex) k.sprite.texture = tex;
