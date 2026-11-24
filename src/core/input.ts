@@ -31,7 +31,36 @@ export class Input {
   private holdTouch: number | null = null;
   private readonly pressedListeners = new Map<string, () => void>();
 
+  private readonly target: HTMLElement;
+
+  /**
+   * Virtual joystick in native pixels for drawing it (null when not touching).
+   * `nativeW/H` is the current game resolution.
+   */
+  stickNative(nativeW: number, nativeH: number): { ox: number; oy: number; x: number; y: number } | null {
+    if (!this.stick) return null;
+    const r = this.target.getBoundingClientRect();
+    const sx = nativeW / r.width;
+    const sy = nativeH / r.height;
+    const dx = this.stick.x - this.stick.ox;
+    const dy = this.stick.y - this.stick.oy;
+    const len = Math.hypot(dx, dy);
+    const k = len > STICK_RADIUS ? STICK_RADIUS / len : 1;
+    return {
+      ox: (this.stick.ox - r.left) * sx,
+      oy: (this.stick.oy - r.top) * sy,
+      x: (this.stick.ox + dx * k - r.left) * sx,
+      y: (this.stick.oy + dy * k - r.top) * sy,
+    };
+  }
+
+  /** True while a touch is holding the right half (to draw the button pressed). */
+  get touchHolding(): boolean {
+    return this.holdTouch !== null;
+  }
+
   constructor(target: HTMLElement) {
+    this.target = target;
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('blur', this.reset);
