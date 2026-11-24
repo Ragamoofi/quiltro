@@ -1,5 +1,8 @@
 import type { SpriteDef } from '../types.ts';
 import { volantin } from './armas.ts';
+import { cohete, confeti, tejo, trompo } from './armas2.ts';
+import { iconos } from './iconos.ts';
+import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
 import { carro, grifo, poste, quiosco } from './decoracion.ts';
 import { digitos, globoGuau, hueso, sombras, sopaipilla } from './efectos.ts';
 import { paloma, zancudo } from './enemigos.ts';
@@ -12,7 +15,18 @@ export const SPRITES: readonly SpriteDef[] = [
   zancudo,
   paloma,
   volantin,
+  trompo,
+  tejo,
+  cohete,
+  confeti,
   sopaipilla,
+  completo,
+  chorrillana,
+  moteConHuesillo,
+  silbido,
+  temblor,
+  caja,
+  iconos,
   sombras,
   digitos,
   globoGuau,

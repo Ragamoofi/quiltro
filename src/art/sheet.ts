@@ -1,5 +1,5 @@
 import { colorOf, hexToRgb, TRANSPARENT } from './palette.ts';
-import { animKey, frameKey, silhouette, type Animation, type SpriteDef } from './types.ts';
+import { animKey, frameKey, outlined, silhouette, type Animation, type SpriteDef } from './types.ts';
 
 /** Problems found in sprite matrices. Empty means every sprite is valid. */
 export function validateSprites(sprites: readonly SpriteDef[]): string[] {
@@ -62,9 +62,17 @@ export function layoutSheet(sprites: readonly SpriteDef[], sheetWidth = 256): Sh
   for (const s of sprites) {
     const anchor = s.anchor ?? { x: 0.5, y: 1 };
     const anims: [string, Animation][] = Object.entries(s.animations);
+    const base = Object.entries(s.animations);
     if (s.flash) {
-      for (const [anim, a] of Object.entries(s.animations)) {
+      for (const [anim, a] of base) {
         anims.push([`${anim}_blanco`, { ...a, frames: a.frames.map((f) => silhouette(f, 'W')) }]);
+      }
+    }
+    if (s.elite) {
+      for (const [anim, a] of base) {
+        const gold = a.frames.map((f) => outlined(f, 'a'));
+        anims.push([`${anim}_elite`, { ...a, frames: gold }]);
+        anims.push([`${anim}_elite_blanco`, { ...a, frames: gold.map((f) => silhouette(f, 'W')) }]);
       }
     }
     for (const [anim, a] of anims) {
@@ -72,7 +80,7 @@ export function layoutSheet(sprites: readonly SpriteDef[], sheetWidth = 256): Sh
       a.frames.forEach((rows, i) => {
         const key = frameKey(s.name, anim, i);
         keys.push(key);
-        items.push({ key, w: s.width, h: s.height, rows, anchor });
+        items.push({ key, w: rows[0]?.length ?? s.width, h: rows.length, rows, anchor });
       });
       animations[animKey(s.name, anim)] = keys;
       animMeta[animKey(s.name, anim)] = { fps: a.fps, loop: a.loop ?? true };

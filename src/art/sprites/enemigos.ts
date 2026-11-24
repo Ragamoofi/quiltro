@@ -34,6 +34,7 @@ export const zancudo: SpriteDef = {
   height: 12,
   anchor: { x: 0.5, y: 0.75 },
   flash: true,
+  elite: true,
   animations: {
     volar: { fps: 16, frames: [ZANCUDO_A, ZANCUDO_B] },
   },
@@ -90,6 +91,7 @@ export const paloma: SpriteDef = {
   height: 12,
   anchor: { x: 0.5, y: 0.75 },
   flash: true,
+  elite: true,
   animations: {
     volar: { fps: 10, frames: [PALOMA_MEDIO, PALOMA_ARRIBA, PALOMA_MEDIO, PALOMA_ABAJO] },
   },

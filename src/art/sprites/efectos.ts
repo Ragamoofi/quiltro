@@ -61,6 +61,7 @@ export const digitos: SpriteDef = {
     blanco: { fps: 1, frames: digits('W') },
     oro: { fps: 1, frames: digits('a') },
     rojo: { fps: 1, frames: digits('r') },
+    verde: { fps: 1, frames: digits('V') },
   },
 };
 

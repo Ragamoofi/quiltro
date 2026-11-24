@@ -29,6 +29,11 @@ export interface SpriteDef {
    * for the 2-frame hit flash (GDD "Animación en pixel art").
    */
   readonly flash?: boolean;
+  /**
+   * Also export `${anim}_elite` (1 px gold outline, 2 px bigger) and
+   * `${anim}_elite_blanco` for elite enemies (GDD "Élites").
+   */
+  readonly elite?: boolean;
 }
 
 export const frameKey = (sprite: string, anim: string, index: number): string =>
