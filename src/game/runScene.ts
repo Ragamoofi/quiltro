@@ -1,12 +1,12 @@
 import { Container } from 'pixi.js';
-import { SUELO_CENTRO_PESOS } from '../art/sprites/suelos.ts';
+import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
 import type { Sfx } from '../audio/sfx.ts';
 import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
 import { Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
-import { CAJA, ENEMY_CAP, kmAt, LEVEL_UP, lucasForRun, PICKUPS, xpToNext } from '../data/balance.ts';
-import { CIUDADES, RUN_MINUTES } from '../data/zonas.ts';
+import { CAJA, ENEMY_CAP, LEVEL_UP, lucasForRun, PICKUPS, xpToNext } from '../data/balance.ts';
+import { CIUDADES } from '../data/zonas.ts';
 import { t, tList } from '../i18n/index.ts';
 import { Banner } from '../ui/banner.ts';
 import { CajaView } from '../ui/cajaView.ts';
@@ -24,11 +24,18 @@ import { DamageNumbers } from './fx/damageNumbers.ts';
 import { Particles } from './fx/particles.ts';
 import { ScreenFx } from './fx/screenFx.ts';
 import { Shake } from './fx/shake.ts';
+import { Journey } from './journey.ts';
+import { Clouds } from './systems/clouds.ts';
+import { EnemyShots } from './systems/enemyShots.ts';
 import { SpatialGrid } from './systems/spatialGrid.ts';
 import { Spawner } from './systems/spawner.ts';
+import { Telegraphs } from './systems/telegraphs.ts';
 import { WeaponSet } from './weapons/index.ts';
 import { Decor } from './world/decor.ts';
 import { FloorLayer } from './world/floor.ts';
+import { Hazards } from './world/hazards.ts';
+import { Horizon } from './world/horizon.ts';
+import { Weather } from './world/weather.ts';
 
 const ENEMY_POOL = 320;
 /** Seconds of the death animation before the end screen. */
@@ -80,6 +87,12 @@ export class RunScene implements Scene {
   private rerolls: number = LEVEL_UP.startingRerolls;
   private banishes = 2;
   private victory = false;
+  readonly journey: Journey;
+  private readonly horizon = new Horizon();
+  private readonly weather = new Weather();
+  private readonly hazards = new Hazards();
+  private timeScale = 1;
+  private worldTime = 0;
 
   constructor(input: Input, sfx: Sfx, opts: RunOptions) {
     this.input = input;
@@ -109,6 +122,10 @@ export class RunScene implements Scene {
       enemies,
       food,
       build,
+      telegraphs: new Telegraphs(),
+      shots: new EnemyShots(),
+      clouds: new Clouds(),
+      wind: { x: 0, y: 0 },
       mods: build.stats(),
       refreshMods: () => {
         ctx.mods = build.stats();
@@ -116,12 +133,16 @@ export class RunScene implements Scene {
         this.weapons.sync(ctx);
       },
       time: 0,
-      stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {} },
+      stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
+      onKill: (_e, source) => {
+        // Cielo del Dieciocho: every enemy cut by a kite heals 1.
+        if (source === 'volantin' && build.evolved.has('volantin')) player.heal(1, ctx);
+      },
       hitstop: (s) => {
         this.freeze = Math.max(this.freeze, s);
       },
-      banner: (text, color) => this.banner.show(text, color),
+      banner: (text, color, subtitle) => this.banner.show(text, color, subtitle),
       openCaja: (golden) => this.openCaja(golden),
       debug: { invincible: false, hitboxes: false },
     };
@@ -136,12 +157,33 @@ export class RunScene implements Scene {
       skip: () => this.skip(),
     });
 
+    this.journey = new Journey(ctx, {
+      onZone: (z) => {
+        this.floor.setFloor(`suelo_${z.id}`, SUELO_PESOS[z.id] ?? SUELO_CENTRO_PESOS);
+        this.decor.setZone(z.id);
+        this.horizon.setZone(z.id, this.viewW);
+        this.weather.setZone(z.id, this.viewW, this.viewH, ctx.rng);
+        this.hazards.setZone(z.hazard, ctx);
+      },
+      onVictory: () => this.finish(true),
+      setTimeScale: (v) => this.setTimeScale(v),
+      addBoss: (root) => this.sorted.addChild(root),
+      setHalfFog: (side) => {
+        this.hazards.halfFogSide = side;
+      },
+    });
+
+    this.sorted.addChild(this.hazards.world);
+    this.hazards.world.sortableChildren = true;
     this.worldRoot.addChild(
       this.weapons.floor,
+      ctx.telegraphs.root,
       this.shadows,
+      ctx.clouds.root,
       food.root,
       this.sorted,
       this.weapons.root,
+      ctx.shots.root,
       this.decor.overhead,
       particles.root,
       numbers.root,
@@ -150,6 +192,9 @@ export class RunScene implements Scene {
     this.shaken.addChild(this.floor.root, this.worldRoot);
     this.root.addChild(
       this.shaken,
+      this.weather.root,
+      this.hazards.screen,
+      this.horizon.root,
       screen.screen,
       this.hud.root,
       this.banner.root,
@@ -174,11 +219,17 @@ export class RunScene implements Scene {
 
   enter(): void {
     this.camera.snapTo(this.ctx.player.x, this.ctx.player.y);
+    this.journey.begin(this.ctx);
   }
 
   exit(): void {
     this.ctx.sfx.setBuzz(0);
     this.opts.setTimeScale(1);
+  }
+
+  private setTimeScale(v: number): void {
+    this.timeScale = v;
+    this.opts.setTimeScale(v);
   }
 
   resize(width: number, height: number): void {
@@ -188,6 +239,9 @@ export class RunScene implements Scene {
     this.ctx.screen.resize(width, height);
     this.hud.resize(width, height);
     this.banner.resize(width, height);
+    this.hazards.resize(width, height);
+    this.horizon.setZone(this.journey.zone.id, width);
+    this.weather.setZone(this.journey.zone.id, width, height, this.ctx.rng);
     if (this.mode === 'cards') this.showCards(false);
   }
 
@@ -200,7 +254,7 @@ export class RunScene implements Scene {
   update(dt: number): void {
     this.input.poll();
     const ctx = this.ctx;
-    const real = this.mode === 'slowmo' ? dt / LEVEL_UP.slowMoScale : dt;
+    const real = dt / Math.max(0.05, this.timeScale);
     this.banner.update(real);
     ctx.screen.updateReal(real);
     this.levelUp.update(real);
@@ -218,12 +272,13 @@ export class RunScene implements Scene {
       this.freeze -= dt;
       return;
     }
-    this.simulate(dt);
+    this.simulate(dt, real);
+    if ((this.mode as Mode) === 'end') return;
 
     if (this.mode === 'slowmo') {
       this.slowLeft -= real;
       if (this.slowLeft <= 0) {
-        this.opts.setTimeScale(1);
+        this.setTimeScale(1);
         this.showCards(true);
       }
       return;
@@ -238,21 +293,28 @@ export class RunScene implements Scene {
       this.startLevelUp();
       return;
     }
-    // End of the road.
+    // End of the road (victory comes from beating El Gran Temblor).
     const p = ctx.player;
     if (p.dead && p.deadFor > DEATH_DELAY) this.finish(false);
-    else if (ctx.time >= RUN_MINUTES * 60 && !p.dead) this.finish(true);
   }
 
-  private simulate(dt: number): void {
+  private simulate(dt: number, real: number): void {
     const ctx = this.ctx;
     ctx.time += dt;
+    this.worldTime += dt;
     const p = ctx.player;
     p.update(dt, this.input.state, ctx);
     ctx.enemies.update(dt, ctx);
     this.weapons.update(dt, ctx);
     ctx.food.update(dt, ctx);
-    this.spawner.update(dt, ctx, this.viewW, this.viewH);
+    ctx.shots.update(dt, ctx);
+    ctx.telegraphs.update(dt);
+    ctx.clouds.update(dt, ctx);
+    this.hazards.update(dt, ctx);
+    this.weather.update(dt, ctx.wind.x, ctx.rng);
+    this.journey.update(dt, real, ctx);
+    if (this.mode === 'end') return;
+    this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive);
     ctx.enemies.recycleFar(p.x, p.y, Math.hypot(this.viewW, this.viewH) * 0.9, ctx, this.viewW, this.viewH);
 
     const speed = Math.hypot(p.vx, p.vy) || 1;
@@ -273,7 +335,7 @@ export class RunScene implements Scene {
     const ctx = this.ctx;
     this.mode = 'slowmo';
     this.slowLeft = LEVEL_UP.slowMoSeconds;
-    this.opts.setTimeScale(LEVEL_UP.slowMoScale);
+    this.setTimeScale(LEVEL_UP.slowMoScale);
     ctx.screen.levelUp(ctx.player.x, ctx.player.y);
     const shouts = tList('ui.subirNivel');
     this.banner.show(shouts[ctx.rng.int(0, Math.max(0, shouts.length - 1))] ?? '¡Wena!', 'a');
@@ -286,7 +348,16 @@ export class RunScene implements Scene {
     this.input.clear();
     this.ctx.sfx.setBuzz(0);
     if (this.offers.some((o) => o.rarity === 'legendaria')) this.ctx.sfx.play('cargaLista', { pitch: 2 });
-    this.levelUp.show(this.offers, this.ctx.progress.level, this.rerolls, this.banishes, this.viewW, this.viewH, fresh);
+    this.levelUp.show(
+      this.offers,
+      this.ctx.progress.level,
+      this.rerolls,
+      this.banishes,
+      this.viewW,
+      this.viewH,
+      fresh,
+      this.offers.map((o) => this.ctx.build.completesEvolution(o)),
+    );
   }
 
   private pick(i: number): void {
@@ -354,6 +425,15 @@ export class RunScene implements Scene {
     let count: number = CAJA.rewards[roll]?.count ?? 1;
     if (golden) count = Math.max(3, count);
     const rewards: Offer[] = [];
+    // An evolution, if one is ready, always comes out first.
+    const evo = ctx.build.evolutionReady();
+    if (evo) {
+      const offer: Offer = { kind: 'evolution', id: evo.weapon, evolution: evo.id, rarity: 'legendaria' };
+      ctx.build.apply(offer);
+      rewards.push(offer);
+      count = Math.max(1, count - 1);
+      ctx.banner(t(evo.nameKey), 'a', t('ui.evoluciona'));
+    }
     for (let i = 0; i < count; i++) {
       const offer = ctx.build.offers(ctx.rng, 1)[0];
       if (!offer) break;
@@ -364,6 +444,7 @@ export class RunScene implements Scene {
     this.mode = 'caja';
     this.input.clear();
     ctx.sfx.setBuzz(0);
+    ctx.sfx.play('campana');
     this.caja.show(
       rewards,
       golden,
@@ -402,9 +483,9 @@ export class RunScene implements Scene {
     const ctx = this.ctx;
     this.victory = victory;
     this.mode = 'end';
-    this.opts.setTimeScale(1);
+    this.setTimeScale(1);
     ctx.sfx.setBuzz(0);
-    const km = Math.round(kmAt(ctx.time / 60));
+    const km = this.journey.km(ctx.time);
     this.end.show(
       {
         victory,
@@ -420,7 +501,16 @@ export class RunScene implements Scene {
       this.viewH,
       () => this.opts.onRestart(),
       () => ctx.sfx.play('comida', { pitch: 1.5 + ctx.rng.range(0, 0.3) }),
+      victory && !this.journey.antartica ? () => this.continueToAntarctica() : undefined,
     );
+  }
+
+  /** After beating El Gran Temblor: keep going into the endless south. */
+  private continueToAntarctica(): void {
+    this.end.hide();
+    this.victory = false;
+    this.journey.continueToAntarctica(this.ctx);
+    this.resume();
   }
 
   get won(): boolean {
@@ -449,10 +539,17 @@ export class RunScene implements Scene {
     ctx.enemies.render(a);
     ctx.food.render(a);
     this.weapons.render(a, ctx);
+    ctx.shots.render(a);
+    ctx.telegraphs.render();
+    ctx.clouds.render(this.worldTime);
+    this.journey.draw(a);
     ctx.particles.render();
     ctx.numbers.render();
     const px = Math.round(p.prevX + (p.x - p.prevX) * a);
     const py = Math.round(p.prevY + (p.y - p.prevY) * a);
+    this.horizon.update(origin.x, this.worldTime);
+    this.weather.render();
+    this.hazards.render(px - origin.x + ctx.shake.x, py - 8 - origin.y + ctx.shake.y);
     ctx.screen.render({
       x: px,
       y: py,
@@ -464,7 +561,7 @@ export class RunScene implements Scene {
       hpRatio: p.hp / p.maxHp,
       dead: p.dead,
     });
-    const km = Math.round(kmAt(ctx.time / 60));
+    const km = this.journey.km(ctx.time);
     this.hud.render(
       {
         hp: p.hp,
@@ -479,6 +576,7 @@ export class RunScene implements Scene {
       },
       ctx.build,
       this.mode === 'playing' ? this.input.stickNative(this.viewW, this.viewH) : null,
+      this.journey.bar(),
     );
   }
 }

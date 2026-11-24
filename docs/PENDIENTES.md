@@ -1,8 +1,12 @@
 # Pendientes para revisar
 
-## Curva de experiencia a mitad de partida (Fase 2 → Fase 3)
+## Curva de experiencia (revisada en Fase 3)
 
-Con solo zancudos y palomas (1 XP cada sopaipilla), un bot que junta comida llega a nivel 3 en el minuto 1 (el GDD pide ~4) pero a nivel ~10 en el minuto 4. El GDD apunta a ~40 subidas en 12 minutos. Eso depende de los enemigos de la Fase 3 que sueltan completos (5 XP) y chorrillanas (25 XP). Revisar con la simulación en la Fase 3 antes de tocar la fórmula.
+Con los enemigos de todas las zonas, un bot que junta comida y elige cartas al azar llega a nivel ~36 al minuto 12 y ~50 al vencer al Gran Temblor. Está cerca de las ~40 subidas del GDD; no se tocó la fórmula.
+
+## Duración de las peleas con jefes (Fase 3 → Fase 8)
+
+Con el bot (cartas al azar) las peleas duraron ~65 s (Alicanto, Taco), ~130 s (Caleuche) y ~270 s (Gran Temblor) antes de bajar la vida de los jefes y acercar al Caleuche. Hay que medirlo con jugadores reales en la Fase 8: la meta razonable es 45–90 s por jefe con un build decente.
 
 Cosas que funcionan pero que hay que volver a mirar antes del lanzamiento (Fase 8).
 

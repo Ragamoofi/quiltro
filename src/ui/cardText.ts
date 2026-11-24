@@ -28,6 +28,15 @@ export function describe(offer: Offer): CardText {
   if (offer.kind === 'heal') {
     return { title: t('ui.curar'), level: '', effect: t('ui.curarEfecto', { n: PICKUPS.moteConHuesillo.heal }), flavor: '', icon: 'laOnce' };
   }
+  if (offer.kind === 'evolution') {
+    return {
+      title: t(`evoluciones.${offer.evolution}`),
+      level: t('ui.evoluciona'),
+      effect: t(`evolucionesEfecto.${offer.evolution}`),
+      flavor: '',
+      icon: offer.id,
+    };
+  }
   if (offer.kind === 'lucas') {
     return { title: t('ui.lucasCarta'), level: '', effect: t('ui.lucasEfecto', { n: LUCAS_CARD }), flavor: '', icon: 'choro' };
   }

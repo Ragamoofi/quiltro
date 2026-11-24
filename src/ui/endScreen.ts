@@ -31,7 +31,14 @@ export class EndScreen {
   private onCoin: () => void = () => {};
   private content = new Container();
 
-  show(s: RunSummary, viewW: number, viewH: number, onRetry: () => void, onCoin: () => void): void {
+  show(
+    s: RunSummary,
+    viewW: number,
+    viewH: number,
+    onRetry: () => void,
+    onCoin: () => void,
+    onContinue?: () => void,
+  ): void {
     this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.root.visible = true;
     this.onCoin = onCoin;
@@ -46,7 +53,7 @@ export class EndScreen {
     const pw = Math.min(viewW - 16, 300);
     const g = new Graphics();
     const entryCount = Object.values(s.damageBy).filter((v) => v > 0).slice(0, 6).length;
-    const ph = Math.min(viewH - 16, 118 + entryCount * 17 + (portrait ? 20 : 0));
+    const ph = Math.min(viewH - 16, 118 + entryCount * 17 + (portrait ? 20 : 0) + (onContinue ? 12 : 0));
     const px0 = Math.round((viewW - pw) / 2);
     const py0 = Math.round((viewH - ph) / 2);
     panel(g, px0, py0, pw, ph, 'K', 'k', 'g', 'k');
@@ -105,9 +112,22 @@ export class EndScreen {
     center(this.lucasText, y);
     y += this.lucasText.height + 8;
 
-    const retry = new Button(`${t('ui.otraAlTiro')} (R)`, Math.min(pw - 24, 160), 22, onRetry, 'a', 'k');
-    retry.position.set(Math.round((viewW - Math.min(pw - 24, 160)) / 2), Math.min(y, py0 + ph - 30));
-    this.content.addChild(retry);
+    const bw = Math.min(pw - 24, 160);
+    const by = Math.min(y + (onContinue ? 10 : 0), py0 + ph - 30);
+    const retry = new Button(`${t('ui.otraAlTiro')} (R)`, bw, 22, onRetry, 'a', 'k');
+    if (onContinue) {
+      const half = Math.floor((pw - 30) / 2);
+      const cont = new Button(t('zonasExtra.seguirAntartica'), half, 22, onContinue, 'b', 'w');
+      retry.position.set(px0 + 12, by);
+      cont.position.set(px0 + 18 + half, by);
+      this.content.addChild(retry, cont);
+      const unlocked = new PixelText(t('zonasExtra.antarticaDesbloqueada'), { color: 'i', outline: 'k' });
+      unlocked.position.set(Math.round((viewW - unlocked.width) / 2), by - unlocked.height - 3);
+      this.content.addChild(unlocked);
+    } else {
+      retry.position.set(Math.round((viewW - bw) / 2), by);
+      this.content.addChild(retry);
+    }
   }
 
   hide(): void {

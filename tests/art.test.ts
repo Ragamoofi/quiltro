@@ -45,7 +45,8 @@ describe('sprites', () => {
 
   it('use the ink outline (#2A2233) on characters', () => {
     for (const s of SPRITES.filter((x) => x.group === 'personajes')) {
-      for (const a of Object.values(s.animations)) {
+      for (const [name, a] of Object.entries(s.animations)) {
+        if (name === 'silueta') continue;
         for (const f of a.frames) expect(f.join('')).toContain('k');
       }
     }

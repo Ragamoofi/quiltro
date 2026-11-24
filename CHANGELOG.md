@@ -4,6 +4,31 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 3 — Chile completo
+
+#### Agregado
+- El viaje: Norte → Centro → Sur → Patagonia, 3 minutos y 1.075 km por zona, con cartel de entrada (título y frase), Valparaíso a mitad del Centro, y un jefe que cierra cada zona. Los km esperan al final de la zona mientras el jefe vive, así que vencer a Chile siempre marca 4.300 km.
+- Suelos, decoración y fondo lejano de cada zona: tierra roja de noche con cactus, salitreras y flores (Norte); pastelones, postes con cables, quioscos y cordillera nevada (Centro); pasto, araucarias, iglesias de madera, copihues y volcanes (Sur); nieve, coirón, cercos, hielo y las Torres (Patagonia); hielo azul y auroras (La Antártica). Dos capas de parallax arriba de la pantalla.
+- Clima por zona: polvo, gaviotas lejanas, lluvia en píxeles diagonales, nieve horizontal que sigue al viento.
+- Peligros: remolinos que empujan (Norte), la micro que no para que cruza en línea recta con aviso de bocina y atropella también a los enemigos (Centro), neblina chilota que tapa los bordes (Sur), viento que empuja al quiltro, a los enemigos y a los proyectiles (Patagonia); en La Antártica rotan cada 30 s.
+- Los 10 enemigos nuevos con su comportamiento: jote (vuela en círculos y se lanza en picada con aviso), guanaco (escupe de lejos), micro (se alinea, toca la bocina y embiste atropellando), gaviota (roba comida y huye; si la matas suelta lo robado), lobo marino (se tira encima con aviso de área), chonchón (avanza en ondas, "tue tue"), camahueto (carga y rompe trompos), basilisco (mirarlo de frente 1 s te ralentiza 30 %), témpano (se parte en 3 al morir), chingue (zigzag y nube tóxica). El puma es el élite de la Patagonia: acecha fuera de cámara y salta.
+- Proyectiles enemigos rojo copihue con un píxel blanco al centro, y avisos (círculos y líneas que se llenan) para todo ataque peligroso.
+- Los 4 jefes, cada uno con presentación de 2 s, barra de vida abajo y 2 fases:
+  - El Alicanto: abanicos de plumas; en fase 2 se vuelve invisible salvo los ojos y deja pepitas que explotan.
+  - El Taco: culebra de 12 autos y micros con bocinazos en cono; en fase 2 se le sueltan micros de la cola.
+  - El Caleuche: barco fantasma con cañonazos avisados; en fase 2 se prenden las luces de fiesta, invoca chonchones y la neblina tapa media pantalla.
+  - El Gran Temblor: grietas en línea y caída de piedras; en fase 2 réplicas cada 5 s con zonas seguras verdes y grietas en cruz.
+  - Al vencerlos: cámara lenta, fuegos artificiales, lluvia de comida y Caja dorada.
+- Las 7 evoluciones (salen primero en la Caja): Cielo del Dieciocho, Trompo Tornado, Apagón, Carnaval, Año Nuevo en Valpo, Persigue autos y Aullido de las 12. Sello "¡Evoluciona!" en la carta que completa una pareja.
+- Evento Temblor una vez por partida entre los minutos 4 y 10: la pantalla tiembla, todos se congelan asustados y el juego registra si el quiltro no se movió (para el logro "Ni se inmutó").
+- Vencer al Gran Temblor muestra "¡De Arica a Punta Arenas!" y desbloquea "Seguir a La Antártica": modo infinito donde los jefes vuelven más fuertes cada 3 minutos.
+- Sonidos nuevos: bocina, "tue tue", retumbo con vidrios, campanita de almacén.
+- Panel F1: saltar al minuto, invocar jefe, ir a La Antártica, evolucionar cualquier arma.
+
+#### Cambiado
+- La vida de los jefes crece con `1 + 0,05·t` (con la curva de los enemigos, el Gran Temblor tendría ×5,7).
+- Los jefes hechos de varias partes reciben un golpe por arma cada 0,12 s, no uno por parte.
+
 ### Fase 2 — La partida
 
 #### Agregado

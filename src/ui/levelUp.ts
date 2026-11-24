@@ -50,7 +50,16 @@ export class LevelUpView {
     return this.age >= LEVEL_UP.pickLockSeconds;
   }
 
-  show(offers: readonly Offer[], level: number, rerolls: number, banishes: number, viewW: number, viewH: number, fresh = true): void {
+  show(
+    offers: readonly Offer[],
+    level: number,
+    rerolls: number,
+    banishes: number,
+    viewW: number,
+    viewH: number,
+    fresh = true,
+    stamps: readonly boolean[] = [],
+  ): void {
     this.viewW = viewW;
     this.viewH = viewH;
     this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -70,6 +79,17 @@ export class LevelUpView {
     const gap = 8;
     this.cards = offers.map((offer, i) => {
       const root = this.buildCard(offer, i, cw, ch, portrait);
+      if (stamps[i]) {
+        // "¡Evoluciona!" stamp: this card completes an evolution pair.
+        const stamp = new PixelText(t('ui.evoluciona'), { color: 'a', outline: 'k' });
+        const sg = new Graphics();
+        panel(sg, 0, 0, stamp.width + 6, stamp.height + 4, 'R', 'k', 'r', 'R');
+        const box = new Container();
+        box.addChild(sg, stamp);
+        stamp.position.set(3, 2);
+        box.position.set(Math.round((cw - stamp.width - 6) / 2), -6);
+        root.addChild(box);
+      }
       const x = portrait ? 15 : Math.round((viewW - (n * cw + (n - 1) * gap)) / 2) + i * (cw + gap);
       const y = portrait ? 56 + i * (ch + 6) : Math.round((viewH - 30 - ch) / 2) + 8;
       root.position.set(x, y + viewH);

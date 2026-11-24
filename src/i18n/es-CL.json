@@ -170,6 +170,20 @@
     "persigueAutos": "Persigue autos",
     "aullidoDeLas12": "Aullido de las 12"
   },
+  "evolucionesEfecto": {
+    "cieloDelDieciocho": "8 volantines de colores con estela; curan 1 de vida por enemigo cortado",
+    "trompoTornado": "Trompos gigantes que arrastran a los enemigos en espiral",
+    "apagon": "Se corta la luz y caen rayos sobre todo lo que se ve",
+    "carnaval": "Estela ancha que frena a los chicos y te da escudo al pisarla",
+    "anoNuevoEnValpo": "Cada explosión lanza 3 cohetes más",
+    "persigueAutos": "Al correr te lanzas como bala, invulnerable",
+    "aullidoDeLas12": "El ladrido cargado no tiene enfriamiento y todos los perros aúllan contigo"
+  },
+  "zonasExtra": {
+    "jefeLlega": "¡Se viene {jefe}!",
+    "seguirAntartica": "Seguir a La Antártica",
+    "antarticaDesbloqueada": "¡La Antártica desbloqueada!"
+  },
   "comida": {
     "sopaipilla": "Sopaipilla",
     "completo": "Completo",

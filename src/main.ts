@@ -9,6 +9,8 @@ import { GameLoop } from './core/loop.ts';
 import { SceneManager } from './core/scene.ts';
 import { ARMAS } from './data/armas.ts';
 import { spawnPerSecond, TUNING, xpToNext } from './data/balance.ts';
+import { EVOLUCIONES } from './data/evoluciones.ts';
+import { JEFES } from './data/jefes.ts';
 import { RASGOS } from './data/rasgos.ts';
 import type { Volantin } from './game/weapons/volantin.ts';
 import { DebugPanel } from './debug/panel.ts';
@@ -162,7 +164,24 @@ async function boot(): Promise<void> {
       c.refreshMods();
     },
   );
-  debug.button('Partida', 'Invocar jefe', () => {}, false);
+  debug.select('Viaje', 'Saltar al minuto…', ['0', '2.8', '3', '5.8', '6', '8.8', '9', '11.8'], (v) => {
+    run.journey.jumpTo(Number(v), ctx());
+  });
+  debug.select('Viaje', 'Invocar jefe', JEFES.map((j) => j.id), (id) => run.journey.spawnBoss(id, ctx()));
+  debug.button('Viaje', 'La Antártica', () => run.journey.continueToAntarctica(ctx()));
+  debug.select('Viaje', 'Evolucionar…', EVOLUCIONES.map((e) => e.id), (id) => {
+    const c = ctx();
+    const ev = EVOLUCIONES.find((e) => e.id === id);
+    if (!ev) return;
+    for (let i = 0; i < 5 && (c.build.weapon(ev.weapon)?.level ?? 0) < 5; i++) {
+      const w = c.build.weapon(ev.weapon);
+      c.build.apply({ kind: 'weapon', id: ev.weapon, rarity: 'comun', toLevel: w ? w.level + 1 : 1 });
+    }
+    if (!c.build.trait(ev.trait)) c.build.apply({ kind: 'trait', id: ev.trait, rarity: 'comun', toLevel: 1 });
+    c.build.apply({ kind: 'evolution', id: ev.weapon, evolution: ev.id, rarity: 'legendaria' });
+    c.refreshMods();
+  });
+  debug.stat('Viaje', 'zona / peligro', () => `${run.journey.zone.id}`);
   debug.slider('Volantín', 'volantines (0 = build)', { min: 0, max: 8, step: 1 }, () => 0, (v) => {
     const k = run.weapons.get<Volantin>('volantin');
     if (k) k.forceCount = v;

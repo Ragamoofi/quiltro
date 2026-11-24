@@ -41,6 +41,10 @@ export class ScreenFx {
   private time = 0;
   private viewW = 480;
   private viewH = 270;
+  private blackoutT = 0;
+  private howlT = 0;
+  private readonly dark = new Sprite();
+  private readonly howlers: Sprite[] = [];
 
   constructor() {
     const tex = anim('globo_guau', 'globo').textures[0];
@@ -49,7 +53,15 @@ export class ScreenFx {
     this.balloon.visible = false;
     this.invert.negative(false);
     this.world.addChild(this.g, this.balloon);
-    this.screen.addChild(this.vignetteA, this.vignetteB, this.border);
+    const sil = anim('quiltro', 'silueta').textures[0];
+    for (let i = 0; i < 6; i++) {
+      const s = new Sprite(sil);
+      s.anchor.set(0.5, 1);
+      s.visible = false;
+      this.howlers.push(s);
+    }
+    this.dark.visible = false;
+    this.screen.addChild(this.dark, ...this.howlers, this.vignetteA, this.vignetteB, this.border);
   }
 
   /** Container that gets the 2-frame colour inversion. */
@@ -62,6 +74,7 @@ export class ScreenFx {
     this.viewH = h;
     this.vignetteA.texture = ditherVignette(w, h, 4, 14);
     this.vignetteB.texture = ditherVignette(w, h, 8, 24);
+    this.dark.texture = ditherVignette(w, h, Math.max(w, h), Math.max(w, h) + 1, 'k', 0.5);
   }
 
   /** Pixel column of light on the dog when levelling up. */
@@ -69,6 +82,16 @@ export class ScreenFx {
     this.columnX = x;
     this.columnY = y;
     this.columnT = 0.5;
+  }
+
+  /** Apagón: the screen goes dark for a moment. */
+  blackout(seconds: number): void {
+    this.blackoutT = Math.max(this.blackoutT, seconds);
+  }
+
+  /** Aullido de las 12: dog silhouettes howl along the bottom of the screen. */
+  howl(): void {
+    this.howlT = 1.2;
   }
 
   damageFlash(): void {
@@ -91,6 +114,8 @@ export class ScreenFx {
 
   update(dt: number): void {
     this.time += dt;
+    this.blackoutT = Math.max(0, this.blackoutT - dt);
+    this.howlT = Math.max(0, this.howlT - dt);
     if (this.ringT >= 0) {
       this.ringT += dt;
       if (this.ringT > RING_TIME + 0.12) this.ringT = -1;
@@ -174,6 +199,14 @@ export class ScreenFx {
       }
     }
 
+    this.dark.visible = this.blackoutT > 0;
+    this.howlers.forEach((s, i) => {
+      s.visible = this.howlT > 0;
+      const rise = Math.min(1, (1.2 - this.howlT) * 6) * Math.min(1, this.howlT * 6);
+      s.position.set(Math.round(((i + 0.5) / this.howlers.length) * this.viewW), Math.round(this.viewH + 22 - rise * 22));
+      s.scale.x = i % 2 === 0 ? 1 : -1;
+    });
+
     // Red border for 2 frames when hurt.
     const b = this.border;
     b.clear();
@@ -201,13 +234,21 @@ export class ScreenFx {
 }
 
 /** Ordered-dither red frame: dense near the edge, sparse toward `outer`. */
-function ditherVignette(w: number, h: number, inner: number, outer: number): Texture {
+function ditherVignette(w: number, h: number, inner: number, outer: number, color = 'R', flat = 0): Texture {
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Texture.EMPTY;
-  ctx.fillStyle = colorOf('R')?.hex ?? '#9E1F35';
+  ctx.fillStyle = colorOf(color)?.hex ?? '#9E1F35';
+  if (flat > 0) {
+    // Uniform ordered dither (blackout).
+    const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (flat > ((bayer[(y % 4) * 4 + (x % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 1, 1);
+    const t = Texture.from(canvas);
+    t.source.scaleMode = 'nearest';
+    return t;
+  }
   const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {

@@ -36,6 +36,7 @@ export class Hud {
   private readonly icons = new Container();
   private readonly iconDots = new Graphics();
   private readonly pause: Button;
+  private readonly bossName = new PixelText(' ', { color: 'w', outline: 'k' });
   private width = 480;
   private height = 270;
   private buildKey = '';
@@ -58,6 +59,7 @@ export class Hud {
       this.icons,
       this.iconDots,
       this.pause,
+      this.bossName,
     );
   }
 
@@ -67,10 +69,30 @@ export class Hud {
     this.buildKey = '';
   }
 
-  render(s: HudState, build: Build, stick: { ox: number; oy: number; x: number; y: number } | null): void {
+  render(
+    s: HudState,
+    build: Build,
+    stick: { ox: number; oy: number; x: number; y: number } | null,
+    boss: { name: string; ratio: number; intro: number } | null = null,
+  ): void {
     const g = this.g;
     g.clear();
     const w = this.width;
+
+    // Boss bar along the bottom; it fills up during the 2 s intro.
+    this.bossName.visible = !!boss;
+    if (boss) {
+      const bw = Math.min(260, w - 60);
+      const bx = Math.round((w - bw) / 2);
+      const by = this.height - 12;
+      const shown = boss.intro > 0 ? Math.min(boss.ratio, 1 - boss.intro / 2) : boss.ratio;
+      g.rect(bx - 1, by - 1, bw + 2, 7).fill(C('k'));
+      g.rect(bx, by, bw, 5).fill(C('R'));
+      g.rect(bx, by, Math.round(bw * Math.max(0, shown)), 5).fill(C('r'));
+      g.rect(bx, by, Math.round(bw * Math.max(0, shown)), 1).fill(C('p'));
+      this.bossName.text = boss.name;
+      this.bossName.position.set(Math.round((w - this.bossName.width) / 2), by - this.bossName.height - 1);
+    }
 
     // XP bar: full width, 3 px gold.
     const fill = Math.round((w - 2) * Math.min(1, s.xp / Math.max(1, s.xpNext)));
