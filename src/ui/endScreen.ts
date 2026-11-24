@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../art/assets.ts';
 import { formatNumber, t } from '../i18n/index.ts';
+import type { RunRewards } from '../meta/progress.ts';
 import { PixelText } from './text.ts';
 import { Button, C, ditherOverlay, panel } from './widgets.ts';
 
@@ -13,14 +14,17 @@ export interface RunSummary {
   level: number;
   lucas: number;
   damageBy: Record<string, number>;
+  rewards?: RunRewards & { affordable?: string | null; newCharacterNames?: string[] };
 }
 
 const fmtTime = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 /**
  * Fin del viaje: big title ("Se te fue la micro" / "¡De Arica a Punta Arenas!"),
- * km and city, stats, damage per weapon as bars, lucas counting up, and the
- * big "¡Otra, al tiro!" button (R).
+ * km and city (and "¡Llegaste más lejos que nunca!"), stats, damage per weapon
+ * as bars, lucas counting up with their breakdown, new characters, "Te
+ * alcanza para…", and the buttons ¡Otra, al tiro! (R), La Cucha and, after
+ * the final boss, Seguir a La Antártica.
  */
 export class EndScreen {
   readonly root = new Container();
@@ -30,6 +34,7 @@ export class EndScreen {
   private age = 0;
   private onCoin: () => void = () => {};
   private content = new Container();
+  private glow: Button | null = null;
 
   show(
     s: RunSummary,
@@ -38,6 +43,7 @@ export class EndScreen {
     onRetry: () => void,
     onCoin: () => void,
     onContinue?: () => void,
+    onCucha?: () => void,
   ): void {
     this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.root.visible = true;
@@ -45,88 +51,106 @@ export class EndScreen {
     this.age = 0;
     this.shown = 0;
     this.target = s.lucas;
+    this.glow = null;
     this.root.addChild(ditherOverlay(viewW, viewH, 'k', 2));
     this.content = new Container();
     this.root.addChild(this.content);
 
     const portrait = viewH > viewW;
-    const pw = Math.min(viewW - 16, 300);
-    const g = new Graphics();
-    const entryCount = Object.values(s.damageBy).filter((v) => v > 0).slice(0, 6).length;
-    const ph = Math.min(viewH - 16, 118 + entryCount * 17 + (portrait ? 20 : 0) + (onContinue ? 12 : 0));
+    const pw = Math.min(viewW - 12, 320);
     const px0 = Math.round((viewW - pw) / 2);
-    const py0 = Math.round((viewH - ph) / 2);
-    panel(g, px0, py0, pw, ph, 'K', 'k', 'g', 'k');
+    const g = new Graphics();
     this.content.addChild(g);
-
-    let y = py0 + 8;
-    const center = (node: Container, yy: number): void => {
-      node.position.set(Math.round((viewW - node.width) / 2), yy);
-      this.content.addChild(node);
+    const items: Container[] = [];
+    let y = 0;
+    const center = (node: Container, gap = 4): void => {
+      node.position.set(Math.round((viewW - node.width) / 2), y);
+      items.push(node);
+      y += node.height + gap;
     };
-    const title = new PixelText(s.victory ? t('ui.victoria') : t('ui.muerte'), {
-      color: s.victory ? 'a' : 'r',
-      outline: 'k',
-      maxWidth: Math.floor((pw - 16) / 2),
-      align: 'center',
-    }, 2);
-    center(title, y);
-    y += title.height + 6;
 
-    const km = new PixelText(`${formatNumber(s.km)} km · ${t('ui.llegasteA', { lugar: s.city })}`, { color: 'w', outline: 'k' });
-    center(km, y);
-    y += km.height + 6;
-
-    const stats = new PixelText(
-      `${t('ui.tiempo')} ${fmtTime(s.seconds)}   ${t('ui.enemigos')} ${formatNumber(s.kills)}   ${t('ui.nivel')} ${s.level}`,
-      { color: 'G', outline: 'k' },
+    center(
+      new PixelText(s.victory ? t('ui.victoria') : t('ui.muerte'), {
+        color: s.victory ? 'a' : 'r',
+        outline: 'k',
+        maxWidth: Math.floor((pw - 16) / 2),
+        align: 'center',
+      }, 2),
+      5,
     );
-    center(stats, y);
-    y += stats.height + 8;
+    center(new PixelText(`${formatNumber(s.km)} km · ${t('ui.llegasteA', { lugar: s.city })}`, { color: 'w', outline: 'k' }));
+    if (s.rewards?.newRecord) center(new PixelText(t('ui.nuevoRecord'), { color: 'a', outline: 'k' }));
+    center(
+      new PixelText(`${t('ui.tiempo')} ${fmtTime(s.seconds)}   ${t('ui.enemigos')} ${formatNumber(s.kills)}   ${t('ui.nivel')} ${s.level}`, {
+        color: 'G',
+        outline: 'k',
+      }),
+      6,
+    );
 
     // Damage per weapon.
-    const head = new PixelText(t('ui.dañoPorArma'), { color: 'w', outline: 'k' });
-    head.position.set(px0 + 12, y);
-    this.content.addChild(head);
-    y += head.height + 3;
-    const entries = Object.entries(s.damageBy).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const entries = Object.entries(s.damageBy).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, portrait ? 6 : 4);
     const max = Math.max(1, ...entries.map(([, v]) => v));
-    const barW = pw - 24 - 18 - 40;
+    const barW = pw - 24 - 18 - 44;
     const bars = new Graphics();
-    this.content.addChild(bars);
+    const barTop = y;
     for (const [id, v] of entries) {
       const icon = new Sprite(anim('icono', id).textures[0]);
       icon.position.set(px0 + 12, y);
-      this.content.addChild(icon);
+      items.push(icon);
       const w = Math.max(1, Math.round((barW * v) / max));
       bars.rect(px0 + 31, y + 5, barW + 2, 6).fill(C('k'));
       bars.rect(px0 + 32, y + 6, w, 4).fill(C('a'));
       const num = new PixelText(formatNumber(v), { color: 'w', outline: 'k' });
       num.position.set(px0 + 34 + barW + 2, y + 4);
-      this.content.addChild(num);
-      y += 17;
+      items.push(num);
+      y += 16;
     }
-    y += 4;
+    void barTop;
+    y += 3;
 
     this.lucasText = new PixelText(`${t('ui.lucasGanadas')}: 0`, { color: 'a', outline: 'k' });
-    center(this.lucasText, y);
-    y += this.lucasText.height + 8;
+    center(this.lucasText, 2);
+    const rw = s.rewards;
+    if (rw) {
+      const parts = [t('meta.lucasViaje', { n: rw.runLucas })];
+      if (rw.zoneBonus > 0) parts.push(t('meta.zonaNueva', { n: rw.zoneBonus }));
+      if (rw.achievementLucas > 0) parts.push(t('meta.logrosLucas', { n: rw.achievementLucas }));
+      center(new PixelText(parts.join('  ·  '), { color: 'G', outline: 'k' }), 3);
+      for (const name of rw.newCharacterNames ?? []) center(new PixelText(t('meta.nuevoPersonaje', { nombre: name }), { color: 's', outline: 'k' }), 3);
+      if (rw.affordable) center(new PixelText(t('ui.teAlcanza', { mejora: rw.affordable }), { color: 'V', outline: 'k' }), 3);
+    }
+    if (onContinue) center(new PixelText(t('zonasExtra.antarticaDesbloqueada'), { color: 'i', outline: 'k' }), 3);
+    y += 3;
 
-    const bw = Math.min(pw - 24, 160);
-    const by = Math.min(y + (onContinue ? 10 : 0), py0 + ph - 30);
-    const retry = new Button(`${t('ui.otraAlTiro')} (R)`, bw, 22, onRetry, 'a', 'k');
-    if (onContinue) {
-      const half = Math.floor((pw - 30) / 2);
-      const cont = new Button(t('zonasExtra.seguirAntartica'), half, 22, onContinue, 'b', 'w');
-      retry.position.set(px0 + 12, by);
-      cont.position.set(px0 + 18 + half, by);
-      this.content.addChild(retry, cont);
-      const unlocked = new PixelText(t('zonasExtra.antarticaDesbloqueada'), { color: 'i', outline: 'k' });
-      unlocked.position.set(Math.round((viewW - unlocked.width) / 2), by - unlocked.height - 3);
-      this.content.addChild(unlocked);
-    } else {
-      retry.position.set(Math.round((viewW - bw) / 2), by);
-      this.content.addChild(retry);
+    // Buttons.
+    const buttons: Button[] = [];
+    const retry = new Button(`${t('ui.otraAlTiro')} (R)`, 0, 22, onRetry, 'a', 'k');
+    buttons.push(retry);
+    if (onCucha) {
+      const c = new Button(t('meta.laCucha'), 0, 22, onCucha, 'v', 'w');
+      buttons.push(c);
+      if (rw?.affordable) this.glow = c;
+    }
+    if (onContinue) buttons.push(new Button(t('zonasExtra.seguirAntartica'), 0, 22, onContinue, 'b', 'w'));
+    const gap = 6;
+    const bw = Math.floor((pw - 24 - gap * (buttons.length - 1)) / buttons.length);
+    buttons.forEach((b, i) => {
+      b.resize(bw, 22);
+      b.position.set(px0 + 12 + i * (bw + gap), y);
+      items.push(b);
+    });
+    y += 22;
+
+    // Center the whole block vertically inside a panel.
+    const ph = y + 16;
+    const offY = Math.max(4, Math.round((viewH - ph) / 2));
+    panel(g, px0, offY, pw, ph, 'K', 'k', 'g', 'k');
+    bars.position.set(0, offY + 8);
+    this.content.addChild(bars);
+    for (const it of items) {
+      it.y += offY + 8;
+      this.content.addChild(it);
     }
   }
 
@@ -137,7 +161,6 @@ export class EndScreen {
   update(dt: number): void {
     if (!this.root.visible) return;
     this.age += dt;
-    // Panel slides up during the first 0.25 s.
     const k = Math.min(1, this.age / 0.25);
     this.content.y = Math.round((1 - k) ** 2 * 40);
     if (this.age > 0.5 && this.shown < this.target && this.lucasText) {
@@ -146,5 +169,7 @@ export class EndScreen {
       this.lucasText.text = `${t('ui.lucasGanadas')}: ${formatNumber(this.shown)}`;
       this.onCoin();
     }
+    // The Cucha button pulses when the lucas buy something.
+    if (this.glow) this.glow.highlight = Math.floor(this.age * 3) % 2 === 0;
   }
 }

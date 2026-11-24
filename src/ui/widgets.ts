@@ -52,8 +52,9 @@ export function ditherOverlay(w: number, h: number, ch = 'k', density: 1 | 2 = 2
 export class Button extends Container {
   private readonly bg = new Graphics();
   private readonly caption: PixelText;
-  private readonly w: number;
-  private readonly h: number;
+  private w: number;
+  private h: number;
+  private glow = false;
   private readonly fill: string;
   private pressed = false;
   private hover = false;
@@ -97,6 +98,19 @@ export class Button extends Container {
     this.draw();
   }
 
+  resize(w: number, h: number): void {
+    this.w = w;
+    this.h = h;
+    this.draw();
+  }
+
+  /** Gold border that the caller can blink to draw attention. */
+  set highlight(v: boolean) {
+    if (v === this.glow) return;
+    this.glow = v;
+    this.draw();
+  }
+
   setText(text: string): void {
     this.caption.text = text;
     this.draw();
@@ -115,7 +129,7 @@ export class Button extends Container {
     // Drop shadow that disappears when pressed.
     if (!down) g.rect(1, 2, this.w, this.h).fill(C('k'));
     const fill = !this.enabled ? 'g' : this.hover ? lighter(this.fill) : this.fill;
-    panel(g, 0, down, this.w, this.h, fill, 'k', 'W', darker(fill));
+    panel(g, 0, down, this.w, this.h, fill, this.glow ? 'a' : 'k', 'W', darker(fill));
     this.caption.position.set(
       Math.floor((this.w - this.caption.width) / 2),
       Math.floor((this.h - this.caption.height) / 2) + down,

@@ -74,10 +74,21 @@ export class Hud {
     build: Build,
     stick: { ox: number; oy: number; x: number; y: number } | null,
     boss: { name: string; ratio: number; intro: number } | null = null,
+    pointer: { x: number; y: number; angle: number } | null = null,
   ): void {
     const g = this.g;
     g.clear();
     const w = this.width;
+    if (pointer) {
+      // Small gold arrow at the screen edge.
+      const { x, y, angle } = pointer;
+      const tip = { x: x + Math.cos(angle) * 6, y: y + Math.sin(angle) * 6 };
+      const l = { x: x + Math.cos(angle + 2.5) * 5, y: y + Math.sin(angle + 2.5) * 5 };
+      const r = { x: x + Math.cos(angle - 2.5) * 5, y: y + Math.sin(angle - 2.5) * 5 };
+      g.poly([Math.round(tip.x), Math.round(tip.y), Math.round(l.x), Math.round(l.y), Math.round(r.x), Math.round(r.y)])
+        .fill(C('a'))
+        .stroke({ width: 1, color: C('k') });
+    }
 
     // Boss bar along the bottom; it fills up during the 2 s intro.
     this.bossName.visible = !!boss;
