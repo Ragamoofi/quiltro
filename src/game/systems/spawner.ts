@@ -6,10 +6,10 @@ import type { RunContext } from '../context.ts';
 import { IMPLEMENTED_ENEMIES } from '../entities/enemies.ts';
 
 /**
- * The director: spawns follow the GDD curve (1,5 + 0,6·t + 0,05·t² per second),
- * using the current zone's enemies that already exist in the game. Pigeons
- * arrive as flocks, an elite every 60 s, and a ring of enemies at minutes
- * 2, 5, 8 and 11 ("¡Te rodearon!").
+ * The director: spawns follow the GDD curve (1,5 + 0,6·t + 0,05·t² per second)
+ * with the current zone's enemies. Pigeons arrive as flocks in the Centro, an
+ * elite every 60 s (the puma in Patagonia), and a ring of enemies at minutes
+ * 2, 5, 8 and 11 ("¡Te rodearon!"). While a boss is on screen the crowd thins.
  */
 export class Spawner {
   private acc = 0;
@@ -21,15 +21,20 @@ export class Spawner {
   cap = 300;
   enabled = true;
 
-  /** Enemy ids available at this minute (zone list ∩ implemented). */
-  pool(minutes: number): string[] {
-    const zone = ZONAS.find((z) => minutes >= z.startMin && minutes < z.endMin);
-    const fromZone = (zone?.enemies ?? []).filter((id) => IMPLEMENTED_ENEMIES.includes(id));
-    // Until every zone has its enemies (Phase 3), mosquitoes and pigeons stand in.
-    return fromZone.length > 0 ? fromZone : IMPLEMENTED_ENEMIES.filter((id) => id !== 'paloma');
+  /** Enemy ids for a zone (La Antártica mixes all of them). */
+  pool(zoneId: string): string[] {
+    if (zoneId === 'antartica') return IMPLEMENTED_ENEMIES.filter((id) => id !== 'paloma');
+    const zone = ZONAS.find((z) => z.id === zoneId);
+    const list = (zone?.enemies ?? []).filter((id) => IMPLEMENTED_ENEMIES.includes(id) && id !== 'paloma');
+    return list.length > 0 ? list : ['zancudo'];
   }
 
-  update(dt: number, ctx: RunContext, viewW: number, viewH: number): void {
+  /** Relative spawn weight: the small fry are common, tanks and chargers rare. */
+  private weight(id: string): number {
+    return ({ zancudo: 10, jote: 3, guanaco: 2, micro: 1.2, gaviota: 3, loboMarino: 1, chonchon: 8, camahueto: 1.5, basilisco: 2, tempano: 1.5, chingue: 6 } as Record<string, number>)[id] ?? 2;
+  }
+
+  update(dt: number, ctx: RunContext, viewW: number, viewH: number, zoneId: string, bossActive: boolean): void {
     if (!this.enabled || ctx.player.dead) return;
     const p = ctx.player;
     const minutes = ctx.time / 60;
@@ -45,8 +50,9 @@ export class Spawner {
       }
     }
 
-    const pool = this.pool(minutes);
-    this.acc += spawnPerSecond(minutes) * dt;
+    const pool = this.pool(zoneId);
+    const weights = pool.map((id) => this.weight(id));
+    this.acc += spawnPerSecond(minutes) * (bossActive ? 0.4 : 1) * dt;
     while (this.acc >= 1) {
       const group = Math.min(Math.floor(this.acc), ctx.rng.int(1, 4));
       this.acc -= group;
@@ -54,28 +60,32 @@ export class Spawner {
       const a = ctx.rng.range(0, Math.PI * 2);
       const cx = p.x + Math.cos(a) * edge;
       const cy = p.y + Math.sin(a) * edge;
-      const kind = ctx.rng.pick(pool);
-      for (let i = 0; i < group; i++) {
+      const kind = pool[ctx.rng.weighted(weights)] ?? 'zancudo';
+      // Big ones come alone.
+      const n = this.weight(kind) < 3 ? 1 : group;
+      for (let i = 0; i < n; i++) {
         ctx.enemies.spawn(kind, cx + ctx.rng.range(-10, 10), cy + ctx.rng.range(-10, 10), minutes, ctx);
       }
     }
 
-    if (ctx.time >= this.nextFlock) {
+    if ((zoneId === 'centro' || zoneId === 'antartica') && ctx.time >= this.nextFlock && !bossActive) {
       this.nextFlock = ctx.time + ctx.rng.range(16, 24) / (1 + minutes * 0.08);
       this.flock(ctx, viewW, viewH);
     }
 
     if (ctx.time >= this.nextElite) {
-      this.nextElite += ELITE.every;
+      // Catch-up guard (debug jumps): never fire a backlog of elites at once.
+      this.nextElite = Math.max(this.nextElite + ELITE.every, ctx.time + ELITE.every * 0.5);
       const a = ctx.rng.range(0, Math.PI * 2);
-      const kind = ctx.rng.pick(IMPLEMENTED_ENEMIES);
+      const kind = zoneId === 'patagonia' ? ELITE.patagoniaElite : ctx.rng.pick(pool);
       ctx.enemies.spawn(kind, p.x + Math.cos(a) * edge, p.y + Math.sin(a) * edge, minutes, ctx, true);
     }
 
     for (const m of RING_WAVES_MIN) {
       if (minutes >= m && !this.ringsDone.has(m)) {
         this.ringsDone.add(m);
-        this.ring(ctx, 24 + m * 3);
+        if (bossActive || minutes - m > 0.25) continue;
+        this.ring(ctx, 24 + m * 3, zoneId);
         ctx.banner(t('ui.rodeado'), 'r');
       }
     }
@@ -89,11 +99,12 @@ export class Spawner {
     ctx.enemies.spawnFlock(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, size, ctx.time / 60, ctx);
   }
 
-  /** A full circle of enemies closing in. */
-  ring(ctx: RunContext, count: number): void {
+  /** A full circle of the zone's smallest enemy closing in. */
+  ring(ctx: RunContext, count: number, zoneId = 'norte'): void {
     const p = ctx.player;
     const minutes = ctx.time / 60;
-    const kind = this.pool(minutes)[0] ?? 'zancudo';
+    const pool = this.pool(zoneId);
+    const kind = [...pool].sort((a, b) => this.weight(b) - this.weight(a))[0] ?? 'zancudo';
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
       ctx.enemies.spawn(kind, p.x + Math.cos(a) * 140, p.y - 8 + Math.sin(a) * 105, minutes, ctx);

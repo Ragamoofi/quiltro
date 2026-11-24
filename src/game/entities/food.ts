@@ -24,7 +24,7 @@ const LOOK: Record<PickupKind, { sprite: string; anim: string }> = {
   cajaDorada: { sprite: 'caja', anim: 'dorada' },
 };
 
-interface Piece {
+export interface Piece {
   active: boolean;
   kind: PickupKind;
   xp: number;
@@ -164,6 +164,40 @@ export class Food {
         break;
       default:
         break;
+    }
+  }
+
+  /** Nearest food piece on the floor (not already flying to the dog), for the gaviota. */
+  nearestFood(x: number, y: number, maxDist: number): Piece | undefined {
+    let best: Piece | undefined;
+    let bd = maxDist * maxDist;
+    for (const p of this.pool) {
+      if (!p.active || p.xp === 0 || p.pulled) continue;
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+      if (d < bd) {
+        bd = d;
+        best = p;
+      }
+    }
+    return best;
+  }
+
+  /** Removes a piece (eaten by a gaviota) and returns its XP. */
+  take(p: Piece): number {
+    if (!p.active) return 0;
+    const xp = p.xp;
+    this.release(p);
+    return xp;
+  }
+
+  /** Drops food worth `xp` in total as the biggest pieces that fit (stolen food, boss rain). */
+  dropValue(xp: number, x: number, y: number, ctx: RunContext, spread = 6): void {
+    let left = Math.round(xp);
+    let guard = 0;
+    while (left > 0 && guard++ < 40) {
+      const kind: PickupKind = left >= FOOD.chorrillana.xp ? 'chorrillana' : left >= FOOD.completo.xp ? 'completo' : 'sopaipilla';
+      left -= XP[kind] ?? 1;
+      this.drop(kind, x + ctx.rng.range(-spread, spread), y + ctx.rng.range(-spread, spread), ctx);
     }
   }
 

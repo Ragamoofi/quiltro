@@ -84,8 +84,44 @@ export class Player {
   armor = PLAYER_BASE.armor;
   regen = 0;
 
+  /** Basilisco's gaze: slowed for a while. */
+  private slowTime = 0;
+  private slowAmount = 0;
+  /** Set whenever the dog moves (the Temblor event checks it). */
+  movedThisRun = false;
+  /** Carnaval shield: absorbs the next hit. */
+  shield = false;
+  /** Extra movement from hazards (wind, dust devils), px/s, decays. */
+  pushX = 0;
+  pushY = 0;
+  /** Persigue autos dash: seconds left. */
+  dashTime = 0;
+  private dashX = 0;
+  private dashY = 0;
+
   get speed(): number {
-    return px(PLAYER_BASE.speed) * this.speedMult * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
+    const slow = this.slowTime > 0 ? 1 - this.slowAmount : 1;
+    return px(PLAYER_BASE.speed) * this.speedMult * slow * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
+  }
+
+  get slowed(): boolean {
+    return this.slowTime > 0;
+  }
+
+  slowFor(seconds: number, amount: number, ctx: RunContext): void {
+    if (this.slowTime <= 0) ctx.particles.burst(ctx.rng, this.x, this.y - 10, 6, ['f', 'v', 'y'], 30, 0.4);
+    this.slowTime = seconds;
+    this.slowAmount = amount;
+  }
+
+  /** Starts a Persigue autos dash in the current direction. */
+  dash(seconds: number, speed: number): void {
+    const len = Math.hypot(this.vx, this.vy);
+    if (len < 10) return;
+    this.dashTime = seconds;
+    this.dashX = (this.vx / len) * speed;
+    this.dashY = (this.vy / len) * speed;
+    this.invulnerable = Math.max(this.invulnerable, seconds + 0.05);
   }
 
   /** Applies passives; raising max HP also heals by the same amount. */
@@ -139,8 +175,21 @@ export class Player {
     const k = 1 - Math.exp(-dt / (moving ? ACCEL_TIME : DECEL_TIME));
     this.vx += (tx - this.vx) * k;
     this.vy += (ty - this.vy) * k;
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
+    this.slowTime = Math.max(0, this.slowTime - dt);
+    // Hazards (wind, dust devils) push on top of the dog's own movement.
+    const pd = Math.exp(-dt / 0.25);
+    this.pushX *= pd;
+    this.pushY *= pd;
+    let mx = this.vx + this.pushX + ctx.wind.x;
+    let my = this.vy + this.pushY + ctx.wind.y;
+    if (this.dashTime > 0) {
+      this.dashTime -= dt;
+      mx = this.dashX;
+      my = this.dashY;
+    }
+    this.x += mx * dt;
+    this.y += my * dt;
+    this.movedThisRun ||= moving;
     if (Math.abs(input.moveX) > 0.15) this.facing = Math.sign(input.moveX);
 
     // Hold → give line + charge the bark. Release with a full ring → ¡GUAU!
@@ -174,6 +223,14 @@ export class Player {
   /** Called by enemies on contact. */
   takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext): void {
     if (this.dead || this.invulnerable > 0 || ctx.debug.invincible) return;
+    if (this.shield) {
+      // Carnaval shield eats the hit.
+      this.shield = false;
+      this.invulnerable = PLAYER_BASE.invulnerability;
+      ctx.particles.burst(ctx.rng, this.x, this.y - 10, 12, ['p', 't', 'y', 'W'], 80, 0.4);
+      ctx.sfx.play('cargaLista', { pitch: 0.8 });
+      return;
+    }
     const dmg = Math.max(1, amount - this.armor);
     this.hp -= dmg;
     ctx.stats.damageTaken += dmg;
@@ -199,8 +256,16 @@ export class Player {
 
   private bark(ctx: RunContext): void {
     const n = ctx.build.numbers('guau', ctx.mods);
-    this.guauCooldown = n.cooldown;
-    this.guauCooldownMax = n.cooldown;
+    // Aullido de las 12: a full bark has no cooldown, and every dog in Chile howls along.
+    const howl = ctx.build.evolved.has('guau');
+    this.guauCooldown = howl ? 0 : n.cooldown;
+    this.guauCooldownMax = Math.max(0.01, n.cooldown);
+    if (howl) {
+      ctx.screen.howl();
+      for (let i = 1; i <= 3; i++) {
+        window.setTimeout(() => ctx.sfx.play('guau', { pitch: 0.7 + i * 0.12, gain: 0.5 }), i * 140);
+      }
+    }
     this.barkTime = BARK_ANIM;
     this.setAnim('ladrar');
     const radius = px(n.area);

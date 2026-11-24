@@ -16,6 +16,7 @@ export class SpatialGrid {
   }
 
   clear(): void {
+    this.hasMulti = false;
     for (const a of this.used) a.length = 0;
     this.used.length = 0;
     if (this.cells.size > 4096) this.cells.clear();
@@ -32,17 +33,43 @@ export class SpatialGrid {
     a.push(id);
   }
 
-  /** Fills `out` with ids in cells touching the circle (x, y, r). */
+  /** Inserts a body in every cell its circle touches (bosses, big enemies). */
+  insertCircle(id: number, x: number, y: number, r: number): void {
+    if (r < 10) {
+      this.insert(id, x, y);
+      return;
+    }
+    this.hasMulti = true;
+    const x0 = Math.floor((x - r) / this.cell);
+    const x1 = Math.floor((x + r) / this.cell);
+    const y0 = Math.floor((y - r) / this.cell);
+    const y1 = Math.floor((y + r) / this.cell);
+    for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) this.insert(id, cx * this.cell, cy * this.cell);
+  }
+
+  private hasMulti = false;
+  private readonly seen = new Set<number>();
+
+  /** Fills `out` with ids (no repeats) in cells touching the circle (x, y, r). */
   query(x: number, y: number, r: number, out: number[]): number[] {
     out.length = 0;
     const x0 = Math.floor((x - r) / this.cell);
     const x1 = Math.floor((x + r) / this.cell);
     const y0 = Math.floor((y - r) / this.cell);
     const y1 = Math.floor((y + r) / this.cell);
+    const dedupe = this.hasMulti && (x0 !== x1 || y0 !== y1);
+    if (dedupe) this.seen.clear();
     for (let cy = y0; cy <= y1; cy++) {
       for (let cx = x0; cx <= x1; cx++) {
         const a = this.cells.get(this.key(cx, cy));
-        if (a) for (const id of a) out.push(id);
+        if (!a) continue;
+        for (const id of a) {
+          if (dedupe) {
+            if (this.seen.has(id)) continue;
+            this.seen.add(id);
+          }
+          out.push(id);
+        }
       }
     }
     return out;

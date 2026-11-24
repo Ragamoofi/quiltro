@@ -4,11 +4,23 @@
  * merge into one, per-sound concurrency limits, random pitch to avoid repetition.
  * The bark is synthesised for now; the CC0 sample replaces it in Phase 6.
  */
-type SoundId = 'golpe' | 'puf' | 'comida' | 'guau' | 'dano' | 'carga' | 'cargaLista' | 'aleteo';
+type SoundId =
+  | 'golpe'
+  | 'puf'
+  | 'comida'
+  | 'guau'
+  | 'dano'
+  | 'carga'
+  | 'cargaLista'
+  | 'aleteo'
+  | 'bocina'
+  | 'tuetue'
+  | 'retumbo'
+  | 'campana';
 
 const MAX_VOICES = 24;
 const MERGE_MS = 30;
-const LIMITS: Partial<Record<SoundId, number>> = { golpe: 8, puf: 6, comida: 4, aleteo: 3 };
+const LIMITS: Partial<Record<SoundId, number>> = { golpe: 8, puf: 6, comida: 4, aleteo: 3, bocina: 2, tuetue: 1, retumbo: 1 };
 /** Pentatonic scale steps (semitones) for the food jingle. */
 const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36];
 
@@ -269,6 +281,80 @@ export class Sfx {
         o.start(t);
         o.stop(t + 0.12);
         return 0.12;
+      }
+      case 'bocina': {
+        // Bus horn: two detuned square waves, 0.8 s.
+        const g = ctx.createGain();
+        env(g, 0.12, 0.02, 0.7);
+        for (const f of [311, 370]) {
+          const o = ctx.createOscillator();
+          o.type = 'square';
+          o.frequency.value = f * pitch;
+          o.connect(g);
+          o.start(t);
+          o.stop(t + 0.75);
+        }
+        g.connect(out);
+        return 0.8;
+      }
+      case 'tuetue': {
+        // The chonchón's call: two falling whistles.
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        for (let i = 0; i < 2; i++) {
+          const s = t + i * 0.22;
+          o.frequency.setValueAtTime(1500 * pitch, s);
+          o.frequency.exponentialRampToValueAtTime(1100 * pitch, s + 0.15);
+          g.gain.exponentialRampToValueAtTime(0.07 * gainMul, s + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + 0.16);
+        }
+        o.connect(g).connect(out);
+        o.start(t);
+        o.stop(t + 0.5);
+        return 0.5;
+      }
+      case 'retumbo': {
+        // Earthquake rumble and rattling glass.
+        const src = this.noiseSource(ctx);
+        const f = ctx.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.value = 120 * pitch;
+        const g = ctx.createGain();
+        env(g, 0.9, 0.1, 1.6);
+        src.connect(f).connect(g).connect(out);
+        const glass = this.noiseSource(ctx);
+        const gf = ctx.createBiquadFilter();
+        gf.type = 'highpass';
+        gf.frequency.value = 6000;
+        const gg = ctx.createGain();
+        gg.gain.setValueAtTime(0.0001, t);
+        for (let i = 0; i < 8; i++) {
+          gg.gain.exponentialRampToValueAtTime(0.05 * gainMul, t + 0.2 + i * 0.17);
+          gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.26 + i * 0.17);
+        }
+        glass.connect(gf).connect(gg).connect(out);
+        src.start(t, Math.random());
+        src.stop(t + 1.8);
+        glass.start(t, Math.random());
+        glass.stop(t + 1.8);
+        return 1.8;
+      }
+      case 'campana': {
+        // Corner-shop bell.
+        const g = ctx.createGain();
+        env(g, 0.12, 0.002, 0.6);
+        for (const f of [1318, 1976, 2637]) {
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f * pitch;
+          o.connect(g);
+          o.start(t);
+          o.stop(t + 0.65);
+        }
+        g.connect(out);
+        return 0.65;
       }
       case 'aleteo': {
         // A flock taking off: a few quick noise flutters.

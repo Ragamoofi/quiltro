@@ -35,6 +35,28 @@ export const ENEMIGOS: readonly EnemyDef[] = [
   { id: 'chingue', nameKey: 'enemigos.chingue', zone: 'patagonia', behavior: 'zigzag', hp: 35, speed: 150, damage: 8, drop: 'completo', size: 16, params: { cloudSeconds: 3 } },
 ];
 
+/**
+ * Enemies that never spawn on their own: the témpano's pieces and the puma
+ * (Patagonia's elite). Values not in the GDD; chosen to match their roles.
+ */
+export const ENEMIGOS_ESPECIALES: readonly EnemyDef[] = [
+  { id: 'tempanito', nameKey: 'enemigos.tempano', zone: 'patagonia', behavior: 'perseguir', hp: 25, speed: 70, damage: 7, drop: 'sopaipilla', size: 12 },
+  { id: 'puma', nameKey: 'enemigos.puma', zone: 'patagonia', behavior: 'acechar', hp: 60, speed: 90, attackSpeed: 380, damage: 18, drop: 'chorrillana', size: 24 },
+];
+
+/** Boss hitboxes are enemies too, with this behaviour (moved by the boss). */
+export const PARTE_DE_JEFE: EnemyDef = {
+  id: 'parte',
+  nameKey: 'enemigos.zancudo',
+  zone: 'norte',
+  behavior: 'parte',
+  hp: 1e9,
+  speed: 0,
+  damage: 15,
+  drop: 'sopaipilla',
+  size: 24,
+};
+
 /** Elite rules (GDD "Élites"). */
 export const ELITE = {
   hpMult: 5,
