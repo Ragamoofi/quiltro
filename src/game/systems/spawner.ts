@@ -1,20 +1,33 @@
-import { spawnPerSecond } from '../../data/balance.ts';
+import { RING_WAVES_MIN, spawnPerSecond } from '../../data/balance.ts';
+import { ELITE } from '../../data/enemigos.ts';
+import { ZONAS } from '../../data/zonas.ts';
+import { t } from '../../i18n/index.ts';
 import type { RunContext } from '../context.ts';
+import { IMPLEMENTED_ENEMIES } from '../entities/enemies.ts';
 
 /**
- * Phase 1 spawner: enough to judge the feel. Zancudo swarms follow the GDD
- * spawn curve; pigeon flocks swoop in every so often; a ring of zancudos
- * surrounds the dog to practise the ¡GUAU!. Phase 2 replaces it with the
- * zone-driven director.
+ * The director: spawns follow the GDD curve (1,5 + 0,6·t + 0,05·t² per second),
+ * using the current zone's enemies that already exist in the game. Pigeons
+ * arrive as flocks, an elite every 60 s, and a ring of enemies at minutes
+ * 2, 5, 8 and 11 ("¡Te rodearon!").
  */
 export class Spawner {
   private acc = 0;
   private nextFlock = 18;
-  private nextRing = 40;
+  private nextElite: number = ELITE.every;
+  private readonly ringsDone = new Set<number>();
   private introDone = false;
   /** Max enemies alive (GDD: 300 desktop, 180 mobile). */
   cap = 300;
   enabled = true;
+
+  /** Enemy ids available at this minute (zone list ∩ implemented). */
+  pool(minutes: number): string[] {
+    const zone = ZONAS.find((z) => minutes >= z.startMin && minutes < z.endMin);
+    const fromZone = (zone?.enemies ?? []).filter((id) => IMPLEMENTED_ENEMIES.includes(id));
+    // Until every zone has its enemies (Phase 3), mosquitoes and pigeons stand in.
+    return fromZone.length > 0 ? fromZone : IMPLEMENTED_ENEMIES.filter((id) => id !== 'paloma');
+  }
 
   update(dt: number, ctx: RunContext, viewW: number, viewH: number): void {
     if (!this.enabled || ctx.player.dead) return;
@@ -32,6 +45,7 @@ export class Spawner {
       }
     }
 
+    const pool = this.pool(minutes);
     this.acc += spawnPerSecond(minutes) * dt;
     while (this.acc >= 1) {
       const group = Math.min(Math.floor(this.acc), ctx.rng.int(1, 4));
@@ -40,18 +54,30 @@ export class Spawner {
       const a = ctx.rng.range(0, Math.PI * 2);
       const cx = p.x + Math.cos(a) * edge;
       const cy = p.y + Math.sin(a) * edge;
+      const kind = ctx.rng.pick(pool);
       for (let i = 0; i < group; i++) {
-        ctx.enemies.spawn('zancudo', cx + ctx.rng.range(-10, 10), cy + ctx.rng.range(-10, 10), minutes, ctx);
+        ctx.enemies.spawn(kind, cx + ctx.rng.range(-10, 10), cy + ctx.rng.range(-10, 10), minutes, ctx);
       }
     }
 
     if (ctx.time >= this.nextFlock) {
-      this.nextFlock = ctx.time + ctx.rng.range(16, 24);
+      this.nextFlock = ctx.time + ctx.rng.range(16, 24) / (1 + minutes * 0.08);
       this.flock(ctx, viewW, viewH);
     }
-    if (ctx.time >= this.nextRing) {
-      this.nextRing = ctx.time + 60;
-      this.ring(ctx, 30);
+
+    if (ctx.time >= this.nextElite) {
+      this.nextElite += ELITE.every;
+      const a = ctx.rng.range(0, Math.PI * 2);
+      const kind = ctx.rng.pick(IMPLEMENTED_ENEMIES);
+      ctx.enemies.spawn(kind, p.x + Math.cos(a) * edge, p.y + Math.sin(a) * edge, minutes, ctx, true);
+    }
+
+    for (const m of RING_WAVES_MIN) {
+      if (minutes >= m && !this.ringsDone.has(m)) {
+        this.ringsDone.add(m);
+        this.ring(ctx, 24 + m * 3);
+        ctx.banner(t('ui.rodeado'), 'r');
+      }
     }
   }
 
@@ -59,15 +85,18 @@ export class Spawner {
     const p = ctx.player;
     const a = ctx.rng.range(0, Math.PI * 2);
     const r = Math.hypot(viewW, viewH) / 2 + 30;
-    ctx.enemies.spawnFlock(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, ctx.rng.int(8, 15), ctx.time / 60, ctx);
+    const size = ctx.rng.int(8, 15) + Math.floor(ctx.time / 60);
+    ctx.enemies.spawnFlock(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, size, ctx.time / 60, ctx);
   }
 
-  /** "¡Te rodearon!": a full circle of zancudos closing in. */
+  /** A full circle of enemies closing in. */
   ring(ctx: RunContext, count: number): void {
     const p = ctx.player;
+    const minutes = ctx.time / 60;
+    const kind = this.pool(minutes)[0] ?? 'zancudo';
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
-      ctx.enemies.spawn('zancudo', p.x + Math.cos(a) * 130, p.y - 8 + Math.sin(a) * 100, ctx.time / 60, ctx);
+      ctx.enemies.spawn(kind, p.x + Math.cos(a) * 140, p.y - 8 + Math.sin(a) * 105, minutes, ctx);
     }
   }
 }
