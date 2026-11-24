@@ -4,6 +4,27 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 4 — Meta incremental
+
+#### Agregado
+- Guardado con versiones en localStorage: migraciones, copia de respaldo (si el principal se corrompe, carga el respaldo) y exportar/importar como código de texto con verificación (en F1 por ahora; en Opciones en la Fase 5).
+- Lucas al terminar cada viaje con la fórmula del GDD, +100 por cada zona alcanzada por primera vez, lucas de logros y la mejora Cuenta RUT. Desglose en la pantalla de fin, "¡Llegaste más lejos que nunca!", nuevo personaje desbloqueado y "Te alcanza para…" con el botón de La Cucha brillando.
+- La Cucha dibujada: la casita con las 12 mejoras como objetos en su lugar (plato frente a la puerta, cuadro de la nariz y medalla en la pared, herradura sobre la puerta, volantín volando sobre el techo, chanchito, naipe sobre la mesita…). Tocar un objeto muestra nivel, efecto y costo (`base × 1,6^nivel`, redondeado a 5).
+- Las 12 mejoras se aplican en la partida: vida, armadura, velocidad, daño, olfato, enfriamientos, volantín extra, suerte en las cartas, Otra mano extra, cuarta carta y Segunda vida (revives una vez con 50 %).
+- Los vecinos (la señora del almacén, el conserje, el de la feria y la tía de la once): se hacen amigos con lucas, aparecen saludando en la calle de la Cucha, producen lucas por hora (máx. 8 h, nunca más del 30 % de un buen viaje) y al volver aparece "Mientras no estabas, … te dejó N lucas" con botón Recoger.
+- Los 6 personajes con sprite propio y animación completa: El Quiltro, La Quiltra del Chalequito, El Gato del Almacén, El Pudú, El Pingüino de Humboldt (se desliza) y La Paloma Rebelde (vuela sobre los peligros), con sus condiciones de desbloqueo, arma inicial y rasgos. Selector en la Cucha, bloqueados con su condición.
+- Los 7 logros, anunciados en la partida apenas se ganan; cada uno da lucas y una pañoleta de color para el quiltro (selector en la Cucha). Logro secreto Guardianes: en La Antártica una pista y una flecha llevan a la isla donde cinco moais amistosos te saludan.
+- Flujo: el primer viaje parte directo (menos de 5 s y un toque); después se vuelve a La Cucha. Fin del viaje: ¡Otra, al tiro!, La Cucha y Seguir a La Antártica.
+- Panel F1: +1000 lucas, ir a La Cucha, desbloquear todo, exportar, importar y borrar progreso (doble confirmación).
+
+#### Cambiado
+- Las lucas por viaje se duplican (`LUCAS_SCALE = 2`): con los valores del GDD cada viaje compraba ~1 mejora y en 10 viajes simulados nunca se llegaba al jefe final.
+- El Alicanto vuela más cerca (80 px) y cada 6 s pasa en picada por la órbita corta, porque antes los volantines no lo alcanzaban sin dar hilo. Su abanico de plumas es más legible: 5 plumas más lentas en fase 1 y 4 en fase 2.
+- El Caleuche navega más cerca (100×70 px) para que el hilo largo lo alcance.
+
+#### Corregido
+- En el primer viaje sin guardado previo, las teclas de las cartas quedaban sin efecto y se podía quedar atrapado en la subida de nivel.
+
 ### Fase 3 — Chile completo
 
 #### Agregado

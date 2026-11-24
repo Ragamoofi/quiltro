@@ -4,6 +4,18 @@
 
 Con los enemigos de todas las zonas, un bot que junta comida y elige cartas al azar llega a nivel ~36 al minuto 12 y ~50 al vencer al Gran Temblor. Está cerca de las ~40 subidas del GDD; no se tocó la fórmula.
 
+## Curva de dificultad con meta (Fase 4, simulación de 10 viajes)
+
+Bot que esquiva, junta comida y objetos, elige cartas con criterio y compra mejoras (prioridad daño > vida > velocidad...). Con `LUCAS_SCALE = 2`:
+
+| Viaje | Murió en | Nivel | Jefes |
+| --- | --- | --- | --- |
+| 1–4 | min 3,3–5,2 (Norte/Centro) | 7–12 | 0–1 |
+| 5 | min 18,9, peleando con el Gran Temblor (4.300 km) | 62 | 3 |
+| 6–10 | min 4,2–5,1 (Centro) | 12–16 | 1 |
+
+Ganó 4.520 lucas y compró 30 niveles. **Se cumple el objetivo** (llega al jefe final dentro de 10 viajes), pero con mucha varianza: el Centro (micros, lobos, camahuetos en carga y proyectiles) es una muralla para un jugador débil, y el Gran Temblor tardó ~7 min. Revisar con jugadores reales en la Fase 8: posible bajar el pico del Centro o subir el efecto de Plato lleno / Frazada.
+
 ## Duración de las peleas con jefes (Fase 3 → Fase 8)
 
 Con el bot (cartas al azar) las peleas duraron ~65 s (Alicanto, Taco), ~130 s (Caleuche) y ~270 s (Gran Temblor) antes de bajar la vida de los jefes y acercar al Caleuche. Hay que medirlo con jugadores reales en la Fase 8: la meta razonable es 45–90 s por jefe con un build decente.

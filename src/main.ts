@@ -6,7 +6,13 @@ import { fitDisplay, type DisplayFit } from './core/display.ts';
 import { Emitter, type GameEvents } from './core/events.ts';
 import { Input } from './core/input.ts';
 import { GameLoop } from './core/loop.ts';
-import { SceneManager } from './core/scene.ts';
+import { SceneManager, type Scene } from './core/scene.ts';
+import { PERSONAJES } from './data/personajes.ts';
+import { defaultLoadout, type Loadout } from './game/loadout.ts';
+import { t } from './i18n/index.ts';
+import { affordable, applyRun, buy as buyUpgrade, checkUnlocks, metaBonus, type RunResult, type RunRewards } from './meta/progress.ts';
+import { exportCode, importCode, load, save, wipe } from './meta/save.ts';
+import { CuchaScene } from './ui/cuchaScene.ts';
 import { ARMAS } from './data/armas.ts';
 import { spawnPerSecond, TUNING, xpToNext } from './data/balance.ts';
 import { EVOLUCIONES } from './data/evoluciones.ts';
@@ -68,21 +74,71 @@ async function boot(): Promise<void> {
     events.emit('resize', { width: fit.width, height: fit.height, scale: fit.scale, portrait: fit.portrait });
   };
 
+  // ---- Progress (La Cucha) ----
+  const data = load();
+  checkUnlocks(data);
+  let wiping = false;
+  const persist = (): void => {
+    if (!wiping) save(data);
+  };
+  const wipeAll = (): void => {
+    wiping = true;
+    wipe();
+    location.reload();
+  };
+  const loadout = (): Loadout => ({
+    character: PERSONAJES.find((p) => p.id === data.character && data.characters.includes(p.id)) ?? defaultLoadout().character,
+    meta: metaBonus(data),
+    bandana: data.bandana,
+    known: [...data.achievements],
+  });
+  const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
+    const rewards = applyRun(data, result);
+    data.lastSeen = Date.now();
+    persist();
+    const cheap = affordable(data);
+    return {
+      ...rewards,
+      affordable: cheap ? t(cheap.nameKey) : null,
+      newCharacterNames: rewards.newCharacters.map((id) => t(PERSONAJES.find((p) => p.id === id)?.nameKey ?? id)),
+    };
+  };
+
+  /** Scene-local key handlers are dropped on every scene change; F1 stays. */
+  const switchTo = (make: () => Scene): void => {
+    input.clearPresses();
+    const scene = make();
+    input.onPress('F1', () => debug.toggle());
+    scenes.change(scene, fit.width, fit.height);
+  };
+
   const makeRun = (): RunScene =>
     new RunScene(input, sfx, {
       seed: Date.now() >>> 0,
       mobile: isMobile(),
+      loadout: loadout(),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
       onRestart: () => restart(),
+      onFinish,
+      onCucha: () => goCucha(),
     });
-  let run = makeRun();
+  let run: RunScene;
   const restart = (): void => {
-    run = makeRun();
-    scenes.change(run, fit.width, fit.height);
+    switchTo(() => (run = makeRun()));
   };
-  scenes.change(run, fit.width, fit.height);
+  const goCucha = (): void => {
+    switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => restart() }));
+  };
+  // First time: straight into the trip (under 5 seconds and one touch). Afterwards: La Cucha.
+  run = makeRun();
+  if (data.totals.runs > 0) goCucha();
+  else restart();
+  window.addEventListener('beforeunload', () => {
+    data.lastSeen = Date.now();
+    persist();
+  });
   applyFit();
   window.addEventListener('resize', applyFit);
 
@@ -146,6 +202,35 @@ async function boot(): Promise<void> {
   debug.button('Partida', 'Caja', () => ctx().food.drop('caja', ctx().player.x + 30, ctx().player.y, ctx()));
   debug.button('Partida', 'Temblor', () => ctx().food.drop('temblor', ctx().player.x + 30, ctx().player.y, ctx()));
   debug.button('Partida', 'Reiniciar', () => restart());
+  debug.stat('Progreso', 'lucas / viajes', () => `${data.lucas} / ${data.totals.runs}`);
+  debug.button('Progreso', '+1000 lucas', () => {
+    data.lucas += 1000;
+    persist();
+  });
+  debug.button('Progreso', 'La Cucha', () => goCucha());
+  debug.button('Progreso', 'Desbloquear todo', () => {
+    data.characters = PERSONAJES.map((p) => p.id);
+    persist();
+  });
+  debug.button('Progreso', 'Exportar', () => {
+    window.prompt('Copia este código:', exportCode(data));
+  });
+  debug.button('Progreso', 'Importar', () => {
+    const code = window.prompt('Pega el código:');
+    const loaded = code ? importCode(code) : null;
+    if (!loaded) return;
+    Object.assign(data, loaded);
+    persist();
+    goCucha();
+  });
+  debug.button('Progreso', 'Borrar progreso', () => {
+    if (!window.confirm('¿Borrar todo el progreso?') || !window.confirm('¿Seguro? No se puede deshacer.')) return;
+    wipeAll();
+  });
+  Object.assign(window, {
+    __quiltroSave: data,
+    __quiltroMeta: { buy: (id: string) => buyUpgrade(data, id), restart: () => restart(), persist, wipe: wipeAll },
+  });
   debug.select(
     'Partida',
     'Dar arma o rasgo',

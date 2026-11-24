@@ -42,8 +42,9 @@ describe('balance formulas (GDD)', () => {
   });
 
   it('lucas and upgrade costs', () => {
-    expect(lucasForRun(2000, 300, 1)).toBe(100 + 10 + 50);
-    expect(lucasForRun(2000, 300, 1, 1.5)).toBe(240);
+    // GDD formula × LUCAS_SCALE (2).
+    expect(lucasForRun(2000, 300, 1)).toBe((100 + 10 + 50) * 2);
+    expect(lucasForRun(2000, 300, 1, 1.5)).toBe(480);
     expect(upgradeCost(40, 0)).toBe(40);
     expect(upgradeCost(40, 1)).toBe(65); // 64 → 65
     expect(upgradeCost(800, 0) % 5).toBe(0);
