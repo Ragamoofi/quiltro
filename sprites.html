@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QUILTRO · Sprites</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #2a2233;
+        color: #fbf3e4;
+        font: 14px/1.4 ui-monospace, Consolas, monospace;
+      }
+      h1,
+      h2 {
+        font-weight: normal;
+        letter-spacing: 1px;
+      }
+      h1 {
+        margin: 0 0 4px;
+      }
+      .controls {
+        margin: 8px 0 16px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .palette {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        gap: 6px;
+      }
+      .swatch {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 12px;
+      }
+      .swatch i {
+        width: 24px;
+        height: 24px;
+        border: 1px solid #4a3f5c;
+        flex: none;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      figure {
+        margin: 0;
+        padding: 8px;
+        background: #4a3f5c;
+        border-radius: 4px;
+      }
+      figcaption {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #b8aec4;
+      }
+      canvas {
+        image-rendering: pixelated;
+        display: block;
+      }
+      .error {
+        color: #e63946;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>QUILTRO · Revisión de sprites</h1>
+    <div>Cada sprite animado a ×4 sobre el suelo de cada zona. Fuente: <code>src/art/</code>.</div>
+    <div class="controls">
+      <label>Zoom <select id="zoom"><option>2</option><option>3</option><option selected>4</option><option>6</option><option>8</option></select></label>
+      <label><input type="checkbox" id="flip" /> Mirar a la izquierda</label>
+      <label><input type="checkbox" id="slow" /> Cámara lenta</label>
+    </div>
+    <h2>Paleta (32)</h2>
+    <div class="palette" id="palette"></div>
+    <div id="sections"></div>
+    <script type="module" src="/src/art/preview.ts"></script>
+  </body>
+</html>
