@@ -6,6 +6,11 @@ import { px } from '../../data/balance.ts';
 import { PLAYER_BASE } from '../../data/personajes.ts';
 import type { RunContext } from '../context.ts';
 
+/** Short vibration on phones, only after the player has touched the page (browsers block it otherwise). */
+function vibrate(ms: number): void {
+  if (navigator.userActivation?.hasBeenActive && 'vibrate' in navigator) navigator.vibrate(ms);
+}
+
 type AnimName = 'quieto' | 'parpadeo' | 'trotar' | 'cargar' | 'ladrar' | 'dano' | 'muerte';
 
 /** Time to reach full speed and to stop: small, so it feels responsive but soft. */
@@ -14,7 +19,6 @@ const DECEL_TIME = 0.1;
 /** Seconds of "ladrar" / "dano" animation before going back to normal. */
 const BARK_ANIM = 0.3;
 const HURT_ANIM = 0.2;
-const RESPAWN_AFTER = 2.5;
 
 /**
  * El Quiltro: movement with soft inertia, health and invulnerability, the
@@ -42,6 +46,7 @@ export class Player {
   charge = 0;
   /** Seconds until the next bark is allowed. */
   guauCooldown = 0;
+  guauCooldownMax: number = GUAU.cooldown;
   /** True while the hold button is down. */
   holding = false;
 
@@ -74,8 +79,34 @@ export class Player {
     world.addChild(this.sprite);
   }
 
+  /** Passive speed multiplier from the build (Pata de perro). */
+  speedMult = 1;
+  armor = PLAYER_BASE.armor;
+  regen = 0;
+
   get speed(): number {
-    return px(PLAYER_BASE.speed) * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
+    return px(PLAYER_BASE.speed) * this.speedMult * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
+  }
+
+  /** Applies passives; raising max HP also heals by the same amount. */
+  applyMods(ctx: RunContext): void {
+    const m = ctx.mods;
+    this.speedMult = m.speedMult;
+    this.armor = PLAYER_BASE.armor + m.armor;
+    this.regen = m.regen;
+    const newMax = PLAYER_BASE.maxHp + m.maxHp;
+    if (newMax > this.maxHp) this.hp += newMax - this.maxHp;
+    this.maxHp = newMax;
+    this.hp = Math.min(this.hp, this.maxHp);
+  }
+
+  heal(amount: number, ctx: RunContext): void {
+    if (this.dead) return;
+    const before = this.hp;
+    this.hp = Math.min(this.maxHp, this.hp + amount);
+    if (this.hp - before >= 1) {
+      ctx.numbers.spawn(this.x, this.y - 22, this.hp - before, 'heal');
+    }
   }
 
   get guauReady(): boolean {
@@ -97,9 +128,9 @@ export class Player {
       this.x += this.vx * dt;
       this.y += this.vy * dt;
       this.deadTime += dt;
-      if (this.deadTime > RESPAWN_AFTER) this.respawn(ctx);
       return;
     }
+    if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
 
     // Movement with soft inertia (exponential approach to the target velocity).
     const tx = input.moveX * this.speed;
@@ -143,7 +174,7 @@ export class Player {
   /** Called by enemies on contact. */
   takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext): void {
     if (this.dead || this.invulnerable > 0 || ctx.debug.invincible) return;
-    const dmg = Math.max(1, amount - PLAYER_BASE.armor);
+    const dmg = Math.max(1, amount - this.armor);
     this.hp -= dmg;
     ctx.stats.damageTaken += dmg;
     this.invulnerable = PLAYER_BASE.invulnerability;
@@ -155,7 +186,7 @@ export class Player {
     ctx.shake.add(0.35);
     ctx.sfx.hurt();
     ctx.numbers.spawn(this.x, this.y - 18, dmg, 'player');
-    navigator.vibrate?.(40);
+    vibrate(40);
     if (this.hp <= 0) {
       this.hp = 0;
       this.dead = true;
@@ -167,19 +198,28 @@ export class Player {
   }
 
   private bark(ctx: RunContext): void {
-    this.guauCooldown = GUAU.cooldown;
+    const n = ctx.build.numbers('guau', ctx.mods);
+    this.guauCooldown = n.cooldown;
+    this.guauCooldownMax = n.cooldown;
     this.barkTime = BARK_ANIM;
     this.setAnim('ladrar');
-    ctx.enemies.shockwave(this.x, this.y - 8, px(GUAU.radius), GUAU.damage, ctx);
-    ctx.screen.guau(this.x, this.y);
+    const radius = px(n.area);
+    ctx.enemies.shockwave(this.x, this.y - 8, radius, n.damage, ctx);
+    ctx.screen.guau(this.x, this.y, radius);
     ctx.shake.add(0.55);
     ctx.sfx.play('guau', { pitch: 0.95 + ctx.rng.range(0, 0.1) });
-    navigator.vibrate?.(60);
+    vibrate(60);
   }
 
-  private respawn(ctx: RunContext): void {
+  /** Seconds since dying (the run shows the end screen after the animation). */
+  get deadFor(): number {
+    return this.dead ? this.deadTime : 0;
+  }
+
+  /** Second life / debug: back on its feet with `hpRatio` of max HP. */
+  revive(ctx: RunContext, hpRatio = 1): void {
     this.dead = false;
-    this.hp = this.maxHp;
+    this.hp = this.maxHp * hpRatio;
     this.invulnerable = 2;
     this.setAnim('quieto');
     ctx.enemies.clearAround(this.x, this.y, 200);

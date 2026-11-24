@@ -2,14 +2,11 @@ import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import { colorOf, hexToNumber } from '../../art/palette.ts';
 import { VOLANTIN_COLA, VOLANTIN_VARIANTES } from '../../art/sprites/armas.ts';
-import { ARMAS, VOLANTIN_ORBIT } from '../../data/armas.ts';
+import { VOLANTIN_ORBIT } from '../../data/armas.ts';
 import { px } from '../../data/balance.ts';
-import { PLAYER_BASE } from '../../data/personajes.ts';
 import type { RunContext } from '../context.ts';
+import type { Weapon } from './weapon.ts';
 
-const VOLANTIN = ARMAS.find((a) => a.id === 'volantin');
-const BASE_DAMAGE = VOLANTIN?.base.damage ?? 8;
-const BASE_COUNT = VOLANTIN?.base.count ?? 3;
 /** Kites hit an enemy at most this often. */
 const HIT_COOLDOWN = 0.22;
 const KITE_RADIUS = 5;
@@ -34,7 +31,8 @@ interface Kite {
  * El Volantín: kites orbiting on a line. Short line (default) = tight, fast,
  * +25 % damage; holding opens the orbit in 0.35 s, slower and wider.
  */
-export class Kites {
+export class Volantin implements Weapon {
+  readonly id = 'volantin';
   readonly root = new Container();
   private readonly lines = new Graphics();
   private readonly kites: Kite[] = [];
@@ -43,16 +41,15 @@ export class Kites {
   private angle = 0;
   private time = 0;
   private readonly near: number[] = [];
-  count = BASE_COUNT;
-  damageMult = 1;
+  private count = 0;
+  /** Debug override for the number of kites (0 = use the build). */
+  forceCount = 0;
 
   constructor() {
     this.root.addChild(this.lines);
-    this.setCount(BASE_COUNT);
   }
 
-  setCount(n: number): void {
-    this.count = n;
+  private ensure(n: number): void {
     while (this.kites.length < n) {
       const i = this.kites.length;
       const variant = i % VOLANTIN_VARIANTES;
@@ -71,35 +68,42 @@ export class Kites {
         tailColor: hexToNumber(colorOf(VOLANTIN_COLA[variant] ?? 'r')?.hex ?? '#E63946'),
       });
     }
-    this.kites.forEach((k, i) => {
-      k.sprite.visible = i < n;
-      k.tailX.length = 0;
-      k.tailY.length = 0;
-    });
+    if (n !== this.count) {
+      this.kites.forEach((k, i) => {
+        k.sprite.visible = i < n;
+        k.tailX.length = 0;
+        k.tailY.length = 0;
+      });
+      this.count = n;
+    }
   }
 
-  get radius(): number {
+  /** Orbit radius in native px (Cachai widens it). */
+  radius(ctx: RunContext): number {
     const e = this.hilo * this.hilo * (3 - 2 * this.hilo);
-    return px(VOLANTIN_ORBIT.shortRadius + (VOLANTIN_ORBIT.longRadius - VOLANTIN_ORBIT.shortRadius) * e);
+    return (
+      px(VOLANTIN_ORBIT.shortRadius + (VOLANTIN_ORBIT.longRadius - VOLANTIN_ORBIT.shortRadius) * e) *
+      ctx.mods.areaMult
+    );
   }
 
   update(dt: number, ctx: RunContext): void {
     const p = ctx.player;
+    const n = ctx.build.numbers('volantin', ctx.mods);
+    this.ensure(this.forceCount || n.count);
     this.time += dt;
     const giving = p.holding && !p.dead;
     // Open smoothly while holding; reel in fast on release ("recoge el hilo de golpe").
-    this.hilo = giving
-      ? Math.min(1, this.hilo + dt / VOLANTIN_ORBIT.openTime)
-      : Math.max(0, this.hilo - dt / 0.12);
+    this.hilo = giving ? Math.min(1, this.hilo + dt / VOLANTIN_ORBIT.openTime) : Math.max(0, this.hilo - dt / 0.12);
 
     const turns =
       VOLANTIN_ORBIT.shortTurnsPerSecond +
       (VOLANTIN_ORBIT.longTurnsPerSecond - VOLANTIN_ORBIT.shortTurnsPerSecond) * this.hilo;
     this.angle += turns * Math.PI * 2 * dt;
-    const r = this.radius;
+    const r = this.radius(ctx);
     const cx = p.x;
     const cy = p.y - HAND_Y;
-    const damage = BASE_DAMAGE * this.damageMult * (1 + VOLANTIN_ORBIT.shortDamageBonus * (1 - this.hilo));
+    const damage = n.damage * (1 + VOLANTIN_ORBIT.shortDamageBonus * (1 - this.hilo));
 
     for (let i = 0; i < this.count; i++) {
       const k = this.kites[i];
@@ -132,29 +136,26 @@ export class Kites {
       const dy = e.y - y;
       if (dx * dx + dy * dy > rr * rr) continue;
       e.kiteCooldown = HIT_COOLDOWN;
-      const crit = ctx.rng.chance(PLAYER_BASE.critChance);
-      const amount = damage * (crit ? PLAYER_BASE.critMultiplier : 1);
       ctx.sfx.play('golpe', { pitch: 0.9 + ctx.rng.range(0, 0.25) });
-      ctx.enemies.damage(e, amount, crit, ctx.player.x, ctx.player.y, 70, ctx);
+      ctx.enemies.hit(e, damage, ctx.player.x, ctx.player.y, 70, ctx, this.id);
     }
   }
 
-  render(alpha: number, playerX: number, playerY: number, visible: boolean): void {
+  render(alpha: number, ctx: RunContext): void {
     const g = this.lines;
     g.clear();
-    this.root.visible = visible;
-    if (!visible) return;
-    const hx = playerX;
-    const hy = playerY - HAND_Y;
+    const p = ctx.player;
+    this.root.visible = !p.dead;
+    if (p.dead) return;
+    const hx = Math.round(p.prevX + (p.x - p.prevX) * alpha);
+    const hy = Math.round(p.prevY + (p.y - p.prevY) * alpha) - HAND_Y;
     for (let i = 0; i < this.count; i++) {
       const k = this.kites[i];
       if (!k) continue;
       const x = Math.round(k.prevX + (k.x - k.prevX) * alpha);
       const y = Math.round(k.prevY + (k.y - k.prevY) * alpha);
-      // Line: 1 px from the dog's back to the kite.
       g.moveTo(hx + 0.5, hy + 0.5).lineTo(x + 0.5, y + 0.5);
       g.stroke({ width: 1, color: LINE });
-      // Tail: alternating pixels trailing behind.
       for (let t = 2; t < k.tailX.length; t += 2) {
         const tx = k.tailX[t];
         const ty = k.tailY[t];
