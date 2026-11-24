@@ -2,6 +2,8 @@
 
 Un quiltro. 4.300 km de Chile. Puro aguante.
 
+**Jugar:** https://ragamoofi.github.io/quiltro/ · **Sprites:** https://ragamoofi.github.io/quiltro/sprites.html
+
 Roguelite de supervivencia en pixel art con meta incremental. Diseño completo en [docs/GDD.md](docs/GDD.md).
 
 ## Desarrollo
