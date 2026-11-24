@@ -1,0 +1,31 @@
+{
+  "name": "quiltro",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QUILTRO: roguelite de supervivencia con meta incremental ambientado en Chile.",
+  "type": "module",
+  "scripts": {
+    "sprites": "node scripts/build-sprites.ts",
+    "dev": "vite",
+    "build": "npm run sprites && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "pixi.js": "^8.23.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.7",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.74.0",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}
