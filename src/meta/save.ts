@@ -26,13 +26,19 @@ export interface Settings {
   tips: boolean;
 }
 
+/** Whether the device asks for less motion (accessibility setting of the system). */
+function prefersReducedMotion(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export function defaultSettings(): Settings {
+  const calm = prefersReducedMotion();
   return {
     music: 0.6,
     sfx: 0.7,
-    shake: 1,
+    shake: calm ? 0.3 : 1,
     damageNumbers: true,
-    reduceFlashes: false,
+    reduceFlashes: calm,
     colorblind: false,
     holdMode: 'mantener',
     joystick: 'flotante',

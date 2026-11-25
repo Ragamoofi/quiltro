@@ -4,6 +4,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 8 — Pulido y lanzamiento (en curso)
+
+#### Agregado
+- Accesibilidad: si el sistema pide menos movimiento (`prefers-reduced-motion`), una partida nueva parte con destellos reducidos y sacudida al 30 %.
+- Revisión de licencias (`public/LICENSES.md`): sin recursos de terceros; lista de bibliotecas MIT.
+- Textos listos para la página de itch.io (`docs/ITCH.md`).
+
+#### Medido
+- Viaje completo simulado (bot con cartas, invencible): llega a 4.300 km con 303 enemigos a la vez y cero errores ni avisos en la consola.
+- Con 316 enemigos en pantalla: 0,43 ms por cuadro (peor 0,67 ms) entre simulación y dibujo, en el PC de desarrollo. El presupuesto de un cuadro a 60 fps es 16,6 ms.
+
 ### Fase 7 — Ruta del día, compartir y PWA
 
 #### Agregado
