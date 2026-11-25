@@ -47,3 +47,7 @@ pm audit --omit=dev da 0. No llegan al juego publicado.
 - **Canva:** el arte promocional está hecho con el propio juego; si se quiere una versión más pulida o con otro estilo, se puede rehacer en Canva (pedirlo en el chat).
 - **Ruta del día:** no se puede verificar en dos dispositivos reales desde aquí; se verificó con pruebas (misma semilla = mismo texto y mismas partidas). Falta probar en dos teléfonos.
 - **Sin conexión:** el panel del navegador integrado no expone CacheStorage; probar a mano en Chrome (instalar y desconectar).
+
+## Resolución en PC 1920x1080 (pedido del 2026-11-25)
+
+El juego no se ve bien en una pantalla de 1920x1080 en PC (se ve raro). No se ha probado en celular. Hay que reproducirlo a 1920x1080, 1366x768 y 2560x1440, revisar src/core/display.ts (escala entera de 480x270), los bordes, la nitidez y el HUD, y recién ahí corregir. Se hace después de la Fase 10.

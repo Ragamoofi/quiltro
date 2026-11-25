@@ -98,7 +98,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'quiltra',
     unlock: { kind: 'llegarA', ciudad: 'santiago' },
     startingWeapon: 'ronda',
-    mods: { speedMult: 0.92, maxHp: 125, startingTraits: [{ id: 'chalequito', level: 1 }], healEvery: { kills: 25, amount: 5 } },
+    mods: { speedMult: 0.92, maxHp: 100, startingTraits: [{ id: 'chalequito', level: 1 }], healEvery: { kills: 40, amount: 5 } },
   },
   {
     id: 'gato',
@@ -114,7 +114,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'zorro',
     unlock: { kind: 'llegarA', ciudad: 'temuco' },
     startingWeapon: 'emboque',
-    mods: { speedMult: 1.05, maxHp: 85, cooldownMult: -0.12, dodgeChance: 0.1 },
+    mods: { speedMult: 1.05, maxHp: 95, cooldownMult: -0.12, dodgeChance: 0.1 },
   },
   {
     id: 'pudu',
@@ -122,7 +122,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'pudu',
     unlock: { kind: 'llegarA', ciudad: 'chiloe' },
     startingWeapon: 'rayuela',
-    mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 65, dodgeChance: 0.12 },
+    mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 105, damageMult: 0.3, dodgeChance: 0.15 },
   },
   {
     id: 'pinguino',
@@ -130,7 +130,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'pinguino',
     unlock: { kind: 'vencer', jefe: 'caleuche' },
     startingWeapon: 'chaya',
-    mods: { areaMult: 1.25, slides: true, immuneSlow: true, immuneWind: true },
+    mods: { areaMult: 1.25, maxHp: 115, armor: 1, slides: true, immuneSlow: true, immuneWind: true },
   },
   {
     id: 'chingue',
@@ -138,7 +138,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'chinguePj',
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
     startingWeapon: 'elastico',
-    mods: { speedMult: 0.95, maxHp: 90, aura: { dps: 6, radius: 30 } },
+    mods: { speedMult: 0.95, maxHp: 100, aura: { dps: 10, radius: 34 } },
   },
   {
     id: 'condor',
@@ -162,6 +162,6 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'palomaRebelde',
     unlock: { kind: 'vencer', jefe: 'vecinoViral' },
     startingWeapon: 'fuegos',
-    mods: { ignoresHazards: true, damageMult: -0.2 },
+    mods: { speedMult: 1.1, maxHp: 110, damageMult: 0.15, ignoresHazards: true },
   },
 ];

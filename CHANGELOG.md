@@ -12,6 +12,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Fase 10.3 — Equilibrio de los personajes
+
+#### Cambiado
+- Medición con el bot de los 10 personajes y tres rondas de ajuste (detalle y tabla en `docs/BALANCE.md`): Quiltra con menos vida y cura más espaciada, Pudú con más vida, esquiva y daño, Pingüino con más vida y armadura y deslizamiento menos brusco, Chingue con más vida y aura más fuerte, Paloma rebelde sin la penalización de daño y con bonos de velocidad, daño y vida, Zorro con algo más de vida. **Ronda:** daño 20→17.
+- Ocho de diez personajes quedan dentro del 70 %–130 % del Quiltro. El Pudú sigue más abajo con el bot (50 %), probablemente por cómo el bot usa la Rayuela; pendiente de una prueba humana.
+
+#### Arreglado
+- La pantalla final fallaba con el Chingue porque su aura no tenía ícono. Ahora tiene uno, y una fuente de daño sin ícono muestra una huella en vez de fallar.
+
 ### Fase 10.2 — Sprites de los personajes
 
 #### Cambiado

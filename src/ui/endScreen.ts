@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../art/assets.ts';
+import { ICON_IDS } from '../art/sprites/iconos.ts';
 import { formatNumber, t } from '../i18n/index.ts';
 import type { RunRewards } from '../meta/progress.ts';
 import { PixelText } from './text.ts';
@@ -103,7 +104,8 @@ export class EndScreen {
     const bars = new Graphics();
     const barTop = y;
     for (const [id, v] of entries) {
-      const icon = new Sprite(anim('icono', id).textures[0]);
+      // A damage source without its own icon (a passive, a future weapon) shows the paw instead of crashing.
+      const icon = new Sprite(anim('icono', ICON_IDS.includes(id) ? id : 'guau').textures[0]);
       icon.position.set(px0 + 12, y);
       items.push(icon);
       const w = Math.max(1, Math.round((barW * v) / max));

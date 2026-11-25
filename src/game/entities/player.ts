@@ -211,7 +211,7 @@ export class Player {
     const tx = input.moveX * this.speed;
     const ty = input.moveY * this.speed;
     const moving = Math.hypot(input.moveX, input.moveY) > 0.05;
-    const k = 1 - Math.exp(-dt / ((moving ? ACCEL_TIME : DECEL_TIME) * (this.slides ? 4 : 1)));
+    const k = 1 - Math.exp(-dt / ((moving ? ACCEL_TIME : DECEL_TIME) * (this.slides ? 2.5 : 1)));
     this.vx += (tx - this.vx) * k;
     this.vy += (ty - this.vy) * k;
     this.slowTime = Math.max(0, this.slowTime - dt);

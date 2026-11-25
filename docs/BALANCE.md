@@ -201,6 +201,39 @@ Los cambios van en la dirección esperada (los eventos dan una ayuda chica: vida
 
 **Lectura honesta:** el medio queda dentro de la meta de victorias (15–30 %); el experto no (5 % contra 40–60 %), y no vence más que el medio, así que sigue pareciendo un límite del bot y no del juego. Llegar a Patagonia (40 % y 35 %) sigue por debajo del 50 % que quería. Hay que repetir esto con partidas humanas antes de tocar más.
 
+## 10.3 — Equilibrio entre personajes
+
+Bot medio, 12 viajes por personaje (semillas 7000–7011), con el mismo bot que juega al Quiltro. Meta del plan: minuto promedio de muerte entre 70 % y 130 % del del Quiltro. El Quiltro mismo varió entre 9,1 y 10,0 minutos entre mediciones (por el ruido y porque bajé la Ronda), así que los porcentajes tienen unos ±10 puntos.
+
+| Personaje | Minuto de muerte | % del Quiltro (9,1) | Vencen al jefe final | Llegan a Patagonia |
+| --- | --- | --- | --- | --- |
+| Quiltro | 9,1 | 100 % | 17 % | 50 % |
+| Quiltra | 11,9 | 130 % | 33 % | 67 % |
+| Gato | 9,6 | 105 % | 33 % | 50 % |
+| Zorro | 7,3 | 80 % | 25 % | 42 % |
+| Pudú | 4,5 | **50 %** | 0 % | 17 % |
+| Pingüino | 7,1 | 77 % | 25 % | 33 % |
+| Chingue | 6,8 | 74 % | 25 % | 33 % |
+| Cóndor | 8,1 | 88 % | 17 % | 42 % |
+| Guanaco | 11,7 | 128 % | 17 % | 75 % |
+| Paloma rebelde | 7,8 | 85 % | 25 % | 42 % |
+
+**Ajustes hechos (tres rondas):**
+- Quiltra: vida 125→100, la cura sale cada 40 enemigos (antes 25). **Ronda: daño 20→17** (era el arma de inicio más fuerte, y la elegía también cualquiera).
+- Pudú: vida 65→105, esquiva 12→15 %, +30 % de daño.
+- Pingüino: vida 100→115 y +1 armadura; deslizarse frena en 2,5 veces el tiempo normal (antes 4).
+- Chingue: vida 90→100, aura 6→10 de daño por segundo y radio 30→34.
+- Paloma rebelde: ya no pega 20 % menos; ahora +10 % de velocidad, +15 % de daño y 110 de vida.
+- Zorro: vida 85→95.
+
+**Un error real que apareció al medir:** el Chingue hacía fallar la pantalla final porque su aura se anotaba como fuente de daño sin ícono. Arreglado: ícono propio y, si una fuente no tiene ícono, se muestra la huella en vez de fallar. Hay una prueba que lo vigila.
+
+**Lectura honesta:**
+- Ocho de diez quedan entre 70 % y 130 %.
+- **El Pudú sigue en 50 %** pese a tres subidas. Creo que es en buena parte culpa del bot: su Rayuela lanza el tejo hacia donde camina y el bot camina alejándose de los enemigos, así que casi no le pega a nadie. No lo subo más a ciegas: **necesito que alguien lo juegue** para decidir si hace falta.
+- La Quiltra está en el borde (130 %). El Guanaco, que se mide más cerca de 117 % con otro Quiltro de referencia, también.
+- Esto compara personajes entre sí con un bot; no dice si cada uno es divertido.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

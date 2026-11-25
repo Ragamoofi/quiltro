@@ -165,7 +165,7 @@ export const ARMAS: readonly WeaponDef[] = [
     i18n: 'armas.ronda',
     maxLevel: 5,
     takesSlot: true,
-    base: { damage: 20, count: 1, cooldown: 2.6, area: 90 },
+    base: { damage: 17, count: 1, cooldown: 2.6, area: 90 },
     levels: [{ areaMult: 0.15, damageMult: 0.1 }, { count: 1 }, { damageMult: 0.2 }, { count: 1, areaMult: 0.15 }],
     evolvesWith: 'manadaChica',
   },

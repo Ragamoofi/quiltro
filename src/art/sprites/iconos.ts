@@ -239,6 +239,16 @@ const ICONS: Record<string, Frame> = {
       .set(7, 7, 'a'),
   ),
 
+  // Perfume (el aura del Chingue): a green cloud with wavy lines.
+  perfume: icon(
+    P()
+      .ellipse(7, 9, 6, 3.6, 'v')
+      .ellipse(4.5, 8, 2.8, 2.6, 'V')
+      .ellipse(9.5, 7.5, 3, 2.8, 'v')
+      .ellipse(7, 11, 5, 1.6, 'f')
+      .rows(2, 0, ['.t..t.', 't..t..', '.t..t.', '..t...']),
+  ),
+
   // ---- Fase 9.5: rasgos ----
   // Colmillo: a fang.
   colmillo: icon(

@@ -68,8 +68,9 @@ describe('personajes', () => {
     const c = build('condor');
     expect(c.stats().damageMult).toBeCloseTo(1.2);
     expect(c.stats().pickupMult).toBeCloseTo(1.6);
-    // Zorro: 12 % faster weapons. Paloma: 20 % weaker.
+    // Zorro: 12 % faster weapons. Pingüino: one point of armour. Paloma: 10 % faster.
     expect(build('zorro').stats().cooldownMult).toBeCloseTo(0.88);
-    expect(build('paloma').stats().damageMult).toBeCloseTo(0.8);
+    expect(build('pinguino').stats().armor).toBe(1);
+    expect(build('paloma').stats().speedMult).toBeCloseTo(1.1);
   });
 });

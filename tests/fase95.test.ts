@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ICON_IDS } from '../src/art/sprites/iconos.ts';
 import { ARMAS, MAX_WEAPONS } from '../src/data/armas.ts';
 import { EVOLUCIONES } from '../src/data/evoluciones.ts';
 import { RASGOS } from '../src/data/rasgos.ts';
@@ -45,6 +46,13 @@ describe('Fase 9.5: armas nuevas', () => {
     const r = new Build('ronda');
     raise(r, 'ronda', 'weapon', 5);
     expect(r.numbers('ronda').count).toBe(3);
+  });
+});
+
+describe('íconos', () => {
+  it('every weapon, trait and damage source has an icon (the end screen would crash without one)', () => {
+    const need = [...ARMAS.map((a) => a.id), ...RASGOS.map((r) => r.id), 'perfume', 'manadaChica'];
+    for (const id of need) expect(ICON_IDS.includes(id), id).toBe(true);
   });
 });
 
