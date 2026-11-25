@@ -12,7 +12,7 @@ export type EventKind = 'cofre' | 'animita' | 'feriante';
 /** Seconds before the first event, between events (min, max) and how long one waits to be used. */
 export const EVENT_TIMING = { first: 50, between: [70, 100], stays: 45 } as const;
 /** How close the dog must be to use an event, and how long the animita takes (seconds). */
-const REACH = { cofre: 16, animita: 26, feriante: 20 } as const;
+const REACH = { cofre: 18, animita: 34, feriante: 22 } as const;
 const PRAYER_SECONDS = 3;
 /** Chest price: this share of the experience the current level asks for, growing with every chest opened. */
 export const CHEST_PRICE = { share: 0.35, perOpened: 0.35 } as const;
@@ -44,7 +44,8 @@ interface Active {
  * their own dice, so the road is the same for everybody on the same seed.
  */
 export class RoadEvents {
-  readonly root = new Container();
+  /** The y-sorted world (the chest, the animita and the stall sort with everything else). */
+  readonly root: Container;
   private readonly ring = new Graphics();
   private readonly rng: Rng;
   private readonly onCrowd: (count: number) => void;
@@ -53,11 +54,13 @@ export class RoadEvents {
   /** Chests opened in this run (each one costs more). */
   opened = 0;
 
-  constructor(seed: number, onCrowd: (count: number) => void) {
+  constructor(seed: number, onCrowd: (count: number) => void, layer: Container = new Container()) {
+    this.root = layer;
     this.rng = new Rng(deriveSeed(seed, 4));
     this.onCrowd = onCrowd;
     this.root.sortableChildren = true;
-    this.ring.zIndex = -5;
+    // The ring is drawn on the floor, under everything that stands.
+    this.ring.zIndex = -1e7;
     this.root.addChild(this.ring);
   }
 
@@ -104,7 +107,7 @@ export class RoadEvents {
       }
       case 'animita': {
         const near = dist < REACH.animita && !p.dead;
-        a.charge = Math.max(0, Math.min(1, a.charge + (near ? dt / PRAYER_SECONDS : -dt / 2)));
+        a.charge = Math.max(0, Math.min(1, a.charge + (near ? dt / PRAYER_SECONDS : -dt / 6)));
         // The prayer circle: it fills while the dog stays.
         const r = REACH.animita;
         this.ring.circle(a.x, a.y - 4, r).stroke({ width: 1, color: C('K') });
@@ -159,7 +162,7 @@ export class RoadEvents {
     if (kind === 'cofre') {
       label = new PixelText(t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) }), { color: 'a', outline: 'k' });
       label.position.set(x - Math.round(label.width / 2), y - 30);
-      label.zIndex = 9999;
+      label.zIndex = 1e7;
       this.root.addChild(label);
     }
     this.active = { kind, x, y, age: 0, charge: 0, sprite, label, nag: 0 };
@@ -180,7 +183,9 @@ export class RoadEvents {
 
   private bless(ctx: RunContext, a: Active): void {
     const p = ctx.player;
-    const id = this.rng.pick([...BLESSINGS]);
+    // Only blessings that do something right now: no healing at full life, no second shield.
+    const useful = BLESSINGS.filter((b) => !(b === 'abrigo' && p.hp > p.maxHp * 0.85) && !(b === 'escudo' && p.shield));
+    const id = this.rng.pick(useful.length > 0 ? [...useful] : [...BLESSINGS]);
     switch (id) {
       case 'escudo':
         p.shield = true;

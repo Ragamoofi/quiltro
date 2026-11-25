@@ -30,7 +30,7 @@ export class Passives {
   /** Goes under the shadows (the bell ring). */
   readonly ground = new Container();
   /** Goes with the y-sorted world (the dogs). */
-  readonly pets = new Container();
+  readonly pets: Container;
   private readonly ring = new Graphics();
   private readonly list: Pet[] = [];
   private readonly run: Anim;
@@ -39,7 +39,8 @@ export class Passives {
   private bellRadius = 0;
   private auraT = 0;
 
-  constructor() {
+  constructor(layer: Container = new Container()) {
+    this.pets = layer;
     this.run = anim('quiltra', 'trotar');
     this.ground.addChild(this.ring);
     for (let i = 0; i < MAX_PETS; i++) {

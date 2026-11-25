@@ -7,6 +7,8 @@ import { POSTE_AISLADORES } from '../../art/sprites/decoracion.ts';
 import { hash2 } from '../../core/rng.ts';
 
 const CHUNK = 96;
+/** Props this tall or less are drawn as part of the floor. */
+const LOW_PROP = 14;
 const INK = hexToNumber(colorOf('k')?.hex ?? '#2A2233');
 const INK_LIGHT = hexToNumber(colorOf('K')?.hex ?? '#4A3F5C');
 
@@ -23,6 +25,8 @@ interface Chunk {
  * big/medium/small props. Pure function of chunk coordinates + zone.
  */
 export class Decor {
+  /** Low props that lie on the floor (never cover the dog). */
+  readonly ground = new Container();
   /** Cables drawn above every entity. */
   readonly overhead = new Graphics();
   private readonly chunks = new Map<string, Chunk>();
@@ -88,7 +92,9 @@ export class Decor {
       s.anchor.set(tex.defaultAnchor?.x ?? 0.5, tex.defaultAnchor?.y ?? 1);
       s.position.set(Math.round(x), Math.round(y));
       s.zIndex = Math.round(y);
-      this.world.addChild(s);
+      // Anything shorter than the dog's legs is a floor decal; tall things (cacti, posts, stalls) sort by depth.
+      if (tex.height <= LOW_PROP) this.ground.addChild(s);
+      else this.world.addChild(s);
       chunk.items.push(s);
     };
     const h = hash2(cx, cy, this.seed);

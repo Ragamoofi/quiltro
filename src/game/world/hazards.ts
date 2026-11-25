@@ -1,7 +1,6 @@
 import { Rng } from '../../core/rng.ts';
 import { Container, Sprite, Texture } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
-import { colorOf } from '../../art/palette.ts';
 import { px } from '../../data/balance.ts';
 import { ENEMIGOS } from '../../data/enemigos.ts';
 import type { RunContext } from '../context.ts';
@@ -38,7 +37,8 @@ const MICRO = ENEMIGOS.find((e) => e.id === 'micro');
  * them in turn.
  */
 export class Hazards {
-  readonly world = new Container();
+  /** The y-sorted world (whirlwinds and the micro sort with the dog). */
+  readonly world: Container;
   readonly screen = new Container();
   private kind: HazardId = 'remolinos';
   private active: Exclude<HazardId, 'rotativo'> = 'remolinos';
@@ -60,7 +60,8 @@ export class Hazards {
   /** Caleuche phase 2: fog covers half the screen (-1 left, 1 right, 0 none). */
   halfFogSide = 0;
 
-  constructor() {
+  constructor(layer: Container = new Container()) {
+    this.world = layer;
     this.devilAnim = anim('remolinoPolvo', 'girar');
     this.busAnim = anim('micro', 'andar');
     this.fog.visible = false;
@@ -247,31 +248,29 @@ export class Hazards {
   }
 }
 
-/** Dithered fog with a clear hole of `hole` px in the middle (-1 = no hole, uniform). */
+/**
+ * Fog with a clear hole of `hole` px around the dog (-1 = no hole, uniform). It used to be a
+ * dither in 2×2 blocks, which still read as a grey checkerboard over the floor; now it is a smooth
+ * cream mist that thickens toward the edges.
+ */
 function fogTexture(w: number, h: number, hole: number): Texture {
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Texture.EMPTY;
-  // Fase 10 (neblina del Sur): the old fog was a 1-pixel dither of lavender up to 62 % dense,
-  // which read as TV static over the whole screen. Now it is a soft mist: cream, in 2×2 blocks,
-  // in three clean levels (none / light / medium), with a bigger clear area around the dog.
-  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  ctx.fillStyle = colorOf('w')?.hex ?? '#FBF3E4';
-  for (let y = 0; y < h; y += 2) {
-    for (let x = 0; x < w; x += 2) {
-      let density: number;
-      if (hole < 0) density = 0.3;
-      else {
-        const d = Math.hypot(x - w / 2, (y - h / 2) * 1.3);
-        density = Math.min(0.4, Math.max(0, (d - hole) / 190));
-      }
-      const level = density < 0.07 ? 0 : density < 0.22 ? 0.19 : 0.31;
-      if (level > ((bayer[((y >> 1) % 4) * 4 + ((x >> 1) % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 2, 2);
-    }
+  if (hole < 0) {
+    ctx.fillStyle = 'rgba(232, 226, 214, 0.55)';
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    const grad = ctx.createRadialGradient(w / 2, h / 2, hole * 0.6, w / 2, h / 2, hole + 170);
+    grad.addColorStop(0, 'rgba(232, 226, 214, 0)');
+    grad.addColorStop(0.35, 'rgba(232, 226, 214, 0.18)');
+    grad.addColorStop(1, 'rgba(232, 226, 214, 0.45)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
   }
   const t = Texture.from(canvas);
-  t.source.scaleMode = 'nearest';
+  t.source.scaleMode = 'linear';
   return t;
 }

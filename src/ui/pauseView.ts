@@ -1,6 +1,8 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../art/assets.ts';
 import type { Build } from '../game/build.ts';
+import { PILARES, PILLAR_POINTS, pillarTier } from '../data/pilares.ts';
+import { PLAYER_BASE } from '../data/personajes.ts';
 import { formatNumber, t } from '../i18n/index.ts';
 import { PixelText } from './text.ts';
 import { Button, C, ditherOverlay, FocusList, panel } from './widgets.ts';
@@ -41,8 +43,8 @@ export class PauseView {
     this.root.visible = true;
     this.confirming = false;
     this.root.addChild(ditherOverlay(viewW, viewH));
-    const pw = Math.min(viewW - 20, 280);
-    const ph = 190;
+    const pw = Math.min(viewW - 20, 430);
+    const ph = Math.min(viewH - 10, 262);
     const x0 = Math.round((viewW - pw) / 2);
     const y0 = Math.round((viewH - ph) / 2);
     const g = new Graphics();
@@ -79,6 +81,63 @@ export class PauseView {
       });
     });
     this.root.addChild(dots);
+
+    // Two columns: the dog's numbers right now, and the pillars with their bonus.
+    const colY = y0 + 112;
+    const colW = Math.floor((pw - 30) / 2);
+    const leftX = x0 + 10;
+    const rightX = leftX + colW + 10;
+    const head = (text: string, x: number): void => {
+      const h = new PixelText(text, { color: 'a', outline: 'k' });
+      h.position.set(x, colY);
+      this.root.addChild(h);
+    };
+    head(t('pausa.stats'), leftX);
+    head(t('pausa.pilares'), rightX);
+    const st = build.stats();
+    const pct = (v: number): string => `${v >= 0 ? '+' : ''}${Math.round(v * 100)}%`;
+    const statRows: [string, string][] = [
+      [t('pausa.dano'), pct(st.damageMult - 1)],
+      [t('pausa.critico'), `${Math.round(st.critChance * 100)}% x${(PLAYER_BASE.critMultiplier + st.critDamage).toFixed(1)}`],
+      [t('pausa.area'), pct(st.areaMult - 1)],
+      [t('pausa.espera'), pct(st.cooldownMult - 1)],
+      [t('pausa.velocidad'), pct(st.speedMult - 1)],
+      [t('pausa.armadura'), String(st.armor)],
+      [t('pausa.regen'), `${(st.regen).toFixed(1)}/s`],
+      [t('pausa.iman'), pct(st.pickupMult - 1)],
+      [t('pausa.exp'), pct(st.xpMult - 1)],
+      [t('pausa.proyectiles'), `+${st.projectiles}`],
+    ];
+    const rowH = Math.max(8, Math.min(10, Math.floor((ph - 152) / 5)));
+    statRows.forEach(([label, value], i) => {
+      const half = i % 2;
+      const x = leftX + half * Math.floor(colW / 2);
+      const y = colY + 12 + Math.floor(i / 2) * rowH;
+      const l = new PixelText(label, { color: 'G', outline: 'k' });
+      const v = new PixelText(value, { color: 'w', outline: 'k' });
+      l.position.set(x, y);
+      v.position.set(x + Math.floor(colW / 2) - v.width - 4, y);
+      this.root.addChild(l, v);
+    });
+    const bars = new Graphics();
+    PILARES.forEach((pillar, i) => {
+      const pts = build.pillarPoints(pillar.id);
+      const tier = pillarTier(pts);
+      const y = colY + 12 + i * 12;
+      const name = new PixelText(`${t(`${pillar.i18n}.nombre`)} ${pts}/${PILLAR_POINTS[1]}`, { color: tier > 0 ? pillar.color : 'G', outline: 'k' });
+      name.position.set(rightX, y);
+      this.root.addChild(name);
+      // A bar to 7 points with a notch at 3 (first bonus).
+      const bx = rightX + 62;
+      const bw = 40;
+      bars.rect(bx, y + 1, bw, 4).fill(C('k'));
+      bars.rect(bx + 1, y + 2, Math.round((bw - 2) * Math.min(1, pts / PILLAR_POINTS[1])), 2).fill(C(pillar.color));
+      bars.rect(bx + Math.round((bw * PILLAR_POINTS[0]) / PILLAR_POINTS[1]), y, 1, 6).fill(C('w'));
+      const bonus = new PixelText(tier > 0 ? t(`${pillar.i18n}.bono${tier}`) : t('pausa.pilarNada', { n: PILLAR_POINTS[0] - pts }), { color: tier > 0 ? 'w' : 'g', outline: 'k', maxWidth: colW - 106, compact: true });
+      bonus.position.set(bx + bw + 4, y);
+      this.root.addChild(bonus);
+    });
+    this.root.addChild(bars);
 
     const bw = Math.floor((pw - 24 - 12) / 3);
     const by = y0 + ph - 30;

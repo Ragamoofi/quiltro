@@ -66,6 +66,9 @@ export class SelectScene implements Scene {
   private cycle(dir: number): void {
     this.index = (this.index + dir + PERSONAJES.length) % PERSONAJES.length;
     this.sfx.play('carga', { pitch: 1.5 });
+    // Each character introduces itself with its own cry.
+    const v = this.char.voice;
+    if (this.data.characters.includes(this.char.id)) this.sfx.play(v?.sound ?? 'guau', { pitch: v?.pitch ?? 1, gain: 0.6 });
     this.build();
   }
 

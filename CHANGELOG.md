@@ -4,6 +4,20 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Revisión visual y personajes con voz propia (Fase 11.9)
+
+#### Arreglado
+- **Sol del Norte:** había dos soles (el cielo se repetía cada 480 px) con un halo a cuadritos, y un brillo tramado sobre toda la pantalla que hacía ver la arena como un damero. Ahora hay un solo sol limpio y un brillo suave solo en la esquina.
+- **Neblina del Sur (Temuco y alrededores):** ya no es un tramado gris; es una bruma suave que se espesa hacia los bordes. Lo mismo para la media neblina del Caleuche, el borde rojo de poca vida, el apagón y el fondo de la pausa y los menús.
+- **Cosas delante del perro:** los animales del paisaje, los eventos, las mascotas y los peligros se ordenaban como un bloque y podían quedar delante del personaje. Ahora todo se ordena por profundidad, y las piedras, huesos y flores bajas son parte del suelo.
+- **Animitas:** a veces no hacían nada visible: la bendición podía ser curar con la vida llena o un escudo que ya tenías, y el viento a favor de 30 s se cortaba al primer enemigo con Cola alegre. Ahora solo da bendiciones útiles, el círculo es más grande y no se vacía tan rápido si te empujan.
+- La pantalla de Elegir personaje se caía al cambiar de pasaje (botones destruidos que se volvían a dibujar).
+
+#### Agregado
+- **Voz propia por personaje** para el ¡GUAU!: la Quiltra ladra más agudo, el Gato maúlla, el Zorro da dos aullidos cortos, el Pudú bala, el Pingüino rebuzna, la Paloma arrulla, el Cóndor sisea con un golpe de alas, el Guanaco relincha y el Chingue bufa. Cada uno se presenta con su voz en Elegir personaje.
+- **El Cóndor vuela** (planea quieto y aletea al moverse; se posa para cargar el grito, en el menú y al caer). **La Paloma rebelde vuela al moverse** y **el Pudú corre a saltitos**.
+- **Pilares a la vista:** en la partida, bajo la comida, los pilares con puntos y una estrella por bono; en la pausa, todos los pilares con su barra y su bono, y las estadísticas del personaje (daño, crítico, área, espera, velocidad, armadura, regeneración, imán, experiencia y proyectiles).
+
 ### Fase 11.4 a 11.7, tutorial y HUD
 
 #### Agregado

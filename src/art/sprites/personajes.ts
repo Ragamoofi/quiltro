@@ -1,5 +1,7 @@
 import { Pix } from '../draw.ts';
 import { outlined, type Frame, type SpriteDef } from '../types.ts';
+
+type Anims = Record<string, SpriteDef['animations'][string]>;
 import { characterAnims, QUILTRO_FRAMES } from './quiltro.ts';
 
 /*
@@ -38,11 +40,66 @@ const POSES: Record<keyof typeof QUILTRO_FRAMES, Pose> = {
   sleepB: { legs: 'lie', eye: 'closed', mouth: false, dy: 4, wiggle: 1 },
 };
 
-function character(name: string, draw: Draw): SpriteDef {
+/**
+ * `own`: animations that replace the shared ones (Fase 11.9: the condor and the pigeon fly, the
+ * pudú hops). Whatever it leaves out keeps the common poses (the condor stands to charge the cry,
+ * to sleep in the menu and when it falls).
+ */
+function character(name: string, draw: Draw, own?: (pose: (p: Partial<Pose>) => Frame) => Partial<Anims>): SpriteDef {
   const frames = Object.fromEntries(
     Object.entries(POSES).map(([k, pose]) => [k, outlined(draw(pose).frame())]),
   ) as Record<keyof typeof QUILTRO_FRAMES, Frame>;
-  return { name, group: 'personajes', width: 24, height: 24, anchor: { x: 0.5, y: 22 / 24 }, flash: true, animations: characterAnims(frames) };
+  const posed = (p: Partial<Pose>): Frame => outlined(draw({ ...(POSES.stand as Pose), ...p }).frame());
+  const animations = { ...characterAnims(frames), ...(own ? own(posed) : {}) } as Anims;
+  return { name, group: 'personajes', width: 24, height: 24, anchor: { x: 0.5, y: 22 / 24 }, flash: true, animations };
+}
+
+/** A wing seen from the side as a band of pixels, with the given lift at the tips (+ up, − down). */
+function wing(p: Pix, cx: number, cy: number, span: number, lift: number, color: string, patch: string | null, tip: string): void {
+  for (let x = cx - span; x <= cx + span; x++) {
+    const d = Math.abs(x - cx);
+    if (d < 2) continue;
+    const y = Math.round(cy - Math.max(0, d - 2) * lift * 0.55);
+    // Broad near the body, narrower toward the tips.
+    const thick = d < 6 ? 3 : 2;
+    p.rect(x, y, 1, thick, color);
+    if (patch && d >= 4 && d <= 7) p.set(x, y + thick - 1, patch);
+    // Spread "fingers" at the tips.
+    if (d >= span - 2 && x % 2 === 0) p.set(x, y + (lift >= 0 ? -1 : 2), tip);
+  }
+}
+
+/** The condor in flight: huge dark wings with white patches, the white ruff and the bare head. */
+function condorFly(lift: number, mouth = false, hurt = false): Frame {
+  const p = new Pix(22, 22);
+  const cy = 7;
+  wing(p, 11, cy - 1, 10, lift, 'K', 'w', 'k');
+  p.ellipse(10, cy + 1, 5, 2.4, 'k').rect(3, cy, 3, 2, 'K');
+  p.ellipse(14.5, cy, 2, 1.6, 'w');
+  p.disc(17, cy - 1, 2, 'p').rect(16, cy - 3, 2, 1, 'r');
+  p.rect(19, cy - 1, 2, 1, 'y').set(20, cy, 'a');
+  if (hurt) p.set(17, cy - 2, 'r');
+  else p.set(17, cy - 2, 'k');
+  if (mouth) p.set(19, cy, 'R');
+  // Feet tucked under the body.
+  p.rect(9, cy + 3, 3, 1, 'G');
+  return outlined(p.frame());
+}
+
+/** The rebel pigeon in flight: grey wings beating, the red bandana flying behind. */
+function palomaFly(lift: number): Frame {
+  const p = new Pix(22, 22);
+  const cy = 9;
+  wing(p, 10, cy - 1, 8, lift, 'g', null, 'G');
+  p.ellipse(10, cy + 1, 5, 2.6, 'G').ellipse(9, cy + 1, 3.5, 1.5, 'g');
+  p.rect(2, cy, 3, 2, 'g');
+  p.ellipse(15, cy, 2, 2, 'T').set(14, cy, 't');
+  p.disc(17, cy - 2, 2.6, 'G');
+  p.rect(15, cy - 4, 5, 1, 'r').rect(12, cy - 4 + (lift > 0 ? 1 : 0), 3, 1, 'r');
+  p.rect(16, cy - 3, 3, 1, 'k').set(17, cy - 3, 'W');
+  p.rect(19, cy - 1, 2, 1, 'M');
+  p.rect(9, cy + 3, 1, 1, 'p').rect(11, cy + 3, 1, 1, 'p');
+  return outlined(p.frame());
 }
 
 /** Four legs in side view (x positions of back and front pairs). */
@@ -279,11 +336,25 @@ const guanaco: Draw = (pose) => {
 export const personajesSprites: SpriteDef[] = [
   character('quiltra', quiltra),
   character('gato', gato),
-  character('pudu', pudu),
+  // The pudú runs in little hops.
+  character('pudu', pudu, (pose) => ({
+    trotar: { fps: 9, frames: [pose({ legs: 'tuck', dy: 1 }), pose({ legs: 'a', dy: -2 }), pose({ legs: 'stand', dy: -3, wiggle: 1 }), pose({ legs: 'b', dy: -1 })] },
+  })),
   character('pinguino', pinguino),
-  character('palomaRebelde', palomaRebelde),
+  // The pigeon walks when it stands still and flies when it moves.
+  character('palomaRebelde', palomaRebelde, () => ({
+    trotar: { fps: 12, frames: [palomaFly(2), palomaFly(0), palomaFly(-1.4), palomaFly(0)] },
+  })),
   character('zorro', zorro),
   character('chinguePj', chingue),
-  character('condor', condor),
+  // The condor flies: it hovers with slow beats and beats hard when it moves. It lands (stands)
+  // to charge its cry, to sleep in the menu and when it falls.
+  character('condor', condor, () => ({
+    quieto: { fps: 4, frames: [condorFly(0.6), condorFly(1.4), condorFly(0.6), condorFly(-0.6)] },
+    parpadeo: { fps: 8, frames: [condorFly(0.6)], loop: false },
+    trotar: { fps: 10, frames: [condorFly(2), condorFly(0.5), condorFly(-1.2), condorFly(0.5)] },
+    ladrar: { fps: 10, frames: [condorFly(2.2, true), condorFly(2.2, true), condorFly(0.6)], loop: false },
+    dano: { fps: 8, frames: [condorFly(-0.8, false, true)], loop: false },
+  })),
   character('guanacoPj', guanaco),
 ];

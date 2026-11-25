@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../art/assets.ts';
 import type { Build } from '../game/build.ts';
+import { PILARES, PILLAR_POINTS, pillarTier } from '../data/pilares.ts';
 import { formatNumber, t } from '../i18n/index.ts';
 import { PixelText } from './text.ts';
 import { drawChile } from './chileMap.ts';
@@ -41,6 +42,9 @@ export class Hud {
   private readonly lucasText = new PixelText('0', { color: 'a', outline: 'k' });
   private readonly foodText = new PixelText('0', { color: 'w', outline: 'k' });
   private readonly foodIcon = new Sprite();
+  /** Fase 11.9: one line per pillar with points (name, points and a star per bonus). */
+  private readonly pillarTexts: PixelText[] = [];
+  private pillarKey = '';
   private readonly icons = new Container();
   private readonly iconDots = new Graphics();
   private readonly pause: Button;
@@ -189,6 +193,7 @@ export class Hud {
     this.foodText.text = formatNumber(s.food);
     this.foodText.position.set(15, 27);
     this.foodIcon.position.set(3, 25);
+    this.renderPillars(build);
 
     this.renderBuild(build);
 
@@ -197,6 +202,23 @@ export class Hud {
       g.circle(Math.round(stick.x), Math.round(stick.y), 6).fill(C('w'));
       g.circle(Math.round(stick.x), Math.round(stick.y), 6).stroke({ width: 1, color: C('k') });
     }
+  }
+
+  /** Under the food: the pillars that have points, in their colour, with a star for each bonus reached. */
+  private renderPillars(build: Build): void {
+    const rows = PILARES.map((pl) => ({ pl, pts: build.pillarPoints(pl.id) })).filter((r) => r.pts > 0);
+    const key = rows.map((r) => `${r.pl.id}${r.pts}`).join();
+    if (key === this.pillarKey) return;
+    this.pillarKey = key;
+    for (const tx of this.pillarTexts) tx.destroy();
+    this.pillarTexts.length = 0;
+    rows.forEach((r, i) => {
+      const tier = pillarTier(r.pts);
+      const tx = new PixelText(`${t(`${r.pl.i18n}.nombre`)} ${r.pts}/${PILLAR_POINTS[1]}${'*'.repeat(tier)}`, { color: tier > 0 ? r.pl.color : 'G', outline: 'k' });
+      tx.position.set(3, 38 + i * 9);
+      this.root.addChild(tx);
+      this.pillarTexts.push(tx);
+    });
   }
 
   /** Bottom-left: weapons then traits, each with level dots. Rebuilt only on change. */

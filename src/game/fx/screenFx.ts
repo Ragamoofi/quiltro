@@ -233,33 +233,34 @@ export class ScreenFx {
   }
 }
 
-/** Ordered-dither red frame: dense near the edge, sparse toward `outer`. */
+/** A soft frame of colour along the edges (low health), or a flat translucent cover (`flat`, blackout). */
 function ditherVignette(w: number, h: number, inner: number, outer: number, color = 'R', flat = 0): Texture {
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Texture.EMPTY;
-  ctx.fillStyle = colorOf(color)?.hex ?? '#9E1F35';
+  const hex = colorOf(color)?.hex ?? '#9E1F35';
   if (flat > 0) {
-    // Uniform ordered dither (blackout).
-    const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (flat > ((bayer[(y % 4) * 4 + (x % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 1, 1);
-    const t = Texture.from(canvas);
-    t.source.scaleMode = 'nearest';
-    return t;
-  }
-  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const e = Math.min(x, y, w - 1 - x, h - 1 - y);
-      if (e >= outer) continue;
-      const density = e < inner ? 0.55 - (e / inner) * 0.25 : 0.3 * (1 - (e - inner) / (outer - inner));
-      const threshold = ((bayer[(y % 4) * 4 + (x % 4)] ?? 0) + 0.5) / 16;
-      if (density > threshold) ctx.fillRect(x, y, 1, 1);
-    }
+    ctx.globalAlpha = flat;
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    // Four gradients, one per edge: strong at the border, gone at `outer` px.
+    const edge = (x0: number, y0: number, x1: number, y1: number, rx: number, ry: number, rw: number, rh: number): void => {
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, hex + 'aa');
+      g.addColorStop(Math.min(0.99, inner / outer), hex + '55');
+      g.addColorStop(1, hex + '00');
+      ctx.fillStyle = g;
+      ctx.fillRect(rx, ry, rw, rh);
+    };
+    edge(0, 0, outer, 0, 0, 0, outer, h);
+    edge(w, 0, w - outer, 0, w - outer, 0, outer, h);
+    edge(0, 0, 0, outer, 0, 0, w, outer);
+    edge(0, h, 0, h - outer, 0, h - outer, w, outer);
   }
   const tex = Texture.from(canvas);
-  tex.source.scaleMode = 'nearest';
+  tex.source.scaleMode = 'linear';
   return tex;
 }

@@ -1,5 +1,4 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
-import { colorOf } from '../../art/palette.ts';
 import type { Rng } from '../../core/rng.ts';
 import { C } from '../../ui/widgets.ts';
 
@@ -23,7 +22,7 @@ export class Weather {
   private h = 270;
   private gullX = -40;
   private gullY = 40;
-  /** The desert sun: a warm dithered glow from the top-right corner, drawn once per size. */
+  /** The desert sun: a soft warm glow from the top-right corner (a smooth gradient), drawn once per size. */
   private readonly glare = new Sprite();
   private heat: { x: number; y: number; w: number; s: number }[] = [];
   private time = 0;
@@ -127,24 +126,25 @@ export class Weather {
   }
 }
 
-/** A warm, translucent, ordered-dither glow that is strongest in the top-right corner. */
+/**
+ * A warm, translucent glow strongest in the top-right corner. It used to be an ordered dither over
+ * the whole screen, which read as a checkerboard on the sand; now it is a smooth gradient that
+ * fades out before the middle of the screen.
+ */
 function glareTexture(w: number, h: number): Texture {
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Texture.EMPTY;
-  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  const reach = Math.hypot(w * 1.0, h * 1.1);
-  ctx.fillStyle = colorOf('y')?.hex ?? '#FFD166';
-  ctx.globalAlpha = 0.34;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const density = Math.max(0, 1 - Math.hypot(w - x, y) / reach) * 0.9;
-      if (density > ((bayer[(y % 4) * 4 + (x % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 1, 1);
-    }
-  }
+  const r = Math.max(w, h) * 0.75;
+  const grad = ctx.createRadialGradient(w * 0.8, -h * 0.1, 0, w * 0.8, -h * 0.1, r);
+  grad.addColorStop(0, 'rgba(255, 224, 140, 0.30)');
+  grad.addColorStop(0.45, 'rgba(255, 209, 102, 0.12)');
+  grad.addColorStop(1, 'rgba(255, 209, 102, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
   const tex = Texture.from(canvas);
-  tex.source.scaleMode = 'nearest';
+  tex.source.scaleMode = 'linear';
   return tex;
 }

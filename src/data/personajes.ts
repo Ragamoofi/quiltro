@@ -39,6 +39,10 @@ export interface CharacterDef {
   readonly nameKey: string;
   /** Sprite sheet name. */
   readonly sprite: string;
+  /** Fase 11.9: the cry of the ¡GUAU! (a sound id) and its pitch. */
+  readonly voice?: { sound: 'guau' | 'miau' | 'yip' | 'balido' | 'rebuzno' | 'arrullo' | 'siseo' | 'relincho' | 'bufido'; pitch?: number };
+  /** Fase 11.9: flies instead of walking (its shadow stays on the ground). */
+  readonly flies?: boolean;
   readonly unlock: UnlockCondition;
   readonly startingWeapon: string;
   /** Changes relative to PLAYER_BASE (multipliers unless stated). */
@@ -96,6 +100,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'quiltra',
     nameKey: 'personajes.quiltra',
     sprite: 'quiltra',
+    voice: { sound: 'guau', pitch: 1.25 },
     unlock: { kind: 'llegarA', ciudad: 'santiago' },
     startingWeapon: 'ronda',
     mods: { speedMult: 0.92, maxHp: 100, startingTraits: [{ id: 'chalequito', level: 1 }], healEvery: { kills: 40, amount: 5 } },
@@ -104,6 +109,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'gato',
     nameKey: 'personajes.gato',
     sprite: 'gato',
+    voice: { sound: 'miau' },
     unlock: { kind: 'total', stat: 'kills', cantidad: 3000 },
     startingWeapon: 'cables',
     mods: { critBonus: 0.15, maxHp: 70, extraRevives: 1 },
@@ -112,6 +118,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'zorro',
     nameKey: 'personajes.zorro',
     sprite: 'zorro',
+    voice: { sound: 'yip' },
     unlock: { kind: 'llegarA', ciudad: 'temuco' },
     startingWeapon: 'emboque',
     mods: { speedMult: 1.05, maxHp: 95, cooldownMult: -0.12, dodgeChance: 0.1 },
@@ -120,6 +127,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'pudu',
     nameKey: 'personajes.pudu',
     sprite: 'pudu',
+    voice: { sound: 'balido' },
     unlock: { kind: 'llegarA', ciudad: 'chiloe' },
     startingWeapon: 'rayuela',
     mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 105, damageMult: 0.3, dodgeChance: 0.15 },
@@ -128,6 +136,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'pinguino',
     nameKey: 'personajes.pinguino',
     sprite: 'pinguino',
+    voice: { sound: 'rebuzno' },
     unlock: { kind: 'vencer', jefe: 'caleuche' },
     startingWeapon: 'chaya',
     mods: { areaMult: 1.25, maxHp: 115, armor: 1, slides: true, immuneSlow: true, immuneWind: true },
@@ -136,6 +145,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'chingue',
     nameKey: 'personajes.chingue',
     sprite: 'chinguePj',
+    voice: { sound: 'bufido' },
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
     startingWeapon: 'elastico',
     mods: { speedMult: 0.95, maxHp: 100, aura: { dps: 10, radius: 34 } },
@@ -144,6 +154,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'condor',
     nameKey: 'personajes.condor',
     sprite: 'condor',
+    voice: { sound: 'siseo' }, flies: true,
     unlock: { kind: 'vencer', jefe: 'taco' },
     startingWeapon: 'trompo',
     mods: { speedMult: 0.9, maxHp: 75, damageMult: 0.2, pickupMult: 0.6 },
@@ -152,6 +163,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'guanaco',
     nameKey: 'personajes.guanaco',
     sprite: 'guanacoPj',
+    voice: { sound: 'relincho' },
     unlock: { kind: 'llegarA', ciudad: 'puntaArenas' },
     startingWeapon: 'bolitas',
     mods: { speedMult: 0.88, maxHp: 140, armor: 1, shieldEvery: 30 },
@@ -160,6 +172,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'paloma',
     nameKey: 'personajes.paloma',
     sprite: 'palomaRebelde',
+    voice: { sound: 'arrullo' }, flies: true,
     unlock: { kind: 'vencer', jefe: 'caiCai' },
     startingWeapon: 'fuegos',
     mods: { speedMult: 1.1, maxHp: 110, damageMult: 0.15, ignoresHazards: true },

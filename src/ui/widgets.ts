@@ -26,17 +26,15 @@ export function panel(
 
 /** Ordered-dither darkening for overlays (stays inside the palette, no alpha). */
 export function ditherOverlay(w: number, h: number, ch = 'k', density: 1 | 2 = 2): Sprite {
+  // A flat translucent veil (it used to be a 1-pixel checkerboard, which looked like static).
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (ctx) {
+    ctx.globalAlpha = density === 2 ? 0.62 : 0.35;
     ctx.fillStyle = colorOf(ch)?.hex ?? '#2A2233';
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        if (density === 2 ? (x + y) % 2 === 0 : x % 2 === 0 && y % 2 === 0) ctx.fillRect(x, y, 1, 1);
-      }
-    }
+    ctx.fillRect(0, 0, w, h);
   }
   const tex = Texture.from(canvas);
   tex.source.scaleMode = 'nearest';
@@ -130,6 +128,7 @@ export class Button extends Container {
   }
 
   private draw(): void {
+    if (this.destroyed) return;
     const g = this.bg;
     g.clear();
     const down = this.pressed && this.enabled ? 1 : 0;
@@ -153,7 +152,10 @@ export class FocusList {
   private index = 0;
 
   set(items: Button[], keepIndex = false): void {
-    this.items.forEach((b) => (b.highlight = false));
+    // Screens that rebuild themselves destroy their old buttons first: skip those.
+    this.items.forEach((b) => {
+      if (!b.destroyed) b.highlight = false;
+    });
     this.items = items;
     if (!keepIndex) this.index = Math.max(0, items.findIndex((b) => b.enabled));
     this.index = Math.min(this.index, items.length - 1);

@@ -1,3 +1,4 @@
+import type { SoundId } from '../../audio/sfx.ts';
 import { Container, Sprite } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import type { InputState } from '../../core/input.ts';
@@ -49,6 +50,8 @@ export class Player {
   vx = 0;
   vy = 0;
   facing = 1;
+  /** Fase 11.9: the character's own cry for the ¡GUAU! (the dog barks, the cat meows...). */
+  voice: { sound: SoundId; pitch: number } = { sound: 'guau', pitch: 1 };
   hp = PLAYER_BASE.maxHp;
   maxHp = PLAYER_BASE.maxHp;
   invulnerable = 0;
@@ -232,6 +235,7 @@ export class Player {
     this.movedThisRun ||= moving;
     // Cola alegre fades; Siesta heals while the dog rests.
     this.hasteT = Math.max(0, this.hasteT - dt);
+    if (this.hasteT === 0) this.hasteAmount = 0;
     this.stillFor = moving ? 0 : this.stillFor + dt;
     if (ctx.mods.restRegen > 0 && this.stillFor > 0.5) this.hp = Math.min(this.maxHp, this.hp + ctx.mods.restRegen * dt);
     if (Math.abs(input.moveX) > 0.15) this.facing = Math.sign(input.moveX);
@@ -316,7 +320,7 @@ export class Player {
     if (howl) {
       ctx.screen.howl();
       for (let i = 1; i <= 3; i++) {
-        window.setTimeout(() => ctx.sfx.play('guau', { pitch: 0.7 + i * 0.12, gain: 0.5 }), i * 140);
+        window.setTimeout(() => ctx.sfx.play(this.voice.sound, { pitch: this.voice.pitch * (0.7 + i * 0.12), gain: 0.5 }), i * 140);
       }
     }
     this.barkTime = BARK_ANIM;
@@ -325,7 +329,7 @@ export class Player {
     ctx.enemies.shockwave(this.x, this.y - 8, radius, n.damage, ctx);
     ctx.screen.guau(this.x, this.y, radius);
     ctx.shake.add(0.55);
-    ctx.sfx.play('guau', { pitch: 0.95 + ctx.rng.range(0, 0.1) });
+    ctx.sfx.play(this.voice.sound, { pitch: this.voice.pitch * (0.95 + ctx.rng.range(0, 0.1)) });
     vibrate(60);
   }
 

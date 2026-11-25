@@ -38,7 +38,16 @@ export type SoundId =
   | 'pajaro'
   | 'ladridoLejano'
   | 'moneda'
-  | 'ruleta';
+  | 'ruleta'
+  // Fase 11.9: every character has its own cry for the ¡GUAU!.
+  | 'miau'
+  | 'yip'
+  | 'balido'
+  | 'rebuzno'
+  | 'arrullo'
+  | 'siseo'
+  | 'relincho'
+  | 'bufido';
 
 export const MAX_VOICES = 24;
 export const MERGE_MS = 30;
@@ -46,6 +55,14 @@ export const MERGE_MS = 30;
 /** 3 = player and bosses (never dropped), 2 = important cues, 1 = everything else. */
 export const PRIORITY: Readonly<Record<SoundId, 1 | 2 | 3>> = {
   guau: 3,
+  miau: 3,
+  yip: 3,
+  balido: 3,
+  rebuzno: 3,
+  arrullo: 3,
+  siseo: 3,
+  relincho: 3,
+  bufido: 3,
   dano: 3,
   jefe: 3,
   retumbo: 3,
@@ -103,6 +120,73 @@ export function canPlay(id: SoundId, voices: number, same: number, sinceLast: nu
   // Near the cap, background sounds yield to the important ones.
   if (voices >= MAX_VOICES - 6 && PRIORITY[id] < 2) return false;
   return true;
+}
+
+/** A voice: an oscillator whose pitch follows `freq` ([seconds, Hz] points), through an optional moving vowel filter. */
+interface ToneSpec {
+  type: OscillatorType;
+  freq: readonly (readonly [number, number])[];
+  formant?: readonly (readonly [number, number])[];
+  q?: number;
+  dur: number;
+  gain: number;
+  /** Pitch wobble (vibrato) and volume wobble (tremolo / trill). */
+  vib?: { rate: number; depth: number };
+  am?: { rate: number; depth: number };
+  at?: number;
+}
+
+function tone(ctx: AudioContext, out: AudioNode, t0: number, s: ToneSpec, pitch: number, gainMul: number): void {
+  const t = t0 + (s.at ?? 0);
+  const o = ctx.createOscillator();
+  o.type = s.type;
+  s.freq.forEach(([dt, hz], i) => {
+    if (i === 0) o.frequency.setValueAtTime(hz * pitch, t + dt);
+    else o.frequency.linearRampToValueAtTime(hz * pitch, t + dt);
+  });
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(s.gain * gainMul, t + Math.min(0.04, s.dur * 0.2));
+  g.gain.setValueAtTime(s.gain * gainMul, t + s.dur * 0.6);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + s.dur);
+  let node: AudioNode = o;
+  if (s.formant) {
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.Q.value = s.q ?? 3;
+    s.formant.forEach(([dt, hz], i) => {
+      if (i === 0) f.frequency.setValueAtTime(hz, t + dt);
+      else f.frequency.linearRampToValueAtTime(hz, t + dt);
+    });
+    o.connect(f);
+    node = f;
+  }
+  const extra: OscillatorNode[] = [];
+  if (s.vib) {
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = s.vib.rate;
+    const lg = ctx.createGain();
+    lg.gain.value = s.vib.depth * pitch;
+    lfo.connect(lg).connect(o.frequency);
+    extra.push(lfo);
+  }
+  if (s.am) {
+    const trem = ctx.createGain();
+    trem.gain.value = 1 - s.am.depth;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = s.am.rate;
+    const lg = ctx.createGain();
+    lg.gain.value = s.am.depth;
+    lfo.connect(lg).connect(trem.gain);
+    node.connect(trem);
+    node = trem;
+    extra.push(lfo);
+  }
+  node.connect(g).connect(out);
+  for (const n of [o, ...extra]) {
+    n.start(t);
+    n.stop(t + s.dur + 0.02);
+  }
 }
 
 /** Pentatonic scale steps (semitones) for the food jingle. */
@@ -361,6 +445,83 @@ export class Sfx {
         grit.start(t);
         grit.stop(t + 0.15);
         return dur + 0.5;
+      }
+      // ---- Fase 11.9: the cries ----
+      case 'miau': {
+        // "Mi-AAU": a nasal voice whose vowel opens (i → a) and closes (u), with a little vibrato.
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 620], [0.12, 900], [0.42, 560]], formant: [[0, 2300], [0.15, 1500], [0.42, 800]], q: 5, dur: 0.48, gain: 0.55, vib: { rate: 6, depth: 18 } }, pitch, gainMul);
+        tone(ctx, out, t, { type: 'triangle', freq: [[0, 1240], [0.12, 1800], [0.42, 1120]], dur: 0.45, gain: 0.08 }, pitch, gainMul);
+        return 0.5;
+      }
+      case 'yip': {
+        // The culpeo fox: two sharp, high yips ("¡kak-kak!").
+        for (const at of [0, 0.13]) tone(ctx, out, t, { type: 'square', freq: [[0, 1150], [0.08, 700]], formant: [[0, 1900]], q: 2, dur: 0.09, gain: 0.45, at }, pitch, gainMul);
+        return 0.25;
+      }
+      case 'balido': {
+        // The pudú bleats: "beeeh", with a fast quaver.
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 480], [0.45, 430]], formant: [[0, 1100], [0.45, 900]], q: 4, dur: 0.5, gain: 0.5, vib: { rate: 17, depth: 40 } }, pitch, gainMul);
+        return 0.52;
+      }
+      case 'rebuzno': {
+        // The Humboldt penguin calls like a small donkey: "jii-AAA".
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 620], [0.18, 700]], formant: [[0, 1400]], q: 3, dur: 0.2, gain: 0.45 }, pitch, gainMul);
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 330], [0.3, 280]], formant: [[0, 800], [0.3, 650]], q: 3, dur: 0.32, gain: 0.55, am: { rate: 22, depth: 0.5 }, at: 0.18 }, pitch, gainMul);
+        return 0.52;
+      }
+      case 'arrullo': {
+        // The pigeon: "rruu-rru", a soft throaty coo with a trill.
+        tone(ctx, out, t, { type: 'sine', freq: [[0, 360], [0.28, 300]], dur: 0.3, gain: 0.6, am: { rate: 26, depth: 0.6 } }, pitch, gainMul);
+        tone(ctx, out, t, { type: 'sine', freq: [[0, 330], [0.2, 280]], dur: 0.22, gain: 0.5, am: { rate: 26, depth: 0.6 }, at: 0.34 }, pitch, gainMul);
+        return 0.58;
+      }
+      case 'siseo': {
+        // The condor has no song: a strong hiss and a gust of its great wings.
+        const src = this.noiseSource(ctx);
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.setValueAtTime(3200, t);
+        f.frequency.exponentialRampToValueAtTime(1400, t + 0.4);
+        f.Q.value = 1.5;
+        const g = ctx.createGain();
+        env(g, 0.5, 0.03, 0.4);
+        src.connect(f).connect(g).connect(out);
+        src.start(t, Math.random());
+        src.stop(t + 0.45);
+        const gust = this.noiseSource(ctx);
+        const lf = ctx.createBiquadFilter();
+        lf.type = 'lowpass';
+        lf.frequency.value = 420;
+        const gg = ctx.createGain();
+        gg.gain.setValueAtTime(0.0001, t);
+        gg.gain.exponentialRampToValueAtTime(0.9 * gainMul, t + 0.08);
+        gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        gust.connect(lf).connect(gg).connect(out);
+        gust.start(t, Math.random());
+        gust.stop(t + 0.36);
+        tone(ctx, out, t, { type: 'triangle', freq: [[0, 1500], [0.3, 900]], dur: 0.32, gain: 0.12 }, pitch, gainMul);
+        return 0.46;
+      }
+      case 'relincho': {
+        // The guanaco's alarm call: a high laughing trill that falls ("jiji-ji-ji").
+        tone(ctx, out, t, { type: 'square', freq: [[0, 1250], [0.5, 760]], formant: [[0, 2000], [0.5, 1300]], q: 2, dur: 0.55, gain: 0.35, am: { rate: 13, depth: 0.85 } }, pitch, gainMul);
+        return 0.58;
+      }
+      case 'bufido': {
+        // The chingue: an angry snort and a hiss.
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 170], [0.12, 120]], formant: [[0, 500]], q: 2, dur: 0.14, gain: 0.6 }, pitch, gainMul);
+        const src = this.noiseSource(ctx);
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass';
+        f.frequency.value = 2200;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t + 0.1);
+        g.gain.exponentialRampToValueAtTime(0.35 * gainMul, t + 0.14);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+        src.connect(f).connect(g).connect(out);
+        src.start(t + 0.1, Math.random());
+        src.stop(t + 0.46);
+        return 0.48;
       }
       case 'dano': {
         const o = ctx.createOscillator();

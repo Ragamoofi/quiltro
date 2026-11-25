@@ -1,4 +1,4 @@
-import { Container, Sprite, Texture, TilingSprite } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
 import { anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
 
@@ -13,7 +13,7 @@ interface Look {
   cap?: string;
   /** Shape of the near range: soft hills, sharp cones (volcanoes) or towers. */
   shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo' | 'valpo' | 'ciudad';
-  /** A hot sun hanging in the sky with a dithered halo (the desert). */
+  /** A hot sun hanging in the sky (the desert). Drawn once, not tiled. */
   sun?: boolean;
   /** The far layer is the sea (a band of waves) instead of distant hills. */
   sea?: boolean;
@@ -26,7 +26,7 @@ interface Look {
   /** Snow on the tallest peaks of the far range. */
   snow?: boolean;
   aurora?: readonly string[];
-  /** A band of dithered haze over the lower part of the far layer (smog). */
+  /** A band of haze over the lower part of the far layer (smog). */
   haze?: string;
 }
 
@@ -90,7 +90,17 @@ export class Horizon {
     if (!look) return;
     this.far = new TilingSprite({ texture: layer(look, 'far'), width: viewW, height: HORIZON_H });
     this.near = new TilingSprite({ texture: layer(look, 'near'), width: viewW, height: HORIZON_H });
-    this.root.addChild(this.far, this.near);
+    const sun = new Graphics();
+    if (look.sun) {
+      // One sun, fixed in the sky at the right: a soft halo, a warm ring and a white core.
+      const sx = Math.round(viewW * 0.8);
+      const sy = 9;
+      sun.circle(sx, sy, 10).fill({ color: colorHex('y'), alpha: 0.18 });
+      sun.circle(sx, sy, 7).fill({ color: colorHex('y'), alpha: 0.35 });
+      sun.circle(sx, sy, 5).fill(colorHex('y'));
+      sun.circle(sx, sy, 3.5).fill(colorHex('W'));
+    }
+    this.root.addChild(this.far, sun, this.near);
   }
 
   /** camX: camera world x (whole pixels). */
@@ -127,20 +137,7 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
     if (look.smoke) {
       // Smoke from the volcano: soft puffs drifting up and to the right, in a dither.
       for (const [px0, py0, r] of [[80, 7, 3.4], [84, 4, 3.8], [89, 2, 4.2], [96, 1, 4.6]] as const) {
-        for (let y = -2; y < 12; y++) for (let x = px0 - 6; x <= px0 + 6; x++) if (Math.hypot(x - px0, y - py0) < r && (x + y) % 2 === 0) put(Math.hypot(x - px0, y - py0) < r - 1.6 ? 'w' : 'G', x, y);
-      }
-    }
-    if (look.sun) {
-      // The desert sun: a bright disc with a dithered halo around it.
-      const sx = 150;
-      const sy = 9;
-      for (let y = 0; y < HORIZON_H; y++) {
-        for (let x = sx - 16; x <= sx + 16; x++) {
-          const d = Math.hypot(x - sx, y - sy);
-          if (d < 4.2) put('W', x, y);
-          else if (d < 7) put('y', x, y);
-          else if (d < 13 && (x + y) % 2 === 0) put(d < 10 ? 'W' : 'y', x, y);
-        }
+        for (let y = -2; y < 12; y++) for (let x = px0 - 6; x <= px0 + 6; x++) if (Math.hypot(x - px0, y - py0) < r) put(Math.hypot(x - px0, y - py0) < r - 1.6 ? 'w' : 'G', x, y);
       }
     }
     if (look.sea) {
@@ -177,18 +174,12 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
     }
     if (look.haze) {
       // Smog: a beige haze that thickens toward the ground, in a clean 2×2 dither.
-      const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-      for (let y = HORIZON_H - 18; y < HORIZON_H; y += 2) {
-        const density = ((y - (HORIZON_H - 18)) / 18) * 0.55;
-        for (let x = 0; x < W; x += 2) {
-          if (density > ((bayer[((y >> 1) % 4) * 4 + ((x >> 1) % 4)] ?? 0) + 0.5) / 16) {
-            put(look.haze, x, y);
-            put(look.haze, x + 1, y);
-            put(look.haze, x, y + 1);
-            put(look.haze, x + 1, y + 1);
-          }
-        }
+      ctx.fillStyle = colorOf(look.haze)?.hex ?? '#C9B79C';
+      for (let y = HORIZON_H - 18; y < HORIZON_H; y++) {
+        ctx.globalAlpha = ((y - (HORIZON_H - 18)) / 18) * 0.5;
+        ctx.fillRect(0, y, W, 1);
       }
+      ctx.globalAlpha = 1;
     }
     return finish(canvas);
   }
@@ -281,4 +272,8 @@ function finish(canvas: HTMLCanvasElement): Texture {
   t.source.scaleMode = 'nearest';
   t.source.addressMode = 'repeat';
   return t;
+}
+
+function colorHex(ch: string): number {
+  return Number.parseInt((colorOf(ch)?.hex ?? '#FFFFFF').slice(1), 16);
 }

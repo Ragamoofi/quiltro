@@ -162,6 +162,21 @@
       "perfume": "Perfume"
     }
   },
+  "pausa": {
+    "stats": "Tu quiltro",
+    "pilares": "Pilares",
+    "dano": "Daño",
+    "critico": "Crítico",
+    "area": "Área",
+    "espera": "Espera",
+    "velocidad": "Velocidad",
+    "armadura": "Armadura",
+    "regen": "Regenera",
+    "iman": "Imán",
+    "exp": "Experiencia",
+    "proyectiles": "Proyectiles",
+    "pilarNada": "faltan {n} para el bono"
+  },
   "pasajes": {
     "titulo": "Pasaje",
     "cambiar": "Pasaje: {nombre}",

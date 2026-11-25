@@ -129,12 +129,12 @@ export class RunScene implements Scene {
   private readonly cities = new Cities();
   /** The environment (Santiago, the coast…) whose floor, horizon and weather are on screen. */
   private envId = '';
-  private readonly passives = new Passives();
+  private readonly passives = new Passives(this.sorted);
   /** Chests, animitas and ferias on the road (Fase 11.3). */
   readonly events: RoadEvents;
   private readonly ambient: AmbientLife;
   private readonly weather = new Weather();
-  private readonly hazards = new Hazards();
+  private readonly hazards = new Hazards(this.sorted);
   private timeScale = 1;
   private worldTime = 0;
   private cards: number = LEVEL_UP.cards;
@@ -162,6 +162,7 @@ export class RunScene implements Scene {
     const lo = opts.loadout;
     const player = new Player(lo.character.sprite, lo.bandana);
     player.radius *= lo.character.mods.hitboxMult ?? 1;
+    player.voice = { sound: lo.character.voice?.sound ?? 'guau', pitch: lo.character.voice?.pitch ?? 1 };
     player.slides = lo.character.mods.slides ?? false;
     player.hazardProof = lo.character.mods.ignoresHazards ?? false;
     player.dodgeChance = lo.character.mods.dodgeChance ?? 0;
@@ -183,11 +184,11 @@ export class RunScene implements Scene {
     this.cards = LEVEL_UP.cards + lo.meta.cards;
     this.revives = lo.meta.revives + (lo.character.mods.extraRevives ?? 0);
     player.addTo(this.shadows, this.sorted);
-    this.ambient = new AmbientLife(opts.seed);
+    this.ambient = new AmbientLife(opts.seed, this.sorted);
     this.shadows.addChild(this.ambient.shadows);
-    this.sorted.addChild(this.ambient.root);
     this.shadows.addChild(this.passives.ground);
-    this.sorted.addChild(this.passives.pets);
+    // Low props (stones, bones, flowers) lie on the floor: under the shadows and everything that stands.
+    this.shadows.addChildAt(this.decor.ground, 0);
 
     const ctx: RunContext = {
       rng: new Rng(opts.seed),
@@ -223,8 +224,9 @@ export class RunScene implements Scene {
         if (heal && ctx.stats.kills > 0 && ctx.stats.kills % heal.kills === 0) player.heal(heal.amount, ctx);
         // Cola alegre: every enemy taken down gives a short burst of speed.
         if (ctx.mods.killHaste > 0) {
-          player.hasteT = 2;
-          player.hasteAmount = ctx.mods.killHaste;
+          // Never cut a longer, stronger haste short (the animita's tailwind lasts 30 s).
+          player.hasteT = Math.max(player.hasteT, 2);
+          player.hasteAmount = Math.max(player.hasteAmount, ctx.mods.killHaste);
         }
         // Cielo del Dieciocho: every enemy cut by a kite heals 1.
         if (source === 'volantin' && build.evolved.has('volantin')) player.heal(1, ctx);
@@ -307,10 +309,7 @@ export class RunScene implements Scene {
       },
     });
 
-    this.events = new RoadEvents(opts.seed, (n) => this.spawner.ring(ctx, n, this.journey.zone.id));
-    this.sorted.addChild(this.events.root);
-    this.sorted.addChild(this.hazards.world);
-    this.hazards.world.sortableChildren = true;
+    this.events = new RoadEvents(opts.seed, (n) => this.spawner.ring(ctx, n, this.journey.zone.id), this.sorted);
     this.worldRoot.addChild(
       this.weapons.floor,
       ctx.telegraphs.root,

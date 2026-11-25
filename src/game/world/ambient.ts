@@ -66,7 +66,8 @@ interface Mover {
 
 export class AmbientLife {
   /** Goes with the y-sorted world. */
-  readonly root = new Container();
+  /** The y-sorted world itself (its sprites sort with the dog and the enemies, not as one block). */
+  readonly root: Container;
   /** Goes under the shadows layer. */
   readonly shadows = new Container();
   private readonly pool: Mover[] = [];
@@ -76,7 +77,8 @@ export class AmbientLife {
   private readonly condorShadow: Texture;
   private time = 0;
 
-  constructor(seed: number) {
+  constructor(seed: number, layer: Container = new Container()) {
+    this.root = layer;
     // Its own random stream: the scenery never touches the run's dice.
     this.rng = new Rng(deriveSeed(seed, 3));
     this.smallShadow = anim('sombra', 'chica').textures[0];
