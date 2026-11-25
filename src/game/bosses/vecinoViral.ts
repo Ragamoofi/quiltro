@@ -10,8 +10,8 @@ import { Boss } from './boss.ts';
 const SOURCE = 'vecinoViral';
 
 /**
- * El Vecino Viral: the last boss. A big-lunged neighbour with a megaphone who films
- * everything (an original character: nobody real). Phase 1, "en vivo": he lumbers toward
+ * El Tío René: the last boss. The neighbourhood uncle with a megaphone and his finger up
+ * (an invented character: it copies nobody's face). Phase 1, "en vivo": he lumbers toward
  * the dog, alternating a megaphone blast (a wide red cone, then a fan of shouts) and a
  * volley of thrown phones. Phase 2, "se hizo viral": his followers show up (a ring of
  * mosquitoes every few seconds) and he charges at the dog after a warning line, ending
@@ -62,9 +62,9 @@ export class VecinoViral extends Boss {
 
   protected partPositions(): { x: number; y: number }[] {
     return [
-      { x: this.x - 4, y: this.y - 54 },
-      { x: this.x, y: this.y - 28 },
-      { x: this.x, y: this.y - 4 },
+      { x: this.x - 2, y: this.y - 62 },
+      { x: this.x - 2, y: this.y - 36 },
+      { x: this.x, y: this.y - 8 },
     ];
   }
 

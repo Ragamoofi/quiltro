@@ -102,62 +102,79 @@ const caleuche = (lights: [string, string, string]): Frame => {
   return outlined(p.frame());
 };
 
-// ---- El Vecino Viral: un vecino con megáfono y celular, grabándolo todo ----
-// Original: ningún personaje ni persona real. Gran pulmón, musculosa crema, short azul y sandalias.
-const vecinoViral = (pose: 'quieto' | 'quieto2' | 'grito' | 'grito2'): Frame => {
+// ---- El Tío René: el tío del barrio con megáfono (rediseño completo) ----
+// Gorro azul, polera a rayas con chaleco, bermudas, calcetines altos con sandalias, el dedo en
+// alto ("¡atención, atención!") y el megáfono. Un personaje inventado: no copia a nadie.
+const tioRene = (pose: 'quieto' | 'quieto2' | 'grito' | 'grito2'): Frame => {
   const shout = pose === 'grito' || pose === 'grito2';
-  const p = new Pix(64, 84);
-  // Legs, shorts and sandals.
-  p.rect(20, 66, 10, 12, 'l').rect(34, 66, 10, 12, 'l').rect(28, 66, 2, 12, 'c').rect(34, 66, 2, 12, 'c');
-  p.rect(18, 78, 13, 3, 'o').rect(33, 78, 13, 3, 'o').rect(18, 81, 13, 1, 'O').rect(33, 81, 13, 1, 'O');
-  p.ellipse(32, 62, 15, 8, 'B').rect(17, 58, 30, 6, 'B').rect(31, 62, 2, 5, 'b');
-  // Torso: cream tank top with turquoise stripes, a round belly.
-  p.ellipse(32, 44, 17, 17, 'w').ellipse(37, 51, 12, 10, 'n');
-  p.rect(16, 38, 32, 1, 't').rect(16, 43, 32, 1, 't').rect(18, 48, 28, 1, 't');
-  p.rect(26, 29, 12, 4, 'l').rect(28, 31, 8, 3, 'c');
-  // Left arm (the phone): shoulder, forearm up, hand.
-  p.rect(10, 31, 6, 13, 'l').rect(6, 24, 6, 14, 'l').ellipse(8, 22, 3.5, 3.5, 'l');
-  p.rect(1, 10, 11, 15, 'K').rect(2, 11, 9, 12, pose === 'quieto2' || pose === 'grito2' ? 's' : 'b');
-  p.rect(3, 12, 6, 2, 'W').rect(9, 11, 2, 2, 'r').rect(3, 21, 7, 1, 'k');
-  // Head: hair, face, big eyes, moustache and mouth.
-  p.rect(28, 26, 8, 4, 'c');
-  p.ellipse(32, 15, 10.5, 11.5, 'l').ellipse(21, 16, 2, 3, 'l').ellipse(43, 16, 2, 3, 'l');
-  p.ellipse(32, 8, 12, 6.5, 'k').rect(25, 10, 14, 3, 'l').rect(21, 10, 3, 8, 'k').rect(41, 10, 3, 8, 'k');
-  p.rows(23, 1, ['k.k..K.k.k', '.kkkkkkkk.']);
-  p.rect(26, 13, 5, 5, 'W').rect(34, 13, 5, 5, 'W').rect(28, 14, 3, 4, 'k').rect(35, 14, 3, 4, 'k').set(28, 14, 'W').set(35, 14, 'W');
-  p.rect(25, 11, 6, 1, 'k').rect(34, 11, 6, 1, 'k').set(30, 12, 'k').set(34, 12, 'k');
-  p.rect(31, 17, 3, 3, 'c').rect(26, 18, 3, 2, 'p').rect(36, 18, 3, 2, 'p');
-  p.rect(26, 21, 12, 2, 'k').rows(25, 22, ['k', 'k']).rows(38, 22, ['k', 'k']);
-  if (shout) p.rect(27, 24, 10, 6, 'R').rect(28, 24, 8, 1, 'W').rect(30, 28, 5, 2, 'r');
-  else p.rect(29, 25, 6, 1, 'R');
-  // Right arm up to the megaphone, and the megaphone (red cone, silver rim).
-  p.rect(48, 31, 6, 11, 'l').rect(43, 27, 8, 6, 'l');
-  for (let i = 0; i < 22; i++) {
-    const h = 4 + Math.floor(i * 0.5);
-    p.rect(40 + i, 22 - Math.floor(h / 2), 1, h, i % 8 < 2 ? 'R' : 'r');
+  const alt = pose === 'quieto2' || pose === 'grito2';
+  const p = new Pix(72, 94);
+  // Legs: calves, high white socks and dark sandals.
+  p.rect(24, 66, 10, 10, 'l').rect(38, 66, 10, 10, 'l').rect(31, 66, 2, 10, 'c').rect(45, 66, 2, 10, 'c');
+  p.rect(24, 76, 10, 10, 'w').rect(38, 76, 10, 10, 'w').rect(24, 76, 10, 1, 'g').rect(38, 76, 10, 1, 'g').rect(24, 80, 10, 1, 'G').rect(38, 80, 10, 1, 'G');
+  p.rect(22, 86, 13, 5, 'd').rect(37, 86, 13, 5, 'd').rect(22, 90, 13, 2, 'k').rect(37, 90, 13, 2, 'k').rect(24, 86, 9, 1, 'C').rect(39, 86, 9, 1, 'C');
+  // Bermudas with a belt.
+  p.ellipse(36, 62, 18, 9, 'n').rect(18, 57, 36, 8, 'n').rect(35, 62, 2, 6, 'o').rect(18, 56, 36, 2, 'd').rect(34, 56, 4, 2, 'a');
+  p.rect(18, 64, 36, 1, 'o');
+  // Striped shirt over a round belly, and an open vest with pockets.
+  p.ellipse(36, 42, 19, 19, 'y').ellipse(36, 50, 17, 12, 'y').ellipse(44, 48, 9, 13, 'A');
+  for (const y of [35, 40, 45, 50]) p.rect(20, y, 32, 1, 'r');
+  p.rect(16, 30, 10, 27, 'g').rect(46, 30, 10, 27, 'g').rect(16, 30, 2, 27, 'K').rect(54, 30, 2, 27, 'K').rect(19, 47, 6, 5, 'K').rect(47, 47, 6, 5, 'K').rect(19, 47, 6, 1, 'G').rect(47, 47, 6, 1, 'G');
+  // Neck and collar.
+  p.rect(30, 27, 12, 5, 'c').rect(28, 30, 16, 2, 'y');
+  // Left arm raised with the index finger up (¡atención!).
+  p.rect(8, 31, 9, 6, 'y').rect(9, 36, 8, 10, 'l').rect(5, 14, 8, 24, 'l').rect(11, 20, 2, 18, 'c');
+  p.ellipse(9, 13, 4.5, 4.5, 'l').rect(alt ? 9 : 8, 3, 3, 11, 'l').rect(alt ? 9 : 8, 2, 3, 2, 'c');
+  // Head: round, shaded, with big ears.
+  p.ellipse(36, 19, 12.5, 12.5, 'l').ellipse(40, 23, 8, 9, 'c').ellipse(36, 19, 12, 12, 'l').ellipse(24, 20, 2.5, 3.5, 'l').ellipse(48, 20, 2.5, 3.5, 'l');
+  p.ellipse(24, 20, 1.2, 2, 'p').ellipse(48, 20, 1.2, 2, 'p');
+  // Blue cap with a brim pointing right.
+  p.ellipse(36, 10, 13, 8, 'b').rect(23, 11, 26, 3, 'b').rect(38, 12, 18, 3, 'B').rect(30, 4, 8, 1, 's').rect(34, 7, 4, 3, 'w');
+  p.rect(23, 14, 26, 1, 'B');
+  // Eyes with eyebrows (angry when shouting), nose, big moustache, cheeks.
+  p.rect(28, 17, 6, 6, 'W').rect(38, 17, 6, 6, 'W').rect(30, 18, 3, 4, 'k').rect(41, 18, 3, 4, 'k').set(30, 18, 'W').set(41, 18, 'W');
+  if (shout) {
+    for (let i = 0; i < 6; i++) p.set(27 + i, 14 + Math.floor(i / 2), 'k').set(44 - i, 14 + Math.floor(i / 2), 'k');
+    p.set(27, 13, 'k').set(44, 13, 'k');
+  } else {
+    p.rect(27, 15, 7, 1, 'k').rect(38, 15, 7, 1, 'k');
   }
-  p.rect(61, 15, 2, 16, 'G').rect(46, 28, 3, 6, 'K').ellipse(46, 29, 3.5, 3, 'l');
-  const out = new Pix(80, 84);
-  out.rows(8, 0, p.frame());
+  p.rect(34, 21, 4, 5, 'c').rect(28, 24, 3, 2, 'p').rect(41, 24, 3, 2, 'p');
+  p.rect(25, 26, 22, 3, 'd').rect(24, 27, 3, 3, 'd').rect(45, 27, 3, 3, 'd').rect(26, 26, 20, 1, 'C');
+  if (shout) {
+    p.rect(30, 29, 12, 7, 'R').rect(31, 29, 10, 2, 'W').rect(33, 34, 6, 2, 'r').rect(30, 29, 1, 7, 'k').rect(41, 29, 1, 7, 'k');
+    p.set(23, 18, 's').set(23, 19, 's').set(23, 20, 's').set(50, 12, 's').set(50, 13, 's').set(21, 24, 's');
+  } else {
+    p.rect(32, 30, 8, 1, 'R').rect(33, 31, 6, 1, 'c');
+  }
+  // Right arm to the megaphone, and the megaphone itself (red and white stripes, silver rim).
+  p.rect(55, 31, 9, 6, 'y').rect(54, 36, 8, 10, 'l').rect(49, 22, 7, 16, 'l').rect(51, 22, 2, 16, 'c');
+  for (let i = 0; i < 25; i++) {
+    const h = 5 + Math.floor(i * 0.6);
+    p.rect(46 + i, 24 - Math.floor(h / 2), 1, h, Math.floor(i / 4) % 2 === 0 ? 'r' : 'w');
+  }
+  p.rect(69, 15, 2, 19, 'G').rect(70, 15, 1, 19, 'g').rect(52, 29, 4, 8, 'k').ellipse(52, 30, 4, 3.5, 'l');
+  const out = new Pix(90, 94);
+  out.rows(6, 0, p.frame());
   if (shout) {
     // Sound arcs from the megaphone's mouth.
     const col = pose === 'grito' ? 'a' : 'W';
-    for (let r = 6; r <= 9; r += 3) {
-      for (let a = -50; a <= 50; a += 8) {
+    for (let r = 5; r <= 11; r += 3) {
+      for (let a = -55; a <= 55; a += 7) {
         const rad = (a * Math.PI) / 180;
-        out.set(70 + Math.cos(rad) * r, 22 + Math.sin(rad) * r * 1.3, col);
+        out.set(77 + Math.cos(rad) * r, 24 + Math.sin(rad) * r * 1.3, col);
       }
     }
   }
   return outlined(out.frame());
 };
 
-const VECINO_A = vecinoViral('quieto');
-const VECINO_B = vecinoViral('quieto2');
-const VECINO_G1 = vecinoViral('grito');
-const VECINO_G2 = vecinoViral('grito2');
-/** Phase 2 ("se hizo viral"): flushed face, golden top, red stripes. */
-const RABIA = { l: 'p', w: 'y', t: 'r', c: 'C', B: 'R', n: 'a' } as const;
+const VECINO_A = tioRene('quieto');
+const VECINO_B = tioRene('quieto2');
+const VECINO_G1 = tioRene('grito');
+const VECINO_G2 = tioRene('grito2');
+/** Phase 2 ("en vivo y en directo"): red in the face, red cap, red shirt. */
+const RABIA = { l: 'p', c: 'C', y: 'r', A: 'R', b: 'R', B: 'k', n: 'w' } as const;
 
 const ALICANTO_A = alicanto(true);
 const ALICANTO_B = alicanto(false);
