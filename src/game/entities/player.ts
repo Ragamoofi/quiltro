@@ -112,7 +112,7 @@ export class Player {
 
   get speed(): number {
     const slow = this.slowTime > 0 ? 1 - this.slowAmount : 1;
-    return px(PLAYER_BASE.speed) * this.speedMult * slow * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
+    return px(PLAYER_BASE.speed) * this.speedMult * (this.hasteT > 0 ? 1 + this.hasteAmount : 1) * slow * (this.holding ? VOLANTIN_ORBIT.holdSpeedMult : 1);
   }
 
   get slowed(): boolean {
@@ -134,6 +134,12 @@ export class Player {
     this.dashY = (this.vy / len) * speed;
     this.invulnerable = Math.max(this.invulnerable, seconds + 0.05);
   }
+
+  /** Cola alegre: seconds of speed bonus left after a kill, and how much. */
+  hasteT = 0;
+  hasteAmount = 0;
+  /** Seconds standing still (Siesta heals while resting). */
+  private stillFor = 0;
 
   /** Seconds since the dog was last hurt ("Puro aguante"). */
   sinceHurt = 0;
@@ -215,6 +221,10 @@ export class Player {
     this.x += mx * dt;
     this.y += my * dt;
     this.movedThisRun ||= moving;
+    // Cola alegre fades; Siesta heals while the dog rests.
+    this.hasteT = Math.max(0, this.hasteT - dt);
+    this.stillFor = moving ? 0 : this.stillFor + dt;
+    if (ctx.mods.restRegen > 0 && this.stillFor > 0.5) this.hp = Math.min(this.maxHp, this.hp + ctx.mods.restRegen * dt);
     if (Math.abs(input.moveX) > 0.15) this.facing = Math.sign(input.moveX);
 
     // Hold → give line + charge the bark. Release with a full ring → ¡GUAU!

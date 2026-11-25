@@ -28,5 +28,9 @@ export const EVOLUCIONES: readonly EvolutionDef[] = [
     params: { extraRockets: 3 },
   },
   { id: 'persigueAutos', nameKey: 'evoluciones.persigueAutos', weapon: 'rayuela', trait: 'pataDePerro', params: {} },
+  { id: 'canicaReina', nameKey: 'evoluciones.canicaReina', weapon: 'bolitas', trait: 'colmillo', params: {} },
+  { id: 'emboqueEterno', nameKey: 'evoluciones.emboqueEterno', weapon: 'emboque', trait: 'hambreDeLunes', params: {} },
+  { id: 'elasticoSinFin', nameKey: 'evoluciones.elasticoSinFin', weapon: 'elastico', trait: 'cascabel', params: {} },
+  { id: 'rondaDeLaManada', nameKey: 'evoluciones.rondaDeLaManada', weapon: 'ronda', trait: 'manadaChica', params: {} },
   { id: 'aullidoDeLas12', nameKey: 'evoluciones.aullidoDeLas12', weapon: 'guau', trait: 'alTiro', params: {} },
 ];

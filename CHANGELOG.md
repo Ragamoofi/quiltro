@@ -4,6 +4,20 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.5 — Armas y pasivas nuevas
+
+#### Agregado
+- **4 armas de juegos de barrio**, con 5 niveles, evolución y sprite o dibujo propios:
+  - **Bolitas:** ráfaga de canicas en abanico que rebotan al pegar. Evolución **Canica Reina**: cada canica se parte en dos más.
+  - **Emboque:** la bola con cuerda sale, pega y vuelve a tu mano. Evolución **Emboque Eterno**: bola gigante que va y vuelve dos veces.
+  - **Elástico:** una banda estirada que barre a tu alrededor y empuja. Evolución **Elástico sin Fin**: nunca descansa y es más larga.
+  - **Ronda:** un anillo de colores que crece desde el quiltro y golpea a todos. Evolución **Ronda de la Manada**: dos anillos más cada vez.
+- **6 pasivas nuevas** repartidas en los pilares: **Colmillo** (crítico), **Cola alegre** (velocidad 2 s tras cada baja), **Siesta** (vida si estás quieto), **Hambre de lunes** (experiencia), **Cascabel** (anillo que empuja a los enemigos chicos) y **Manada chica** (hasta 3 perritos aliados que muerden solos). Con íconos propios, textos de carta y los pilares (Garra tiene 3 rasgos, Aguante 3, Olfato 4, Barrio 4).
+- Sistema de pasivas con efecto propio (`src/game/systems/passives.ts`) y pruebas nuevas (`tests/fase95.test.ts`).
+
+#### Cambiado
+- Daño base de las armas que no son de área, para compensar que el mazo pasó de 6 a 10 armas y los fuegos y el trompo salen menos veces (ver `docs/BALANCE.md`): volantín 12→15, cables 15→18, chaya 4→5, rayuela 30→36. Con el bot medio, los viajes que vencen al jefe final suben a 25 %.
+
 ### Fase 9.4 — Ciudades como escenarios
 
 #### Agregado

@@ -102,6 +102,13 @@
     "pickupMult": "+{n}% olfato",
     "projectiles": "+1 proyectil a todas las armas en nv 2 y 4",
     "projectilesAhora": "¡+1 proyectil a todas las armas!",
+    "critChance": "+{n}% crítico",
+    "killHaste": "+{n}% velocidad 2 s tras cada baja",
+    "restRegen": "+{n} vida/s si estás quieto",
+    "xpMult": "+{n}% experiencia",
+    "bell": "Empuja a los enemigos chicos que se acercan",
+    "petsAhora": "¡Un perrito aliado más!",
+    "pets": "Los perritos aliados muerden por ti",
     "rarityBonus": "y +{n}% daño extra",
     "rarezaEspera": "-{n}% espera",
     "rarezaExtra": "+1 extra",
@@ -115,7 +122,11 @@
     "volantin": "volantín",
     "trompo": "trompo",
     "fuegos": "cohete",
-    "rayuela": "tejo"
+    "rayuela": "tejo",
+    "bolitas": "canica",
+    "emboque": "bola",
+    "elastico": "banda",
+    "ronda": "anillo"
   },
   "tutorial": {
     "muevete": "Muévete",
@@ -171,6 +182,10 @@
     "chaya": { "nombre": "Chaya", "efecto": "Estela de confeti y serpentina que daña y ralentiza" },
     "fuegos": { "nombre": "Fuegos artificiales", "efecto": "Cohetes que suben y explotan en área sobre grupos" },
     "rayuela": { "nombre": "Rayuela", "efecto": "Lanza el tejo en línea recta hacia donde caminas" },
+    "bolitas": { "nombre": "Bolitas", "efecto": "Ráfaga de canicas en abanico que rebotan al pegar" },
+    "emboque": { "nombre": "Emboque", "efecto": "La bola con cuerda sale, pega y vuelve a tu mano" },
+    "elastico": { "nombre": "Elástico", "efecto": "Una banda estirada que barre a tu alrededor y empuja" },
+    "ronda": { "nombre": "Ronda", "efecto": "Un anillo de colores que crece desde ti y golpea a todos" },
     "guau": { "nombre": "¡GUAU!", "efecto": "El ladrido: onda de choque que empuja a todos" }
   },
   "rasgos": {
@@ -181,7 +196,13 @@
     "choro": { "nombre": "Choro", "carta": "No le tiene miedo a na'" },
     "laJauria": { "nombre": "La jauría", "carta": "Llegaron los del barrio" },
     "alTiro": { "nombre": "Al tiro", "carta": "Altiro, altiro" },
-    "olfato": { "nombre": "Olfato", "carta": "Huele un completo a tres cuadras" }
+    "olfato": { "nombre": "Olfato", "carta": "Huele un completo a tres cuadras" },
+    "colmillo": { "nombre": "Colmillo", "carta": "Muerde fuerte" },
+    "colaAlegre": { "nombre": "Cola alegre", "carta": "Cada baja da ánimo" },
+    "siesta": { "nombre": "Siesta", "carta": "Quieto un ratito y listo" },
+    "hambreDeLunes": { "nombre": "Hambre de lunes", "carta": "Todo le sabe a poco" },
+    "cascabel": { "nombre": "Cascabel", "carta": "Se oye venir" },
+    "manadaChica": { "nombre": "Manada chica", "carta": "Un perrito y su amigo" }
   },
   "evoluciones": {
     "cieloDelDieciocho": "Cielo del Dieciocho",
@@ -190,6 +211,10 @@
     "carnaval": "Carnaval",
     "anoNuevoEnValpo": "Año Nuevo en Valpo",
     "persigueAutos": "Persigue autos",
+    "canicaReina": "Canica Reina",
+    "emboqueEterno": "Emboque Eterno",
+    "elasticoSinFin": "Elástico sin Fin",
+    "rondaDeLaManada": "Ronda de la Manada",
     "aullidoDeLas12": "Aullido de las 12"
   },
   "evolucionesEfecto": {
@@ -199,6 +224,10 @@
     "carnaval": "Estela ancha que frena a los chicos y te da escudo al pisarla",
     "anoNuevoEnValpo": "Cada explosión lanza 3 cohetes más",
     "persigueAutos": "Al correr te lanzas como bala, invulnerable",
+    "canicaReina": "Al pegar, cada canica se parte en dos más",
+    "emboqueEterno": "Una bola gigante que va y vuelve dos veces",
+    "elasticoSinFin": "Las bandas no descansan nunca y son más largas",
+    "rondaDeLaManada": "Dos anillos más cada vez, y más fuertes",
     "aullidoDeLas12": "El ladrido cargado no tiene enfriamiento y todos los perros aúllan contigo"
   },
   "meta": {

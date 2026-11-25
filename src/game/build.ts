@@ -26,6 +26,14 @@ export interface Stats {
   xpMult: number;
   /** Seconds between free shields, 0 = none (Aguante pillar). */
   shieldEvery: number;
+  /** Speed bonus for 2 s after each enemy taken down (Cola alegre). */
+  killHaste: number;
+  /** HP per second while standing still (Siesta). */
+  restRegen: number;
+  /** Points of the Cascabel ring (0 = none). */
+  bell: number;
+  /** Friendly dogs that bite on their own (Manada chica). */
+  pets: number;
 }
 
 /**
@@ -97,6 +105,11 @@ export interface OwnedTrait {
     damageMult: number;
     cooldownMult: number;
     pickupMult: number;
+    critChance: number;
+    killHaste: number;
+    restRegen: number;
+    xpMult: number;
+    bell: number;
   };
 }
 
@@ -173,6 +186,10 @@ export class Build {
       critChance: PLAYER_BASE.critChance + b.critChance,
       xpMult: 1 + b.xpMult,
       shieldEvery: 0,
+      killHaste: 0,
+      restRegen: 0,
+      bell: 0,
+      pets: 0,
     };
     for (const t of this.traits) {
       s.speedMult += t.totals.speedMult;
@@ -183,8 +200,15 @@ export class Build {
       s.damageMult += t.totals.damageMult;
       s.cooldownMult += t.totals.cooldownMult;
       s.pickupMult += t.totals.pickupMult;
+      s.critChance += t.totals.critChance;
+      s.killHaste += t.totals.killHaste;
+      s.restRegen += t.totals.restRegen;
+      s.xpMult += t.totals.xpMult;
+      s.bell += t.totals.bell;
       const at = t.def.perLevel.projectilesAtLevels;
       if (at) s.projectiles += at.filter((l) => t.level >= l).length;
+      const pets = t.def.perLevel.petsAtLevels;
+      if (pets) s.pets += pets.filter((l) => t.level >= l).length;
     }
     for (const pillar of PILARES) {
       const tier = pillarTier(this.pillarPoints(pillar.id));
@@ -329,7 +353,21 @@ export class Build {
         t = {
           def,
           level: 0,
-          totals: { speedMult: 0, armor: 0, maxHp: 0, regen: 0, areaMult: 0, damageMult: 0, cooldownMult: 0, pickupMult: 0 },
+          totals: {
+            speedMult: 0,
+            armor: 0,
+            maxHp: 0,
+            regen: 0,
+            areaMult: 0,
+            damageMult: 0,
+            cooldownMult: 0,
+            pickupMult: 0,
+            critChance: 0,
+            killHaste: 0,
+            restRegen: 0,
+            xpMult: 0,
+            bell: 0,
+          },
         };
         this.traits.push(t);
       }
@@ -343,6 +381,11 @@ export class Build {
       t.totals.damageMult += (p.damageMult ?? 0) * mult;
       t.totals.cooldownMult += (p.cooldownMult ?? 0) * mult;
       t.totals.pickupMult += (p.pickupMult ?? 0) * mult;
+      t.totals.critChance += (p.critChance ?? 0) * mult;
+      t.totals.killHaste += (p.killHaste ?? 0) * mult;
+      t.totals.restRegen += (p.restRegen ?? 0) * mult;
+      t.totals.xpMult += (p.xpMult ?? 0) * mult;
+      t.totals.bell += (p.bell ?? 0) * mult;
     }
   }
 }

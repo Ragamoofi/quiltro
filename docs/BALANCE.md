@@ -176,6 +176,31 @@ Se midió con el mismo bot v2 y las mismas semillas (20 viajes) para ver que los
 
 Los cambios van en la dirección esperada (los eventos dan una ayuda chica: vida, experiencia, ladridos, una caja, un escudo), pero con 20 viajes están dentro del ruido (±15 puntos). La meta era "no mover las metas de supervivencia más de 5 puntos"; **no puedo confirmarlo ni refutarlo con esta muestra**. Rendimiento sin cambios.
 
+## 9.5 — Cuatro armas y seis pasivas nuevas
+
+**Armas** (todas con 5 niveles, evolución y rasgo pareja): Bolitas (ráfaga de canicas que rebotan), Emboque (bola con cuerda que va y vuelve), Elástico (banda que barre alrededor) y Ronda (anillos de colores que crecen desde el quiltro). **Pasivas:** Colmillo (crítico), Cola alegre (velocidad tras cada baja), Siesta (vida quieto), Hambre de lunes (experiencia), Cascabel (empuja a los enemigos chicos) y Manada chica (perritos aliados que muerden solos).
+
+**Banco de armas** (nivel 5, daño por segundo, 100 enemigos): Ronda 104, Elástico 69, Emboque 65, Bolitas 29 (antes del ajuste de abajo), frente a Volantín 101, Cables 95, Chaya 116, Fuegos 118, Rayuela 80. Las armas nuevas caen en el mismo rango que las viejas.
+
+**Lo que pasó al sumarlas (efecto de dilución):** con 10 armas en el mazo en vez de 6, el bot (y cualquiera) ve menos veces los fuegos y el trompo, que son con diferencia las que más daño hacen en las multitudes (en viajes completos, de 5 a 10 veces más que las demás). Con el contenido nuevo y sin ajustar nada:
+
+| 20 viajes | Medio (antes) | Medio (con lo nuevo) | Experto (antes) | Experto (con lo nuevo) |
+| --- | --- | --- | --- | --- |
+| Minuto promedio de muerte | 10,1 | **6,5** | 9,2 | **7,4** |
+| Llegan a Patagonia | 55 % | 25 % | 40 % | 30 % |
+
+**Ajuste:** subí el daño base de las armas que no son de área (volantín 12→15, cables 15→18, chaya 4→5, rayuela 30→36, y las nuevas: bolitas 9→11, emboque 18→22, elástico 12→15, ronda 16→20). No toqué fuegos ni trompo.
+
+| 20 viajes | Medio (final) | Experto (final) |
+| --- | --- | --- |
+| Minuto promedio de muerte | 8,0 | 8,3 |
+| Llegan a Patagonia | 40 % | 35 % |
+| **Vencen al Vecino Viral** | **25 % (5 de 20)** | 5 % (1 de 20) |
+| CPU por segundo de juego | 5,1 ms | 5,7 ms |
+| Errores en consola | 0 | 0 |
+
+**Lectura honesta:** el medio queda dentro de la meta de victorias (15–30 %); el experto no (5 % contra 40–60 %), y no vence más que el medio, así que sigue pareciendo un límite del bot y no del juego. Llegar a Patagonia (40 % y 35 %) sigue por debajo del 50 % que quería. Hay que repetir esto con partidas humanas antes de tocar más.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

@@ -52,12 +52,13 @@ describe('balance formulas (GDD)', () => {
 });
 
 describe('content data', () => {
-  it('has the scoped amounts from the GDD', () => {
-    expect(ARMAS.filter((a) => a.takesSlot)).toHaveLength(6);
-    expect(RASGOS).toHaveLength(8);
+  it('has the scoped amounts (GDD base plus the Fase 9.5 content)', () => {
+    // GDD: 6 weapons, 8 traits, 7 evolutions. Fase 9.5 added 4 weapons, 6 traits and 4 evolutions.
+    expect(ARMAS.filter((a) => a.takesSlot)).toHaveLength(10);
+    expect(RASGOS).toHaveLength(14);
     expect(ENEMIGOS).toHaveLength(12);
     expect(JEFES).toHaveLength(4);
-    expect(EVOLUCIONES).toHaveLength(7);
+    expect(EVOLUCIONES).toHaveLength(11);
     expect(MEJORAS).toHaveLength(12);
     expect(PERSONAJES).toHaveLength(6);
   });

@@ -188,6 +188,119 @@ const ICONS: Record<string, Frame> = {
       .set(5, 7, 'G')
       .rows(2, 0, ['w..w..w...', '.w..w..w..', 'w..w..w...']),
   ),
+
+  // ---- Fase 9.5: armas ----
+  // Bolitas: three marbles.
+  bolitas: icon(
+    P()
+      .disc(4.5, 4.5, 3.5, 'b')
+      .disc(5.2, 5.2, 2.2, 'B')
+      .set(3, 3, 'W')
+      .disc(10, 5, 3, 'r')
+      .disc(10.6, 5.6, 1.8, 'R')
+      .set(9, 4, 'W')
+      .disc(7, 10, 3.5, 'a')
+      .disc(7.6, 10.6, 2.2, 'A')
+      .set(6, 9, 'W'),
+  ),
+  // Emboque: the wooden handle with a cup, and the ball on its string.
+  emboque: icon(
+    P()
+      .rect(2, 6, 3, 8, 'd')
+      .rect(1, 4, 5, 3, 'C')
+      .rect(2, 3, 3, 1, 'o')
+      .rows(5, 2, ['.......', '..y....', '...y...', '....y..', '.....y.'])
+      .disc(10.5, 3.5, 3, 'r')
+      .disc(11, 4, 1.6, 'R')
+      .set(9, 2, 'W'),
+  ),
+  // Elástico: a pink band stretched between two pegs.
+  elastico: icon(
+    P()
+      .rect(1, 2, 2, 10, 'd')
+      .rect(11, 2, 2, 10, 'd')
+      .rect(3, 3, 8, 1, 'p')
+      .rect(3, 4, 8, 1, 'r')
+      .rect(3, 9, 8, 1, 'p')
+      .rect(3, 10, 8, 1, 'r')
+      .rect(3, 6, 8, 1, 'y'),
+  ),
+  // Ronda: a ring of colourful dots, the circle of the game.
+  ronda: icon(
+    P()
+      .disc(7, 1.5, 1.5, 'y')
+      .disc(11.5, 3.5, 1.5, 'p')
+      .disc(12.5, 7.5, 1.5, 't')
+      .disc(10.5, 11.5, 1.5, 'b')
+      .disc(7, 12.5, 1.5, 'y')
+      .disc(3.5, 11.5, 1.5, 'p')
+      .disc(1.5, 7.5, 1.5, 't')
+      .disc(2.5, 3.5, 1.5, 'b')
+      .set(7, 7, 'a'),
+  ),
+
+  // ---- Fase 9.5: rasgos ----
+  // Colmillo: a fang.
+  colmillo: icon(
+    P()
+      .rect(1, 1, 12, 3, 'R')
+      .rect(2, 3, 4, 2, 'r')
+      .rows(2, 3, ['wwwwww', '.wwww.', '.wwww.', '..ww..', '..ww..', '...w..', '...w..'])
+      .rows(8, 3, ['w', 'w', 'w'])
+      .set(3, 4, 'W'),
+  ),
+  // Cola alegre: a wagging tail.
+  colaAlegre: icon(
+    P()
+      .rect(1, 11, 4, 2, 'C')
+      .rows(3, 4, ['...cc', '..ccC', '.ccC.', 'ccC..', 'cc...', 'cC...'])
+      .rows(3, 9, ['cc.', 'cC.'])
+      .rows(9, 2, ['.y', 'y.', '..'])
+      .rows(11, 6, ['y.', '.y'])
+      .set(10, 9, 'y'),
+  ),
+  // Siesta: a crescent moon and a Z.
+  siesta: icon(
+    P()
+      .disc(6, 7, 5.5, 'y')
+      .disc(8.5, 5.5, 5, '.')
+      .rows(9, 1, ['wwww', '..w.', '.w..', 'wwww'])
+      .set(3, 6, 'A')
+      .set(4, 9, 'A'),
+  ),
+  // Hambre de lunes: a marraqueta with a bite.
+  hambreDeLunes: icon(
+    P()
+      .ellipse(7, 8, 6.2, 4, 'o')
+      .ellipse(7, 7, 5, 2.2, 'n')
+      .rows(2, 6, ['O...O...O.', '.O...O...O'])
+      .disc(11, 5, 2.2, '.')
+      .rows(1, 11, ['..OOOOOO..'])
+      .set(5, 5, 'W'),
+  ),
+  // Cascabel: a golden bell.
+  cascabel: icon(
+    P()
+      .ellipse(7, 7, 5, 5, 'a')
+      .rect(2, 9, 10, 3, 'a')
+      .ellipse(5.5, 5.5, 2, 2.5, 'y')
+      .rect(2, 11, 10, 1, 'A')
+      .disc(7, 12.5, 1.5, 'k')
+      .rect(6, 0, 2, 2, 'A')
+      .set(4, 4, 'W'),
+  ),
+  // Manada chica: a little dog's face.
+  manadaChica: icon(
+    P()
+      .ellipse(7, 8, 5.5, 4.8, 'c')
+      .ellipse(7, 10, 3, 2, 'l')
+      .rows(0, 0, ['CC........CC.', 'cCC......CCc.', '.cC......Cc..'])
+      .rect(4, 7, 2, 2, 'k')
+      .rect(8, 7, 2, 2, 'k')
+      .rect(6, 9, 2, 2, 'k')
+      .set(4, 7, 'W')
+      .set(8, 7, 'W'),
+  ),
 };
 
 export const ICON_IDS = Object.keys(ICONS);

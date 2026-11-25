@@ -1,9 +1,13 @@
 import { Container } from 'pixi.js';
 import type { RunContext } from '../context.ts';
 import { Cables } from './cables.ts';
+import { Bolitas } from './bolitas.ts';
 import { Chaya } from './chaya.ts';
+import { Elastico } from './elastico.ts';
+import { Emboque } from './emboque.ts';
 import { Fuegos } from './fuegos.ts';
 import { Rayuela } from './rayuela.ts';
+import { Ronda } from './ronda.ts';
 import { Trompo } from './trompo.ts';
 import { Volantin } from './volantin.ts';
 import type { Weapon } from './weapon.ts';
@@ -15,6 +19,10 @@ const FACTORIES: Record<string, () => Weapon> = {
   chaya: () => new Chaya(),
   fuegos: () => new Fuegos(),
   rayuela: () => new Rayuela(),
+  bolitas: () => new Bolitas(),
+  emboque: () => new Emboque(),
+  elastico: () => new Elastico(),
+  ronda: () => new Ronda(),
 };
 
 /**

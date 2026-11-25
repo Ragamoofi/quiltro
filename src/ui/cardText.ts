@@ -114,6 +114,12 @@ export function describe(offer: Offer): CardText {
   if (p.damageMult) parts.push(t('efectos.damageMult', { n: pct(p.damageMult * mult) }));
   if (p.cooldownMult) parts.push(t('efectos.cooldownMult', { n: pct(p.cooldownMult * mult) }));
   if (p.pickupMult) parts.push(t('efectos.pickupMult', { n: pct(p.pickupMult * mult) }));
+  if (p.critChance) parts.push(t('efectos.critChance', { n: pct(p.critChance * mult) }));
+  if (p.killHaste) parts.push(t('efectos.killHaste', { n: pct(p.killHaste * mult) }));
+  if (p.restRegen) parts.push(t('efectos.restRegen', { n: fmt(Math.round(p.restRegen * mult * 10) / 10) }));
+  if (p.xpMult) parts.push(t('efectos.xpMult', { n: pct(p.xpMult * mult) }));
+  if (p.bell) parts.push(t('efectos.bell'));
+  if (p.petsAtLevels) parts.push(p.petsAtLevels.includes(offer.toLevel) ? t('efectos.petsAhora') : t('efectos.pets'));
   if (p.projectilesAtLevels) {
     parts.push(
       p.projectilesAtLevels.includes(offer.toLevel) ? t('efectos.projectilesAhora') : t('efectos.projectiles'),

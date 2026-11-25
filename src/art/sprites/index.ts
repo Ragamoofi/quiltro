@@ -16,6 +16,7 @@ import { paloma, zancudo } from './enemigos.ts';
 import { quiltro } from './quiltro.ts';
 import { sueloCentro } from './suelos.ts';
 import { ciudadesSprites } from './ciudades.ts';
+import { bolitas, emboqueBola } from './armas3.ts';
 
 /** Every sprite in the game. The build script and /sprites.html read this list. */
 export const SPRITES: readonly SpriteDef[] = [
@@ -68,4 +69,6 @@ export const SPRITES: readonly SpriteDef[] = [
   manoDef,
   teclaDef,
   ...ciudadesSprites,
+  bolitas,
+  emboqueBola,
 ];

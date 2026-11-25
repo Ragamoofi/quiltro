@@ -46,6 +46,7 @@ import { WeaponSet } from './weapons/index.ts';
 import { Decor } from './world/decor.ts';
 import { FloorLayer } from './world/floor.ts';
 import { Hazards } from './world/hazards.ts';
+import { Passives } from './systems/passives.ts';
 import { Cities } from './world/cities.ts';
 import { Horizon } from './world/horizon.ts';
 import { Weather } from './world/weather.ts';
@@ -138,6 +139,7 @@ export class RunScene implements Scene {
   readonly journey: Journey;
   private readonly horizon = new Horizon();
   private readonly cities = new Cities();
+  private readonly passives = new Passives();
   private readonly weather = new Weather();
   private readonly hazards = new Hazards();
   private timeScale = 1;
@@ -183,6 +185,8 @@ export class RunScene implements Scene {
     this.cards = LEVEL_UP.cards + lo.meta.cards;
     this.revives = lo.meta.revives;
     player.addTo(this.shadows, this.sorted);
+    this.shadows.addChild(this.passives.ground);
+    this.sorted.addChild(this.passives.pets);
 
     const ctx: RunContext = {
       rng: new Rng(opts.seed),
@@ -212,6 +216,11 @@ export class RunScene implements Scene {
       stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, damageFrom: {}, lastHit: '', killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
       onKill: (e, source) => {
+        // Cola alegre: every enemy taken down gives a short burst of speed.
+        if (ctx.mods.killHaste > 0) {
+          player.hasteT = 2;
+          player.hasteAmount = ctx.mods.killHaste;
+        }
         // Cielo del Dieciocho: every enemy cut by a kite heals 1.
         if (source === 'volantin' && build.evolved.has('volantin')) player.heal(1, ctx);
         // "La micro sí paró": a micro taken down before it charged.
@@ -500,6 +509,7 @@ export class RunScene implements Scene {
     p.update(dt, this.input.state, ctx);
     ctx.enemies.update(dt, ctx);
     this.weapons.update(dt, ctx);
+    this.passives.update(dt, ctx);
     ctx.food.update(dt, ctx);
     ctx.shots.update(dt, ctx);
     ctx.telegraphs.update(dt);
@@ -897,6 +907,7 @@ export class RunScene implements Scene {
     ctx.enemies.render(a);
     ctx.food.render(a);
     this.weapons.render(a, ctx);
+    this.passives.render(a, ctx);
     ctx.shots.render(a);
     ctx.telegraphs.render();
     ctx.clouds.render(this.worldTime);
