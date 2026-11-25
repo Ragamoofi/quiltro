@@ -22,8 +22,8 @@ export const KM_PER_MINUTE = TOTAL_KM / RUN_MINUTES;
 
 export const ZONAS: readonly ZoneDef[] = [
   { id: 'norte', i18n: 'zonas.norte', startMin: 0, endMin: 3, hazard: 'remolinos', boss: 'alicanto', enemies: ['zancudo', 'jote', 'guanaco'], shareSquare: '🟨' },
-  { id: 'centro', i18n: 'zonas.centro', startMin: 3, endMin: 6, hazard: 'microQueNoPara', boss: 'taco', enemies: ['paloma', 'micro', 'gaviota', 'loboMarino'], shareSquare: '🟦' },
-  { id: 'sur', i18n: 'zonas.sur', startMin: 6, endMin: 9, hazard: 'neblina', boss: 'caleuche', enemies: ['chonchon', 'camahueto', 'basilisco'], shareSquare: '🟩' },
+  { id: 'centro', i18n: 'zonas.centro', startMin: 3, endMin: 6, hazard: 'microQueNoPara', boss: 'taco', enemies: ['paloma', 'micro', 'colectivo', 'rata', 'gaviota', 'loboMarino'], shareSquare: '🟦' },
+  { id: 'sur', i18n: 'zonas.sur', startMin: 6, endMin: 9, hazard: 'neblina', boss: 'caleuche', enemies: ['chonchon', 'camahueto', 'basilisco', 'loboMarino'], shareSquare: '🟩' },
   { id: 'patagonia', i18n: 'zonas.patagonia', startMin: 9, endMin: 12, hazard: 'viento', boss: 'vecinoViral', enemies: ['tempano', 'chingue'], shareSquare: '⬜' },
   { id: 'antartica', i18n: 'zonas.antartica', startMin: 12, endMin: Number.POSITIVE_INFINITY, hazard: 'rotativo', boss: null, enemies: [], shareSquare: '⬜' },
 ];
@@ -33,6 +33,34 @@ export const ZONAS: readonly ZoneDef[] = [
  * 4.300 km at minute 12). Valparaíso triggers the mid-Centro banner; Chiloé is an
  * unlock condition (El Pudú) and a Ruta del día milestone.
  */
+/**
+ * Fase 10.4: inside a zone the enemies follow the place. Santiago has the city's own (traffic,
+ * pigeons, rats); the coast of Valparaíso has the gulls and sea lions; the south splits in the
+ * forest of the Araucanía and the sea of the lakes and Chiloé.
+ */
+export interface AmbienteDef {
+  readonly id: string;
+  readonly zone: ZoneId;
+  readonly desdeKm: number;
+  readonly hastaKm: number;
+  readonly enemies: readonly string[];
+}
+
+export const AMBIENTES: readonly AmbienteDef[] = [
+  { id: 'desierto', zone: 'norte', desdeKm: 0, hastaKm: 1075, enemies: ['zancudo', 'jote', 'guanaco'] },
+  { id: 'santiago', zone: 'centro', desdeKm: 1075, hastaKm: 1600, enemies: ['paloma', 'micro', 'colectivo', 'rata'] },
+  { id: 'costa', zone: 'centro', desdeKm: 1600, hastaKm: 2150, enemies: ['paloma', 'gaviota', 'loboMarino'] },
+  { id: 'araucania', zone: 'sur', desdeKm: 2150, hastaKm: 2700, enemies: ['chonchon', 'camahueto', 'basilisco'] },
+  { id: 'lagos', zone: 'sur', desdeKm: 2700, hastaKm: 3225, enemies: ['chonchon', 'camahueto', 'loboMarino'] },
+  { id: 'patagonia', zone: 'patagonia', desdeKm: 3225, hastaKm: 4300, enemies: ['tempano', 'chingue'] },
+];
+
+/** The environment of a zone at this kilometre (the last one of the zone if past its end). */
+export function ambienteAt(zone: ZoneId, km: number): AmbienteDef | undefined {
+  const list = AMBIENTES.filter((a) => a.zone === zone);
+  return list.find((a) => km >= a.desdeKm && km < a.hastaKm) ?? list[list.length - 1];
+}
+
 export interface CityDef {
   readonly id: string;
   /** i18n key under `ciudades.` */

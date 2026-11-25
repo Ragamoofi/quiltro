@@ -31,7 +31,8 @@ export class Weather {
     this.zone = zone;
     this.w = w;
     this.h = h;
-    const count = { norte: 26, centro: 0, sur: 80, patagonia: 70, antartica: 50 }[zone] ?? 0;
+    // The southern rain is lighter than before (80 → 45 drops) so it does not pile noise on the mist.
+    const count = { norte: 26, centro: 0, sur: 45, patagonia: 70, antartica: 50 }[zone] ?? 0;
     this.drops = Array.from({ length: count }, () => ({ x: rng.range(0, w), y: rng.range(0, h), s: rng.range(0.6, 1.4) }));
   }
 

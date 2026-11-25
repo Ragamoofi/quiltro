@@ -24,6 +24,8 @@ const LOOKS: Readonly<Record<string, EnemyLook>> = {
   jote: { sprite: 'jote', anim: 'volar', particles: ['K', 'k', 'r', 'g'], radius: 6, hover: 14 },
   guanaco: { sprite: 'guanaco', anim: 'caminar', attack: 'escupir', particles: ['o', 'w', 'O'], radius: 8, hover: 9 },
   micro: { sprite: 'micro', anim: 'andar', particles: ['y', 'b', 'K', 'G'], radius: 10, hover: 7 },
+  colectivo: { sprite: 'colectivo', anim: 'andar', particles: ['k', 'y', 'K', 'G'], radius: 9, hover: 6 },
+  rata: { sprite: 'rata', anim: 'correr', particles: ['g', 'G', 'p'], radius: 3, hover: 3 },
   gaviota: { sprite: 'gaviota', anim: 'volar', particles: ['w', 'G', 'y'], radius: 5, hover: 9 },
   loboMarino: { sprite: 'loboMarino', anim: 'arrastrarse', attack: 'aplastar', particles: ['C', 'c', 'd'], radius: 10, hover: 8 },
   chonchon: { sprite: 'chonchon', anim: 'volar', particles: ['l', 'C', 'd'], radius: 5, hover: 11 },

@@ -533,7 +533,7 @@ export class RunScene implements Scene {
     const city = this.journey.antartica ? null : this.cities.view(km);
     this.horizon.setLandmark(city?.scene.landmark ?? null, city?.progress ?? 0);
     this.decor.setCityProp(city?.scene.prop ?? null);
-    this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive);
+    this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive, this.journey.km(ctx.time));
     ctx.enemies.recycleFar(p.x, p.y, Math.hypot(this.viewW, this.viewH) * 0.9, ctx, this.viewW, this.viewH);
 
     const speed = Math.hypot(p.vx, p.vy) || 1;

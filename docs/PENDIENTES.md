@@ -51,3 +51,7 @@ pm audit --omit=dev da 0. No llegan al juego publicado.
 ## Resolución en PC 1920x1080 (pedido del 2026-11-25)
 
 El juego no se ve bien en una pantalla de 1920x1080 en PC (se ve raro). No se ha probado en celular. Hay que reproducirlo a 1920x1080, 1366x768 y 2560x1440, revisar src/core/display.ts (escala entera de 480x270), los bordes, la nitidez y el HUD, y recién ahí corregir. Se hace después de la Fase 10.
+
+## Neblina del Sur (Temuco y alrededores) se ve mal (pedido del 2026-11-25)
+
+En el Sur la neblina hace que la pantalla se vea rara / con fallas (se ve un patrón gris en damero sobre el suelo). Hay que reproducirlo, ver src/game/world/weather.ts y hazards.ts (neblina y media neblina del Caleuche) y arreglarlo. Va justo después de la 10.4.

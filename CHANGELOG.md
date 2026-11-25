@@ -12,6 +12,22 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Fase 10.4 — Enemigos por ambiente, y arreglo de la neblina
+
+#### Agregado
+- **Ambientes por kilómetro** (`AMBIENTES` en `src/data/zonas.ts`): cada zona se divide según el lugar y el generador de enemigos usa la lista del ambiente donde estás.
+  - Desierto: zancudo, jote, guanaco.
+  - **Santiago** (km 1.075–1.600): paloma, micro, **colectivo** y **rata de plaza**.
+  - **Costa de Valparaíso** (1.600–2.150): paloma, gaviota y lobo marino.
+  - Araucanía (2.150–2.700): chonchón, camahueto y basilisco.
+  - **Lagos y Chiloé** (2.700–3.225): chonchón, camahueto y lobo marino (el mar del sur).
+  - Patagonia: témpano y chingue.
+  Ya no hay gaviotas ni lobos marinos en Santiago.
+- **Dos enemigos nuevos con sprite propio:** el **colectivo** (auto negro de techo amarillo que embiste tras un bocinazo, más rápido y chico que la micro) y la **rata de plaza** (chica, rápida, en grupos). Pruebas en `tests/ambientes.test.ts`.
+
+#### Arreglado
+- **La neblina del Sur se veía como estática de televisión** sobre toda la pantalla (puntos de a un píxel lavanda hasta 62 % de densidad). Ahora es una bruma crema en bloques de 2×2 y tres niveles limpios (hasta 31 %), con una zona despejada más grande alrededor del quiltro, y la lluvia del Sur es más liviana (80 → 45 gotas).
+
 ### Fase 10.3 — Equilibrio de los personajes
 
 #### Cambiado

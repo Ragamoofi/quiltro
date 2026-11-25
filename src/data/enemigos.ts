@@ -30,6 +30,9 @@ export const ENEMIGOS: readonly EnemyDef[] = [
   { id: 'guanaco', nameKey: 'enemigos.guanaco', zone: 'norte', behavior: 'escupir', hp: 26, speed: 70, damage: 8, drop: 'completo', size: 24 },
   { id: 'paloma', nameKey: 'enemigos.paloma', zone: 'centro', behavior: 'bandada', hp: 10, speed: 140, damage: 6, drop: 'sopaipilla', size: 12, params: { flockMin: 8, flockMax: 15 } },
   { id: 'micro', nameKey: 'enemigos.micro', zone: 'centro', behavior: 'embestir', hp: 60, speed: 40, attackSpeed: 420, damage: 14, drop: 'completo', size: 32, params: { hornTime: 0.8 } },
+  // Fase 10.4: Santiago.
+  { id: 'colectivo', nameKey: 'enemigos.colectivo', zone: 'centro', behavior: 'embestir', hp: 40, speed: 70, attackSpeed: 380, damage: 12, drop: 'completo', size: 24, params: { hornTime: 0.55 } },
+  { id: 'rata', nameKey: 'enemigos.rata', zone: 'centro', behavior: 'perseguir', hp: 8, speed: 115, damage: 5, drop: 'sopaipilla', size: 10 },
   { id: 'gaviota', nameKey: 'enemigos.gaviota', zone: 'centro', behavior: 'robar', hp: 20, speed: 160, damage: 4, drop: 'robado', size: 16 },
   { id: 'loboMarino', nameKey: 'enemigos.loboMarino', zone: 'centro', behavior: 'aplastar', hp: 110, speed: 45, damage: 15, drop: 'chorrillana', size: 32 },
   { id: 'chonchon', nameKey: 'enemigos.chonchon', zone: 'sur', behavior: 'ondas', hp: 22, speed: 130, damage: 8, drop: 'sopaipilla', size: 16 },

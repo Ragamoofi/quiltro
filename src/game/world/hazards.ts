@@ -68,7 +68,7 @@ export class Hazards {
   resize(w: number, h: number): void {
     this.viewW = w;
     this.viewH = h;
-    this.fog.texture = fogTexture(w * 2, h * 2, 90);
+    this.fog.texture = fogTexture(w * 2, h * 2, 135);
     this.halfFog.texture = fogTexture(Math.ceil(w / 2), h, -1);
   }
 
@@ -250,17 +250,21 @@ function fogTexture(w: number, h: number, hole: number): Texture {
   canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return Texture.EMPTY;
+  // Fase 10 (neblina del Sur): the old fog was a 1-pixel dither of lavender up to 62 % dense,
+  // which read as TV static over the whole screen. Now it is a soft mist: cream, in 2×2 blocks,
+  // in three clean levels (none / light / medium), with a bigger clear area around the dog.
   const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  ctx.fillStyle = colorOf('G')?.hex ?? '#B8AEC4';
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
+  ctx.fillStyle = colorOf('w')?.hex ?? '#FBF3E4';
+  for (let y = 0; y < h; y += 2) {
+    for (let x = 0; x < w; x += 2) {
       let density: number;
-      if (hole < 0) density = 0.45;
+      if (hole < 0) density = 0.3;
       else {
         const d = Math.hypot(x - w / 2, (y - h / 2) * 1.3);
-        density = Math.min(0.62, Math.max(0, (d - hole) / 130));
+        density = Math.min(0.4, Math.max(0, (d - hole) / 190));
       }
-      if (density > ((bayer[(y % 4) * 4 + (x % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 1, 1);
+      const level = density < 0.07 ? 0 : density < 0.22 ? 0.19 : 0.31;
+      if (level > ((bayer[((y >> 1) % 4) * 4 + ((x >> 1) % 4)] ?? 0) + 0.5) / 16) ctx.fillRect(x, y, 2, 2);
     }
   }
   const t = Texture.from(canvas);

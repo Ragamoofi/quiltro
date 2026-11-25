@@ -1,6 +1,6 @@
 import { RING_WAVES_MIN, spawnPerSecond } from '../../data/balance.ts';
 import { ELITE } from '../../data/enemigos.ts';
-import { ZONAS } from '../../data/zonas.ts';
+import { ambienteAt, ZONAS } from '../../data/zonas.ts';
 import { t } from '../../i18n/index.ts';
 import type { RunContext } from '../context.ts';
 import { IMPLEMENTED_ENEMIES } from '../entities/enemies.ts';
@@ -21,20 +21,22 @@ export class Spawner {
   cap = 300;
   enabled = true;
 
-  /** Enemy ids for a zone (La Antártica mixes all of them). */
-  pool(zoneId: string): string[] {
+  /** Enemy ids for a zone at a kilometre (the environment decides; La Antártica mixes all of them). */
+  pool(zoneId: string, km = -1): string[] {
     if (zoneId === 'antartica') return IMPLEMENTED_ENEMIES.filter((id) => id !== 'paloma');
     const zone = ZONAS.find((z) => z.id === zoneId);
-    const list = (zone?.enemies ?? []).filter((id) => IMPLEMENTED_ENEMIES.includes(id) && id !== 'paloma');
+    const env = zone && km >= 0 ? ambienteAt(zone.id, km) : undefined;
+    const source = env?.enemies ?? zone?.enemies ?? [];
+    const list = source.filter((id) => IMPLEMENTED_ENEMIES.includes(id) && id !== 'paloma');
     return list.length > 0 ? list : ['zancudo'];
   }
 
   /** Relative spawn weight: the small fry are common, tanks and chargers rare. */
   private weight(id: string): number {
-    return ({ zancudo: 10, jote: 3, guanaco: 2, micro: 1.2, gaviota: 3, loboMarino: 1, chonchon: 8, camahueto: 1.5, basilisco: 2, tempano: 1.5, chingue: 6 } as Record<string, number>)[id] ?? 2;
+    return ({ zancudo: 10, jote: 3, guanaco: 2, micro: 1.2, colectivo: 1.4, rata: 9, gaviota: 3, loboMarino: 1, chonchon: 8, camahueto: 1.5, basilisco: 2, tempano: 1.5, chingue: 6 } as Record<string, number>)[id] ?? 2;
   }
 
-  update(dt: number, ctx: RunContext, viewW: number, viewH: number, zoneId: string, bossActive: boolean): void {
+  update(dt: number, ctx: RunContext, viewW: number, viewH: number, zoneId: string, bossActive: boolean, km = -1): void {
     if (!this.enabled || ctx.player.dead) return;
     const p = ctx.player;
     const minutes = ctx.time / 60;
@@ -50,7 +52,7 @@ export class Spawner {
       }
     }
 
-    const pool = this.pool(zoneId);
+    const pool = this.pool(zoneId, km);
     const weights = pool.map((id) => this.weight(id));
     this.acc += spawnPerSecond(minutes) * (bossActive ? 0.4 : 1) * dt;
     while (this.acc >= 1) {
