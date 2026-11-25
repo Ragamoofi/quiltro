@@ -1,5 +1,5 @@
 import type { SoundId } from '../../audio/sfx.ts';
-import { Container, Sprite } from 'pixi.js';
+import { Container, Sprite, Graphics } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import type { InputState } from '../../core/input.ts';
 import { GUAU, VOLANTIN_ORBIT } from '../../data/armas.ts';
@@ -93,6 +93,10 @@ export class Player {
     if (shadow) this.shadow.texture = shadow;
     this.shadow.anchor.set(0.5);
   }
+
+  /** Fase 11.11: a small life bar under the feet, always in view (drawn above everything). */
+  readonly lifeBar = new Graphics();
+  private barFlash = 0;
 
   addTo(shadows: Container, world: Container): void {
     shadows.addChild(this.shadow);
@@ -189,6 +193,7 @@ export class Player {
     this.guauCooldown = Math.max(0, this.guauCooldown - dt);
     this.barkTime = Math.max(0, this.barkTime - dt);
     this.hurtTime = Math.max(0, this.hurtTime - dt);
+    this.barFlash = Math.max(0, this.barFlash - dt);
 
     if (this.dead) {
       this.vx *= Math.exp(-dt / 0.1);
@@ -268,6 +273,27 @@ export class Player {
     this.setAnim(this.pickAnim(moving));
   }
 
+  /** The bar under the dog: dark frame, red life, a white flash when hurt, and it blinks under 25 %. */
+  private drawLifeBar(x: number, y: number): void {
+    const g = this.lifeBar;
+    g.clear();
+    if (this.dead) return;
+    const w = 22;
+    const bx = x - w / 2;
+    const by = y + 4;
+    const ratio = Math.max(0, Math.min(1, this.hp / Math.max(1, this.maxHp)));
+    const low = ratio < 0.25;
+    const blink = low && Math.floor(performance.now() / 180) % 2 === 0;
+    g.rect(bx - 1, by - 1, w + 2, 5).fill(0x2a2233);
+    g.rect(bx, by, w, 3).fill(0x4a3f5c);
+    const fw = Math.round(w * ratio);
+    if (fw > 0) {
+      const color = this.barFlash > 0 ? 0xffffff : blink ? 0xffd166 : ratio < 0.5 ? 0xf5a524 : 0xe63946;
+      g.rect(bx, by, fw, 3).fill(color);
+      g.rect(bx, by, fw, 1).fill({ color: 0xffffff, alpha: 0.35 });
+    }
+  }
+
   /** Called by enemies on contact. */
   takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext, source = 'otro'): void {
     if (this.dead || this.invulnerable > 0 || ctx.debug.invincible) return;
@@ -287,6 +313,7 @@ export class Player {
     }
     const dmg = Math.max(1, (source === 'proyectil' ? amount * (1 - Math.min(0.75, ctx.mods.shotArmor)) : amount) - this.armor);
     this.hp -= dmg;
+    this.barFlash = 0.12;
     this.sinceHurt = 0;
     ctx.stats.damageTaken += dmg;
     ctx.stats.damageFrom[source] = (ctx.stats.damageFrom[source] ?? 0) + dmg;
@@ -377,5 +404,6 @@ export class Player {
     // Blink while invulnerable (every other 60 ms).
     this.sprite.visible = this.dead || this.invulnerable <= 0 || Math.floor(this.invulnerable * 16) % 2 === 0;
     this.shadow.position.set(x, y);
+    this.drawLifeBar(x, y);
   }
 }

@@ -325,6 +325,7 @@ export class RunScene implements Scene {
       this.weapons.root,
       ctx.shots.root,
       this.decor.overhead,
+      player.lifeBar,
       particles.root,
       numbers.root,
       screen.world,
