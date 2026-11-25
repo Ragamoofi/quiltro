@@ -4,6 +4,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 7 — Ruta del día, compartir y PWA
+
+#### Agregado
+- **Azar determinista:** la semilla de una partida se reparte en tres flujos independientes (cosmético, director de enemigos/jefes/peligros/viaje, y cartas/cajas). Lo que haga el jugador ya no cambia qué enemigos aparecen ni qué cartas se ofrecen. Dos partidas con la misma semilla dan lo mismo (verificado: 70 s idénticos al byte).
+- **Ruta del día** (`src/meta/daily.ts`): semilla por fecha de Chile (America/Santiago), numerada desde el 2026-11-01. Un intento que cuenta por día (se gasta al empezar, así que cerrar la pestaña no sirve para repetir); los siguientes son práctica con el mismo viaje. Quiltro base sin mejoras de La Cucha, para que sea parejo. Guardado v3.
+- **Texto para compartir** con el formato del GDD: 12 cuadrados (🟨🟦🟩⬜, ⬛ = no llegué), ciudad, km, evolución o arma más fuerte e invitación con enlace. Botón "Copiar para el grupo".
+- **Tarjeta de 1080×1920** hecha con el mismo pixel art del juego: mapa de Chile con la ruta, km, ciudad, personaje, cuadrados, build y enlace. Botón "Compartir" (hoja de compartir del sistema con la imagen; si no existe, descarga el PNG y copia el texto).
+- **PWA** (`vite-plugin-pwa`): se instala y funciona sin conexión (32 archivos precargados, 1,5 MB). Íconos 192/512/180 generados desde el sprite del quiltro.
+- **Arte promocional** (`scripts/make-promo.ts`): portada 1280×720, afiche vertical 1080×1920 y cuadrado 1024, hechos con los sprites y la fuente del juego, en `promo/`.
+- Panel F1: sección "Ruta del día" (ver estado, iniciar, devolver el intento).
+
 ### Fase 6 — Sonido
 
 #### Agregado

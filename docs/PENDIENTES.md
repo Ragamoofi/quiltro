@@ -39,3 +39,11 @@ Al probarla, la Fase 1 se siente bien, pero el ataque del volantín todavía no 
 3. **Picada:** los volantines orbitan, pero cada ~1 s uno se lanza en picada al enemigo más cercano y vuelve tirando el hilo. Da sensación de que "atacan solos" con intención.
 4. **Comisión (cortar hilos):** el daño lo hace el hilo curado (la línea completa) además del volantín, como en las peleas de volantines. Dar hilo pasa a ser barrer una zona grande.
 5. **Menos volantines, más grandes:** 2 volantines de 16×16 con más daño. Más legible en el caos.
+
+## Fase 7
+
+- **npm audit:** 4 avisos moderados solo en herramientas de compilación (glob/minimatch dentro de workbox-build, de vite-plugin-pwa). 
+pm audit --omit=dev da 0. No llegan al juego publicado.
+- **Canva:** el arte promocional está hecho con el propio juego; si se quiere una versión más pulida o con otro estilo, se puede rehacer en Canva (pedirlo en el chat).
+- **Ruta del día:** no se puede verificar en dos dispositivos reales desde aquí; se verificó con pruebas (misma semilla = mismo texto y mismas partidas). Falta probar en dos teléfonos.
+- **Sin conexión:** el panel del navegador integrado no expone CacheStorage; probar a mano en Chrome (instalar y desconectar).
