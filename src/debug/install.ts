@@ -258,6 +258,71 @@ export async function installDebug(env: DebugEnv): Promise<void> {
         get run(): RunScene {
           return env.run();
         },
+        /**
+         * Frame-cost stress test (milliseconds of CPU per frame, update + draw, no waiting for the screen):
+         * `__quiltro.perf({ extreme: true, weapons: ['ronda'] })` after `goDaily()`. It gives every chosen weapon
+         * five levels, jumps to minute 10 and keeps ~200 enemies around a dog that walks in circles.
+         * `extreme` adds +6 projectiles, ×3 area, ×0.3 cooldown: what a late build looks like.
+         */
+        perf(opts: { extreme?: boolean; weapons?: string[]; frames?: number } = {}): Record<string, number> {
+          const run = env.run();
+          const c = run.ctx;
+          const p = c.player;
+          const frames = opts.frames ?? 900;
+          const weapons = opts.weapons ?? ARMAS.filter((a) => a.takesSlot).map((a) => a.id);
+          c.debug.invincible = true;
+          c.progress.level = 400;
+          for (const w of weapons) {
+            for (let l = 0; l < 5; l++) {
+              const owned = c.build.weapon(w);
+              c.build.apply({ kind: 'weapon', id: w, rarity: 'epica', toLevel: owned ? owned.level + 1 : 1 });
+            }
+          }
+          c.refreshMods();
+          const boost = opts.extreme ? { projectiles: 6, areaMult: 3, cooldownMult: 0.3, damageMult: 5 } : {};
+          Object.assign(c.mods, boost);
+          run.journey.jumpTo(10, c);
+          const render: Record<string, number> = {};
+          for (const w of weapons) {
+            const weapon = run.weapons.get(w);
+            if (!weapon) continue;
+            const draw = weapon.render.bind(weapon);
+            weapon.render = (...args): void => {
+              const t0 = performance.now();
+              draw(...args);
+              render[w] = (render[w] ?? 0) + performance.now() - t0;
+            };
+          }
+          const times: number[] = [];
+          let angle = 0;
+          for (let i = 0; i < frames; i++) {
+            c.progress.xp = 0;
+            // A card screen or a box would freeze the fight and hide the cost: keep playing.
+            const scene = run as unknown as { mode: string };
+            if (scene.mode !== 'playing' && scene.mode !== 'slowmo') scene.mode = 'playing';
+            Object.assign(c.mods, boost);
+            if (i % 20 === 0 && c.enemies.activeCount < 200) {
+              for (let k = 0; k < 30; k++) {
+                const a = c.rng.range(0, Math.PI * 2);
+                c.enemies.spawn(['tempano', 'chingue', 'zancudo', 'micro'][k % 4] ?? 'zancudo', p.x + Math.cos(a) * 230, p.y + Math.sin(a) * 150, c.time / 60, c);
+              }
+            }
+            p.x += Math.cos(angle) * 1.6;
+            p.y += Math.sin(angle) * 1.6;
+            angle += 0.004;
+            const t0 = performance.now();
+            this.step(1 / 60);
+            times.push(performance.now() - t0);
+          }
+          times.sort((a, b) => a - b);
+          const out: Record<string, number> = {
+            avgMs: Math.round((times.reduce((s, v) => s + v, 0) / frames) * 100) / 100,
+            p99Ms: Math.round((times[Math.floor(frames * 0.99)] ?? 0) * 100) / 100,
+            kills: c.stats.kills,
+          };
+          for (const [w, ms] of Object.entries(render)) out[`dibujo:${w}`] = Math.round((ms / frames) * 1000) / 1000;
+          return out;
+        },
       },
     });
   }

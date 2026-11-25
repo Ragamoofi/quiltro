@@ -12,6 +12,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Arreglo de rendimiento: el lag del final de la partida
+
+#### Corregido
+- **La Ronda era lo más caro de la pantalla.** Dibujaba cada punto de sus anillos como un rectángulo suelto; con más anillos (La jauría), más área y más recarga eran miles por cuadro. Medido con 10 armas al nivel 5 y 200–250 enemigos: **12,7 ms por cuadro → 2,8 ms** (el peor 1 % de cuadros, de 40 ms a 6 ms); el dibujo de la Ronda solo, de 3,5 ms a 0,25 ms. Ahora los puntos son sprites reutilizados (sprite nuevo `rondaPunto`, un cuadrado de 3×3 por color) y ningún anillo dibuja más de 160.
+- Las otras nueve armas se midieron una por una en modo extremo (+6 proyectiles, ×3 área, ×0,3 de espera): todas cuestan menos de 0,1 ms.
+
+#### Añadido
+- Herramienta de depuración `__quiltro.perf({ extreme, weapons, frames })` (solo con `?debug`): mide milisegundos por cuadro y el costo de dibujo de cada arma con un build cargado.
+
 ### Jefe final nuevo: Cai Cai Vilú
 
 #### Cambiado

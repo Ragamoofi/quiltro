@@ -1,6 +1,6 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Sprite, type Texture } from 'pixi.js';
+import { anim } from '../../art/assets.ts';
 import { px } from '../../data/balance.ts';
-import { C } from '../../ui/widgets.ts';
 import type { RunContext } from '../context.ts';
 import { Cooldown, type Weapon } from './weapon.ts';
 
@@ -8,7 +8,8 @@ const SPEED = 230;
 /** Thickness of the ring that hurts, and the pause between rings of one burst. */
 const BAND = 7;
 const GAP = 0.28;
-const COLORS = ['y', 'p', 't', 'w'] as const;
+/** A ring never draws more dots than this, however wide it grows. */
+const MAX_DOTS = 160;
 
 interface Ring {
   r: number;
@@ -23,19 +24,20 @@ interface Ring {
  * Ronda: a ring of colour that grows out from the dog like the circle of the game, hurting
  * every enemy it crosses and pushing it outward. More levels: more rings in a row, wider and
  * stronger. Ronda de la Manada (evolution): two more rings every time.
+ *
+ * The dots are pooled sprites (one 3×3 texture per handkerchief colour). They used to be
+ * thousands of separate `Graphics` rectangles per frame, which made this the most expensive
+ * thing on screen once the ring count and the area grew.
  */
 export class Ronda implements Weapon {
   readonly id = 'ronda';
   readonly root = new Container();
-  private readonly g = new Graphics();
+  private readonly dots: Sprite[] = [];
+  private readonly textures: readonly Texture[] = anim('rondaPunto', 'punto').textures;
   private readonly cd = new Cooldown();
   private readonly near: number[] = [];
   private rings: Ring[] = [];
   private time = 0;
-
-  constructor() {
-    this.root.addChild(this.g);
-  }
 
   update(dt: number, ctx: RunContext): void {
     this.time += dt;
@@ -71,30 +73,40 @@ export class Ronda implements Weapon {
   }
 
   render(alpha: number, ctx: RunContext): void {
-    const g = this.g;
-    g.clear();
     const p = ctx.player;
     const cx = Math.round(p.prevX + (p.x - p.prevX) * alpha);
     const cy = Math.round(p.prevY + (p.y - p.prevY) * alpha) - 8;
+    // Dotted in the colours of the handkerchiefs; fades into dither near its end.
+    const spin = this.time * 0.8;
+    let used = 0;
     for (const ring of this.rings) {
       if (ring.delay > 0 || ring.r < 2) continue;
-      // Dotted in the colours of the handkerchiefs; fades into dither near its end.
-      const steps = Math.max(12, Math.round(ring.r * 0.9));
+      const steps = Math.min(MAX_DOTS, Math.max(12, Math.round(ring.r * 0.9)));
       const fading = ring.r / ring.max > 0.8;
       for (let i = 0; i < steps; i++) {
         if (fading && i % 2 === 0) continue;
-        const a = (i / steps) * Math.PI * 2 + this.time * 0.8;
-        const x = Math.round(cx + Math.cos(a) * ring.r);
-        const y = Math.round(cy + Math.sin(a) * ring.r);
-        g.rect(x - 1, y - 1, 3, 3).fill(C('k'));
-      }
-      for (let i = 0; i < steps; i++) {
-        if (fading && i % 2 === 0) continue;
-        const a = (i / steps) * Math.PI * 2 + this.time * 0.8;
-        const x = Math.round(cx + Math.cos(a) * ring.r);
-        const y = Math.round(cy + Math.sin(a) * ring.r);
-        g.rect(x, y, 1, 1).fill(C(COLORS[i % COLORS.length] ?? 'y'));
+        const a = (i / steps) * Math.PI * 2 + spin;
+        const s = this.dot(used++);
+        s.texture = this.textures[i % this.textures.length] as Texture;
+        s.position.set(Math.round(cx + Math.cos(a) * ring.r) - 1, Math.round(cy + Math.sin(a) * ring.r) - 1);
       }
     }
+    for (let i = used; i < this.dots.length; i++) {
+      const s = this.dots[i] as Sprite;
+      if (!s.visible) break;
+      s.visible = false;
+    }
+  }
+
+  /** The i-th dot sprite (created on demand, kept for good). */
+  private dot(i: number): Sprite {
+    let s = this.dots[i];
+    if (!s) {
+      s = new Sprite();
+      this.dots.push(s);
+      this.root.addChild(s);
+    }
+    s.visible = true;
+    return s;
   }
 }

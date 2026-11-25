@@ -47,6 +47,18 @@ export const sombras: SpriteDef = {
   },
 };
 
+/** One dot of the Ronda rings: a 3×3 black square with a coloured centre (yellow, pink, teal, white). */
+export const rondaPunto: SpriteDef = {
+  name: 'rondaPunto',
+  group: 'armas',
+  width: 3,
+  height: 3,
+  anchor: { x: 0, y: 0 },
+  animations: {
+    punto: { fps: 1, frames: ['y', 'p', 't', 'w'].map((c) => ['kkk', `k${c}k`, 'kkk']) },
+  },
+};
+
 /** Damage digits 0–9, white and gold (critical), 5×7 with outline. */
 const digits = (color: string): Frame[] =>
   Array.from({ length: 10 }, (_, n) => outlined((GLYPHS[String(n)] ?? []).map((r) => r.replace(/#/g, color))));

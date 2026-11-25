@@ -11,7 +11,7 @@ import { manoDef, martinaDef, teclaDef, volantinAzul } from './historia.ts';
 import { sueloAntartica, sueloCosta, sueloLagos, sueloNorte, sueloPatagonia, sueloSantiago, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
 import { carro, grifo, poste, quiosco } from './decoracion.ts';
-import { digitos, globoGuau, hueso, sombras, sopaipilla } from './efectos.ts';
+import { digitos, globoGuau, hueso, rondaPunto, sombras, sopaipilla } from './efectos.ts';
 import { paloma, zancudo } from './enemigos.ts';
 import { quiltro } from './quiltro.ts';
 import { sueloCentro } from './suelos.ts';
@@ -40,6 +40,7 @@ export const SPRITES: readonly SpriteDef[] = [
   iconos,
   sombras,
   digitos,
+  rondaPunto,
   globoGuau,
   hueso,
   poste,
