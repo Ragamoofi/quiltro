@@ -2,6 +2,7 @@ import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../../art/assets.ts';
 import { colorOf, hexToNumber } from '../../art/palette.ts';
 import { DECO_ZONA } from '../../art/sprites/decoracion2.ts';
+import { DECO_AMBIENTE } from '../../art/sprites/mapas.ts';
 import { POSTE_AISLADORES } from '../../art/sprites/decoracion.ts';
 import { hash2 } from '../../core/rng.ts';
 
@@ -48,9 +49,8 @@ export class Decor {
   /** Fase 10.6: Santiago is a busy market street, the rest of the Centro keeps the old props. */
   setEnv(id: string): void {
     if (id === this.env) return;
-    const was = this.env === 'santiago';
     this.env = id;
-    if (was || id === 'santiago') this.clearChunks();
+    this.clearChunks();
   }
 
   /** The ground prop of the city that is near (null: none); redraws the props around the view. */
@@ -65,8 +65,13 @@ export class Decor {
     this.chunks.clear();
   }
 
+  /** Santiago and the old Centro are a city of poles and cables; the coast (Valparaíso, Viña) has its own scenery. */
+  private get urban(): boolean {
+    return this.zone === 'centro' && this.env !== 'costa';
+  }
+
   private isStreet(cy: number): boolean {
-    return this.zone === 'centro' && ((cy % 3) + 3) % 3 === 1;
+    return this.urban && ((cy % 3) + 3) % 3 === 1;
   }
 
   private build(cx: number, cy: number): Chunk {
@@ -93,7 +98,7 @@ export class Decor {
       add(this.cityProp, x0 + 14 + hash2(cx, cy, this.seed + 12) * (CHUNK - 28), y0 + 24 + hash2(cx, cy, this.seed + 13) * (CHUNK - 36));
     }
 
-    if (this.zone === 'centro') {
+    if (this.urban) {
       if (this.isStreet(cy)) {
         const x = x0 + CHUNK / 2 + Math.round((hash2(cx, cy, this.seed + 1) - 0.5) * 16);
         const y = y0 + 24;
@@ -119,11 +124,19 @@ export class Decor {
       return chunk;
     }
 
-    const [big, medium, small] = DECO_ZONA[this.zone] ?? [];
     if (nearOrigin) return chunk;
-    if (big && h < 0.06) add(big, ox, oy);
-    else if (medium && h < 0.2) add(medium, ox, oy);
-    else if (small && h < 0.42) {
+    // The environment's own props if it has them (desert, Valparaíso), else the zone's three.
+    const own = DECO_AMBIENTE[this.env];
+    const [zb, zm, zs] = DECO_ZONA[this.zone] ?? [];
+    const pickFrom = (pool: readonly string[] | undefined, fallback: string | undefined, salt: number): string | undefined =>
+      pool && pool.length > 0 ? pool[Math.floor(hash2(cx, cy, this.seed + salt) * pool.length)] : fallback;
+    const cuts = own?.cuts ?? [0.06, 0.2, 0.42];
+    const big = pickFrom(own?.big, zb, 21);
+    const medium = pickFrom(own?.medium, zm, 22);
+    const small = pickFrom(own?.small, zs, 23);
+    if (big && h < cuts[0]) add(big, ox, oy);
+    else if (medium && h < cuts[1]) add(medium, ox, oy);
+    else if (small && h < cuts[2]) {
       add(small, ox, oy);
       if (hash2(cx, cy, this.seed + 5) < 0.5) add(small, ox + 12, oy + 7);
     }
@@ -153,7 +166,7 @@ export class Decor {
 
     const g = this.overhead;
     g.clear();
-    if (this.zone !== 'centro') return;
+    if (!this.urban) return;
     for (let cy = cy0; cy <= cy1; cy++) {
       if (!this.isStreet(cy)) continue;
       for (let cx = cx0; cx < cx1; cx++) {

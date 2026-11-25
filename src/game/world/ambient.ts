@@ -3,7 +3,7 @@ import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
 import { deriveSeed, Rng } from '../../core/rng.ts';
 
-type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa';
+type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa' | 'llama';
 
 interface Rule {
   kind: Kind;
@@ -18,13 +18,19 @@ interface Rule {
  * gulls over the coast, a condor's shadow over the desert, butterflies in the south.
  */
 const RULES: Readonly<Record<string, readonly Rule[]>> = {
-  desierto: [{ kind: 'condor', rate: 0.04, max: 1 }],
+  desierto: [
+    { kind: 'condor', rate: 0.04, max: 1 },
+    { kind: 'llama', rate: 0.06, max: 2 },
+  ],
   santiago: [
     { kind: 'moto', rate: 0.22, max: 2 },
     { kind: 'auto', rate: 0.16, max: 2 },
     { kind: 'peaton', rate: 0.45, max: 5 },
   ],
-  costa: [{ kind: 'gaviota', rate: 0.15, max: 2 }],
+  costa: [
+    { kind: 'gaviota', rate: 0.15, max: 2 },
+    { kind: 'peaton', rate: 0.14, max: 3 },
+  ],
   araucania: [{ kind: 'mariposa', rate: 0.4, max: 4 }],
   lagos: [{ kind: 'mariposa', rate: 0.3, max: 3 }],
 };
@@ -153,6 +159,11 @@ export class AmbientLife {
         m.vy = r.range(-4, 4);
         m.anim = anim('gaviota', 'volar');
         m.y = oy + r.range(50, vh * 0.7);
+        break;
+      case 'llama':
+        m.vx = dir * r.range(9, 14);
+        m.anim = anim('llama', 'caminar');
+        m.life = 70;
         break;
       case 'condor':
         m.vx = dir * 34;

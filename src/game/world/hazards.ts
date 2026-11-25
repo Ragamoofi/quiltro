@@ -1,3 +1,4 @@
+import { Rng } from '../../core/rng.ts';
 import { Container, Sprite, Texture } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
@@ -51,6 +52,8 @@ export class Hazards {
   private readonly halfFog = new Sprite();
   private windTarget = { x: 0, y: 0 };
   private windTimer = 0;
+  /** Its own dice for the sand the devils kick up, so scenery never changes the run's random stream. */
+  private readonly dust = new Rng(9091);
   private time = 0;
   private viewW = 480;
   private viewH = 270;
@@ -58,7 +61,7 @@ export class Hazards {
   halfFogSide = 0;
 
   constructor() {
-    this.devilAnim = anim('remolino', 'girar');
+    this.devilAnim = anim('remolinoPolvo', 'girar');
     this.busAnim = anim('micro', 'andar');
     this.fog.visible = false;
     this.halfFog.visible = false;
@@ -136,6 +139,8 @@ export class Hazards {
       d.life -= dt;
       d.x += d.vx * dt;
       d.y += d.vy * dt;
+      // Sand kicked up at its foot and flung from its sides.
+      if (this.dust.chance(dt * 16)) ctx.particles.burst(this.dust, d.x + this.dust.range(-8, 8), d.y - 2, 1, ['n', 'o', 'O'], 26, 0.55);
       const dx = p.x - d.x;
       const dy = p.y - d.y;
       const dist = Math.hypot(dx, dy) || 1;
@@ -183,7 +188,6 @@ export class Hazards {
     const r = 200;
     const sprite = new Sprite();
     sprite.anchor.set(0.5, 1);
-    sprite.scale.set(2);
     this.world.addChild(sprite);
     const sx = p.x + Math.cos(a) * r;
     const sy = p.y + Math.sin(a) * r * 0.7;

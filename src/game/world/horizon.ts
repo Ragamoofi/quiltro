@@ -12,21 +12,25 @@ interface Look {
   near: string;
   cap?: string;
   /** Shape of the near range: soft hills, sharp cones (volcanoes) or towers. */
-  shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo';
+  shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo' | 'valpo';
+  /** A hot sun hanging in the sky with a dithered halo (the desert). */
+  sun?: boolean;
+  /** The far layer is the sea (a band of waves) instead of distant hills. */
+  sea?: boolean;
   aurora?: readonly string[];
   /** A band of dithered haze over the lower part of the far layer (smog). */
   haze?: string;
 }
 
 const LOOKS: Record<string, Look> = {
-  norte: { sky: 'k', stars: ['w', 'y', 'G'], far: 'R', near: 'O', shape: 'cerros' },
+  norte: { sky: 's', sun: true, far: 'R', near: 'O', shape: 'cerros' },
   centro: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera' },
   sur: { sky: 'G', far: 'g', near: 'F', cap: 'w', shape: 'volcanes' },
   patagonia: { sky: 's', far: 'i', near: 'K', cap: 'W', shape: 'torres' },
   antartica: { sky: 'k', stars: ['w', 'i'], far: 'I', near: 'i', shape: 'hielo', aurora: ['t', 'v', 'V'] },
   // Fase 10.5: one look per environment.
   santiago: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera', haze: 'n' },
-  costa: { sky: 's', far: 'b', near: 'v', shape: 'cerros' },
+  costa: { sky: 's', sea: true, far: 'b', near: 'v', shape: 'valpo' },
   lagos: { sky: 'G', far: 'I', near: 'f', cap: 'w', shape: 'volcanes' },
 };
 
@@ -112,6 +116,33 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
         put(look.stars[i % look.stars.length] ?? 'w', x, y);
       }
     }
+    if (look.sun) {
+      // The desert sun: a bright disc with a dithered halo around it.
+      const sx = 150;
+      const sy = 9;
+      for (let y = 0; y < HORIZON_H; y++) {
+        for (let x = sx - 16; x <= sx + 16; x++) {
+          const d = Math.hypot(x - sx, y - sy);
+          if (d < 4.2) put('W', x, y);
+          else if (d < 7) put('y', x, y);
+          else if (d < 13 && (x + y) % 2 === 0) put(d < 10 ? 'W' : 'y', x, y);
+        }
+      }
+    }
+    if (look.sea) {
+      // The Pacific: a band of waves with whitecaps, and a faint headland far away.
+      for (let x = 0; x < W; x++) {
+        const h = 5 + Math.round(wave(x, [3, 8], [2, 1]));
+        for (let y = HORIZON_H - h - 9; y < HORIZON_H - 9; y++) put('G', x, y);
+      }
+      for (let y = HORIZON_H - 10; y < HORIZON_H; y++) {
+        for (let x = 0; x < W; x++) {
+          const swell = Math.sin(x * 0.45 + y * 1.7) + Math.sin(x * 0.17 - y);
+          put(swell > 1.25 ? 'W' : swell > 0.55 ? 's' : y % 3 === 0 ? 'B' : 'b', x, y);
+        }
+      }
+      return finish(canvas);
+    }
     if (look.aurora) {
       for (let x = 0; x < W; x++) {
         const y0 = 6 + Math.round(wave(x, [3, 7], [3, 1.5]));
@@ -171,12 +202,24 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
       case 'hielo':
         h = 8 + Math.round(wave(x, [5, 11], [2, 1])) + ((x % 40) < 18 ? 4 : 0);
         break;
+      case 'valpo':
+        // The hills of Valparaíso: tall, steep, and covered in houses.
+        h = 17 + Math.round(wave(x, [5, 11, 19], [4, 2.5, 1]));
+        break;
       default:
         h = 9 + Math.round(wave(x, [3, 8, 17], [3, 2, 1]));
     }
     const top = HORIZON_H - h;
     for (let y = top; y < HORIZON_H; y++) {
-      const ch = look.cap && y < top + 2 && h > 15 ? look.cap : look.near;
+      let ch = look.cap && y < top + 2 && h > 15 ? look.cap : look.near;
+      if (look.shape === 'valpo') {
+        // Façades in the colours of the city, each house 5 px wide and 4 tall, with a dark window and a tin roof on top.
+        const palette = ['y', 'p', 't', 'b', 'r', 'w', 'a', 'T'] as const;
+        const bx = Math.floor(x / 5);
+        const by = Math.floor((y - top) / 4);
+        ch = y - top < 1 ? 'G' : (palette[(bx * 5 + by * 3 + (bx >> 2)) % palette.length] ?? 'y');
+        if (x % 5 === 2 && (y - top) % 4 === 2 && y - top > 1) ch = 'k';
+      }
       // Dither the very bottom rows so the strip melts into the floor.
       if (y >= HORIZON_H - 3 && (x + y) % (HORIZON_H - y + 1) !== 0) continue;
       put(ch, x, y);

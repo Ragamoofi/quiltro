@@ -11,7 +11,7 @@ import { encodePng } from './png.ts';
 
 const [out = 'contact.png', filter = '', zoomArg = '4'] = process.argv.slice(2);
 const Z = Number(zoomArg);
-const frames = layoutSheet(SPRITES).frames.filter((f) => f.key.includes(filter) && !f.key.includes('_blanco'));
+const frames = layoutSheet(SPRITES).frames.filter((f) => filter.split('|').some((part) => f.key.includes(part)) && !f.key.includes('_blanco'));
 
 const W = 1200;
 const PAD = 3 * Z;

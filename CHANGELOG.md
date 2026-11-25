@@ -12,6 +12,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Mapas vivos, primera tanda: el Norte, Valparaíso y Viña del Mar (Fase 11.1b)
+
+#### Añadido
+- **Norte (desierto) con sol:** el cielo ahora es de día con un sol de halo punteado, un brillo cálido que baja desde la esquina de arriba a la derecha y ondas de calor sobre la arena. Antes era una noche estrellada.
+- **Remolinos de polvo rehechos:** un embudo de arena en bandas que se balancea, con la nube de polvo a los pies, tierra suelta girando y polvo que levanta al pasar (sprite `remolinoPolvo`, 4 cuadros, el doble de detalle que el anterior).
+- **Más cosas en el desierto:** geoglifo hecho de piedras, torre de mina, animita con velas, esqueleto de animal, rocas, arbustos secos y **llamas** que cruzan caminando.
+- **Valparaíso:** los cerros del horizonte ahora son laderas llenas de casitas de colores con techo de calamina y un mar con olas detrás; en el suelo hay casas de cerro (4 colores), escaleras, el ascensor, murales, grúas del puerto, anclas, botes, faroles, sombrillas y franjas de playa. El suelo es adoquín. Ya no hay postes ni cables de ciudad en la costa y por el camino pasea gente.
+- **Viña del Mar** (km 1.900): una ciudad nueva en la ruta, con el **reloj de flores** y palmeras cruzando el horizonte, palmeras en el suelo y un cartel al llegar.
+- Neutral para el equilibrio: el bot (medio, 20 viajes, semillas 7000–7019) da exactamente lo mismo que antes (10 %, 6,37 min). Para lograrlo, el polvo de los remolinos y las ondas de calor no usan los dados de la partida, y Viña no regala nada.
+- La decoración ahora se elige por ambiente (`DECO_AMBIENTE`), no solo por zona, para ir sumando lugares sin tocar el resto.
+
 ### Pantalla sin franjas y La Cucha (Fase 11.1a)
 
 #### Cambiado

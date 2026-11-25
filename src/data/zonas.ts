@@ -79,6 +79,7 @@ export const CIUDADES: readonly CityDef[] = [
   { id: 'antofagasta', i18n: 'ciudades.antofagasta', km: 540, hud: true },
   { id: 'santiago', i18n: 'ciudades.santiago', km: 1075, hud: true },
   { id: 'valparaiso', i18n: 'ciudades.valparaiso', km: 1610, hud: false },
+  { id: 'vina', i18n: 'ciudades.vina', km: 1900, hud: false },
   { id: 'temuco', i18n: 'ciudades.temuco', km: 2150, hud: true },
   { id: 'puertoMontt', i18n: 'ciudades.puertoMontt', km: 2600, hud: true },
   { id: 'chiloe', i18n: 'ciudades.chiloe', km: 2900, hud: false },

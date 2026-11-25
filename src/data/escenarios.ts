@@ -32,6 +32,7 @@ export const ESCENARIOS: readonly CityScene[] = [
   { id: 'antofagasta', landmark: 'hito_antofagasta', prop: 'salitrera', event: 'brisa' },
   { id: 'santiago', landmark: 'hito_santiago', prop: null, event: 'lluvia' },
   { id: 'valparaiso', landmark: 'hito_valparaiso', prop: 'casa_valpo', event: 'cerros' },
+  { id: 'vina', landmark: 'hito_vina', prop: 'palmera', event: null },
   { id: 'temuco', landmark: 'hito_temuco', prop: 'araucaria', event: 'lluvia' },
   { id: 'puertoMontt', landmark: 'hito_puertoMontt', prop: null, event: 'curanto' },
   { id: 'chiloe', landmark: 'hito_chiloe', prop: 'iglesia', event: 'pincoya' },

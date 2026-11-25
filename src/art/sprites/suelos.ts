@@ -197,11 +197,25 @@ export const sueloSantiago = zoneFloor('suelo_santiago', [
   TRIZADO,
 ]);
 
+/** Valparaíso's steep streets: cobblestones laid in offset rows, with dark joints. */
+function cobbles(seed: number): string[][] {
+  const rows = speckled('g', ['G', 'G'], 0.06, seed);
+  for (let y = 0; y < 16; y++) {
+    const shift = Math.floor(y / 4) % 2 === 0 ? 0 : 4;
+    for (let x = 0; x < 16; x++) {
+      const row = rows[y];
+      // Dotted joints (every other pixel): readable as stone without eating the contrast of what walks on it.
+      if (row && ((y % 4 === 3 && x % 2 === 0) || ((x + shift) % 8 === 7 && y % 2 === 0))) row[x] = 'G';
+    }
+  }
+  return rows;
+}
+
 export const sueloCosta = zoneFloor('suelo_costa', [
-  toFrame(speckled('g', ['G', 'K'], 0.07, 21)),
-  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 22), 5, 6, ['.p.', 'pWp'])),
-  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 23), 4, 5, ['v.v', 'vVv', '.v.'])),
-  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 24), 3, 6, ['gG.', 'Ggg'])),
+  toFrame(cobbles(21)),
+  toFrame(stamp(cobbles(22), 5, 5, ['.p.', 'pWp'])),
+  toFrame(stamp(cobbles(23), 4, 4, ['v.v', 'vVv', '.v.'])),
+  toFrame(stamp(cobbles(24), 3, 5, ['gG.', 'Ggg'])),
 ]);
 
 export const sueloLagos = zoneFloor('suelo_lagos', [
