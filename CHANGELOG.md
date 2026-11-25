@@ -4,6 +4,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.4b — El Vecino Viral, jefe final nuevo
+
+#### Cambiado
+- **El Gran Temblor se retira** (sprite, jefe y textos). Lo reemplaza **El Vecino Viral**, un personaje original (no es nadie real): un vecino con megáfono y celular que lo graba todo. Sprite nuevo en 4 poses (normal y "viral" con la cara roja y la musculosa dorada), 2 fases y ataques con aviso:
+  - Fase 1: cono rojo del megáfono con un abanico de gritos y ráfaga de celulares lanzados.
+  - Fase 2: llegan los seguidores (6 zancudos cada 7 s) y embiste tras una línea de aviso, terminando con un golpe de área.
+- Vida 9.000, contacto 7. Los textos (nombre, frases, logro "De Arica a Punta Arenas") están en `es-CL.json`.
+
+#### Bot de balance
+- Esquiva las nubes del chingue y, contra un jefe, se acerca a él. Nueva opción de bot invencible para medir cuánto dura cada pelea. **Las cifras anteriores a este cambio no se comparan con las nuevas** (ver `docs/BALANCE.md`).
+
 ### Fase 9.3 — La Cucha rehecha
 
 #### Cambiado

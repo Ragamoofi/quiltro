@@ -504,13 +504,13 @@ async function boot(): Promise<void> {
     };
     Object.assign(window, {
       __quiltroBot: {
-        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16): void {
+        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16, invincible = false): void {
           if (botState.running) return;
           Object.assign(botState, { running: true, done: 0, total: runs, reports: [], error: '' });
           void (async () => {
             try {
               for (let i = 0; i < runs; i++) {
-                botState.reports.push(await playRun(botHooks, seed0 + i, skill, maxMinutes));
+                botState.reports.push(await playRun(botHooks, seed0 + i, skill, maxMinutes, invincible));
                 botState.done = i + 1;
               }
             } catch (err) {

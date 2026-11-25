@@ -1,4 +1,4 @@
-﻿import type { SpriteDef } from '../types.ts';
+import type { SpriteDef } from '../types.ts';
 
 /*
  * Baldosas de suelo 16×16. Colores apagados para que todo lo que se mueve resalte.

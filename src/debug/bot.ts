@@ -159,12 +159,14 @@ function bump(map: Record<string, number>, key: string, by = 1): void {
 }
 
 /** One trip. */
-export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMinutes = 16): Promise<RunReport> {
+export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMinutes = 16, invincible = false): Promise<RunReport> {
   const cfg = SKILLS[skill];
   const rng = new Rng(seed ^ 0xb07b07);
   const run = hooks.start(seed);
   const I = run as unknown as Internals;
   const ctx = run.ctx;
+  // Invincible bots measure how long each fight lasts when the dog survives it (time to kill).
+  ctx.debug.invincible = invincible;
   const p = ctx.player;
   const t0 = performance.now();
   const st: InputState = { moveX: 0, moveY: 0, hold: false };
@@ -217,6 +219,14 @@ export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMi
         hasGoal = true;
       }
     }
+    // Against a boss a person goes in close, because the weapons only reach so far (the short
+    // kite orbit is ~45 px): with nothing else to chase, head for the boss.
+    const boss = I.journey.boss;
+    if (boss && !hasGoal && cfg.foodRange > 40 && !boss.invulnerable) {
+      goalX = boss.x;
+      goalY = boss.y - 24;
+      hasGoal = true;
+    }
     const near: { x: number; y: number; r: number; w: number }[] = [];
     const lookR = cfg.danger + reach + 30;
     for (const e of ctx.enemies.list) {
@@ -226,13 +236,18 @@ export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMi
         x: e.x + e.vx * cfg.lookahead * 0.5,
         y: e.y + e.vy * cfg.lookahead * 0.5,
         r: e.radius,
-        w: 1 + e.damage / 12 + (e.boss ? 2 : 0),
+        w: e.boss ? 0.7 : 1 + e.damage / 12,
       });
     }
     // Enemy projectiles count as small, fast enemies (so spit and waves get dodged).
     for (const s of (ctx.shots as unknown as { pool: Shot[] }).pool) {
       if (!s.active || Math.abs(s.x - p.x) > lookR || Math.abs(s.y - p.y) > lookR) continue;
       near.push({ x: s.x + s.vx * cfg.lookahead, y: s.y + s.vy * cfg.lookahead, r: 3, w: 1 + s.damage / 8 });
+    }
+    // The chingue's toxic clouds are standing hazards: walk around them.
+    for (const c of (ctx.clouds as unknown as { list: { x: number; y: number; life: number }[] }).list) {
+      if (c.life <= 0.3 || Math.abs(c.x - p.x) > lookR || Math.abs(c.y - p.y) > lookR) continue;
+      near.push({ x: c.x, y: c.y, r: 14, w: 1.5 });
     }
     const red = cfg.telegraph > 0 ? warnings().filter((w) => w.color === 'r') : [];
     let bestScore = Number.NEGATIVE_INFINITY;

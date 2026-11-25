@@ -102,30 +102,65 @@ const caleuche = (lights: [string, string, string]): Frame => {
   return outlined(p.frame());
 };
 
-// ---- El Gran Temblor: titán de roca con grietas que brillan ----
-const temblor = (slam: boolean): Frame => {
-  const fy = slam ? 64 : 50;
-  const p = new Pix(94, 78);
-  p.ellipse(47, 48, 30, 26, 'm').ellipse(47, 60, 26, 14, 'M').ellipse(40, 38, 12, 8, 'n');
-  p.ellipse(47, 17, 15, 12, 'm').ellipse(43, 13, 6, 4, 'n');
-  p.rect(38, 15, 6, 4, 'a').rect(51, 15, 6, 4, 'a').rect(40, 16, 2, 2, 'W').rect(53, 16, 2, 2, 'W');
-  p.rows(39, 24, ['r.r.r.r.r.r.r.r', '.r.r.r.r.r.r.r.']);
-  // Arms and fists.
-  p.ellipse(18, fy - 12, 8, 14, 'M').ellipse(76, fy - 12, 8, 14, 'M');
-  p.ellipse(14, fy, 12, 10, 'g').ellipse(80, fy, 12, 10, 'g').ellipse(12, fy - 3, 6, 4, 'G').ellipse(78, fy - 3, 6, 4, 'G');
-  // Glowing cracks.
-  p.rows(30, 36, ['a.......', '.a......', '..aa....', '....a...', '.....aa.', '.......a']);
-  p.rows(56, 44, ['......a', '.....a.', '...aa..', '..a....', 'aa.....']);
-  p.rows(44, 56, ['a', 'a', '.a', '.a', 'a']);
-  // Moss.
-  p.rect(30, 30, 4, 2, 'f').rect(60, 34, 5, 2, 'f');
-  return outlined(p.frame());
+// ---- El Vecino Viral: un vecino con megáfono y celular, grabándolo todo ----
+// Original: ningún personaje ni persona real. Gran pulmón, musculosa crema, short azul y sandalias.
+const vecinoViral = (pose: 'quieto' | 'quieto2' | 'grito' | 'grito2'): Frame => {
+  const shout = pose === 'grito' || pose === 'grito2';
+  const p = new Pix(64, 84);
+  // Legs, shorts and sandals.
+  p.rect(20, 66, 10, 12, 'l').rect(34, 66, 10, 12, 'l').rect(28, 66, 2, 12, 'c').rect(34, 66, 2, 12, 'c');
+  p.rect(18, 78, 13, 3, 'o').rect(33, 78, 13, 3, 'o').rect(18, 81, 13, 1, 'O').rect(33, 81, 13, 1, 'O');
+  p.ellipse(32, 62, 15, 8, 'B').rect(17, 58, 30, 6, 'B').rect(31, 62, 2, 5, 'b');
+  // Torso: cream tank top with turquoise stripes, a round belly.
+  p.ellipse(32, 44, 17, 17, 'w').ellipse(37, 51, 12, 10, 'n');
+  p.rect(16, 38, 32, 1, 't').rect(16, 43, 32, 1, 't').rect(18, 48, 28, 1, 't');
+  p.rect(26, 29, 12, 4, 'l').rect(28, 31, 8, 3, 'c');
+  // Left arm (the phone): shoulder, forearm up, hand.
+  p.rect(10, 31, 6, 13, 'l').rect(6, 24, 6, 14, 'l').ellipse(8, 22, 3.5, 3.5, 'l');
+  p.rect(1, 10, 11, 15, 'K').rect(2, 11, 9, 12, pose === 'quieto2' || pose === 'grito2' ? 's' : 'b');
+  p.rect(3, 12, 6, 2, 'W').rect(9, 11, 2, 2, 'r').rect(3, 21, 7, 1, 'k');
+  // Head: hair, face, big eyes, moustache and mouth.
+  p.rect(28, 26, 8, 4, 'c');
+  p.ellipse(32, 15, 10.5, 11.5, 'l').ellipse(21, 16, 2, 3, 'l').ellipse(43, 16, 2, 3, 'l');
+  p.ellipse(32, 8, 12, 6.5, 'k').rect(25, 10, 14, 3, 'l').rect(21, 10, 3, 8, 'k').rect(41, 10, 3, 8, 'k');
+  p.rows(23, 1, ['k.k..K.k.k', '.kkkkkkkk.']);
+  p.rect(26, 13, 5, 5, 'W').rect(34, 13, 5, 5, 'W').rect(28, 14, 3, 4, 'k').rect(35, 14, 3, 4, 'k').set(28, 14, 'W').set(35, 14, 'W');
+  p.rect(25, 11, 6, 1, 'k').rect(34, 11, 6, 1, 'k').set(30, 12, 'k').set(34, 12, 'k');
+  p.rect(31, 17, 3, 3, 'c').rect(26, 18, 3, 2, 'p').rect(36, 18, 3, 2, 'p');
+  p.rect(26, 21, 12, 2, 'k').rows(25, 22, ['k', 'k']).rows(38, 22, ['k', 'k']);
+  if (shout) p.rect(27, 24, 10, 6, 'R').rect(28, 24, 8, 1, 'W').rect(30, 28, 5, 2, 'r');
+  else p.rect(29, 25, 6, 1, 'R');
+  // Right arm up to the megaphone, and the megaphone (red cone, silver rim).
+  p.rect(48, 31, 6, 11, 'l').rect(43, 27, 8, 6, 'l');
+  for (let i = 0; i < 22; i++) {
+    const h = 4 + Math.floor(i * 0.5);
+    p.rect(40 + i, 22 - Math.floor(h / 2), 1, h, i % 8 < 2 ? 'R' : 'r');
+  }
+  p.rect(61, 15, 2, 16, 'G').rect(46, 28, 3, 6, 'K').ellipse(46, 29, 3.5, 3, 'l');
+  const out = new Pix(80, 84);
+  out.rows(8, 0, p.frame());
+  if (shout) {
+    // Sound arcs from the megaphone's mouth.
+    const col = pose === 'grito' ? 'a' : 'W';
+    for (let r = 6; r <= 9; r += 3) {
+      for (let a = -50; a <= 50; a += 8) {
+        const rad = (a * Math.PI) / 180;
+        out.set(70 + Math.cos(rad) * r, 22 + Math.sin(rad) * r * 1.3, col);
+      }
+    }
+  }
+  return outlined(out.frame());
 };
+
+const VECINO_A = vecinoViral('quieto');
+const VECINO_B = vecinoViral('quieto2');
+const VECINO_G1 = vecinoViral('grito');
+const VECINO_G2 = vecinoViral('grito2');
+/** Phase 2 ("se hizo viral"): flushed face, golden top, red stripes. */
+const RABIA = { l: 'p', w: 'y', t: 'r', c: 'C', B: 'R', n: 'a' } as const;
 
 const ALICANTO_A = alicanto(true);
 const ALICANTO_B = alicanto(false);
-const TEMBLOR_A = temblor(false);
-const TEMBLOR_SLAM = temblor(true);
 
 export const jefesSprites: SpriteDef[] = [
   boss('alicanto', { volar: { fps: 6, frames: [ALICANTO_A, ALICANTO_B] } }),
@@ -153,12 +188,12 @@ export const jefesSprites: SpriteDef[] = [
     fiesta: { fps: 8, frames: [caleuche(['p', 't', 'y']), caleuche(['t', 'y', 'p']), caleuche(['y', 'p', 't'])] },
   }),
   boss(
-    'granTemblor',
+    'vecinoViral',
     {
-      quieto: { fps: 2, frames: [TEMBLOR_A, recolor(TEMBLOR_A, { a: 'y' })] },
-      golpe: { fps: 1, frames: [TEMBLOR_SLAM] },
-      furia: { fps: 4, frames: [recolor(TEMBLOR_A, { a: 'r' }), recolor(TEMBLOR_A, { a: 'R' })] },
-      furiaGolpe: { fps: 1, frames: [recolor(TEMBLOR_SLAM, { a: 'r' })] },
+      quieto: { fps: 3, frames: [VECINO_A, VECINO_B] },
+      grito: { fps: 8, frames: [VECINO_G1, VECINO_G2] },
+      furia: { fps: 4, frames: [recolor(VECINO_A, RABIA), recolor(VECINO_B, RABIA)] },
+      furiaGrito: { fps: 8, frames: [recolor(VECINO_G1, RABIA), recolor(VECINO_G2, RABIA)] },
     },
     0.85,
   ),

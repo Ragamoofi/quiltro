@@ -136,7 +136,7 @@
     "alicanto": { "nombre": "El Alicanto", "linea": "Dicen que quien lo sigue encuentra oro. O se pierde para siempre." },
     "taco": { "nombre": "El Taco", "linea": "Costanera, 18:30 horas." },
     "caleuche": { "nombre": "El Caleuche", "linea": "Se escucha música de fiesta en medio del mar..." },
-    "granTemblor": { "nombre": "El Gran Temblor", "linea": "Este sí es grado 9. Ahora sí hay que moverse." }
+    "vecinoViral": { "nombre": "El Vecino Viral", "linea": "¡Grábalo, cabro! ¡Esto se va a hacer viral!", "linea2": "¡Estamos en vivo!", "seguidores": "¡Llegaron los seguidores!" }
   },
   "enemigos": {
     "zancudo": "Zancudo",
@@ -368,7 +368,7 @@
     "niSeInmuto": { "nombre": "Ni se inmutó", "desc": "Sobrevivir un Temblor sin moverte" },
     "laMicroSiParo": { "nombre": "La micro sí paró", "desc": "Matar una micro antes de que embista" },
     "dieciochero": { "nombre": "Dieciochero", "desc": "Tener Cielo del Dieciocho" },
-    "deAricaAPuntaArenas": { "nombre": "De Arica a Punta Arenas", "desc": "Vencer al Gran Temblor" },
+    "deAricaAPuntaArenas": { "nombre": "De Arica a Punta Arenas", "desc": "Vencer al Vecino Viral" },
     "puroAguante": { "nombre": "Puro aguante", "desc": "Sobrevivir 5 min sin recibir daño" },
     "paLaFoto": { "nombre": "Pa' la foto", "desc": "Llegar a 300 enemigos en pantalla" },
     "guardianes": { "nombre": "Guardianes", "desc": "???" }

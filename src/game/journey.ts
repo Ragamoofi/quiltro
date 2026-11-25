@@ -6,7 +6,7 @@ import { t } from '../i18n/index.ts';
 import { Alicanto } from './bosses/alicanto.ts';
 import type { Boss } from './bosses/boss.ts';
 import { Caleuche } from './bosses/caleuche.ts';
-import { GranTemblor } from './bosses/granTemblor.ts';
+import { VecinoViral } from './bosses/vecinoViral.ts';
 import { Taco } from './bosses/taco.ts';
 import type { RunContext } from './context.ts';
 
@@ -183,7 +183,7 @@ export class Journey {
           ? new Taco(def, minutes, returns)
           : id === 'caleuche'
             ? new Caleuche(def, minutes, returns)
-            : new GranTemblor(def, minutes, returns);
+            : new VecinoViral(def, minutes, returns);
     if (boss instanceof Caleuche) boss.setFog = (side) => this.hooks.setHalfFog(side);
     const p = ctx.player;
     const a = Math.atan2(p.vy, p.vx) || -Math.PI / 2;
@@ -210,7 +210,7 @@ export class Journey {
     this.boss = null;
     this.deathT = -1;
     this.hooks.onBoss(false);
-    if (boss.def.id === 'granTemblor' && !this.antartica) {
+    if (boss.def.id === 'vecinoViral' && !this.antartica) {
       this.hooks.onVictory();
       return;
     }

@@ -142,6 +142,26 @@ El objetivo era menos de 25 % de muertes en el Norte (5 de 20); queda en 35 %. M
 Meta cumplida en el Centro (≤ 20 % de muertes). **El Taco con el bot medio sigue lento** (123 s promedio, con peleas de más de 300 s): el bot medio le pega poco. Con una persona que apunta, el tiempo debería parecerse más al del experto, pero es algo que hay que mirar jugando.
 **Dónde se pierde ahora:** Patagonia (4 a 9 de 20 muertes, por el Gran Temblor y los témpanos) y el Norte (5 a 8, Alicanto). Nadie vence todavía al jefe final. El Gran Temblor se reemplaza en la 9.4b, así que lo reviso entonces con el jefe nuevo.
 
+## 9.4b — El Vecino Viral (jefe final nuevo)
+
+Reemplaza al Gran Temblor: un vecino original (nadie real) con megáfono y celular. HP base 9.000 (≈ 13.500 a los 10,5 minutos), tres hitboxes con contacto de 7. Fase 1 ("en vivo"): un cono rojo del megáfono (0,9 s de aviso) con un abanico de gritos, y una ráfaga de celulares lanzados. Fase 2 ("se hizo viral"): cada 7 s llegan 6 zancudos como seguidores y cada 8 s embiste tras una línea de aviso de 0,8 s y termina con un golpe de área.
+
+**Bot v2:** para medir el jefe final tuve que arreglar al bot: no esquivaba las nubes del chingue (era la mayor fuente de daño en Patagonia, ~530 por viaje) y huía de los jefes en vez de acercarse, de modo que sus armas no los tocaban. Ahora esquiva las nubes y, contra un jefe, va hacia él si no hay comida cerca. **Las cifras de antes y después de este cambio de bot no se comparan entre sí**; esta es la línea base nueva (mismas semillas 7000–7019):
+
+| 20 viajes | Medio | Experto |
+| --- | --- | --- |
+| Llegan al Sur / Patagonia | 50 % / 45 % | 45 % / 35 % |
+| Vencen al Vecino Viral | **10 % (2 de 20)** | 0 % (4 peleas, todas perdidas) |
+| Duración de las peleas con el jefe final | 33, 120, 101, **52 ganada**, **85 ganada** | 67, 96, 106, 42 (perdidas) |
+| Minuto promedio de muerte | 8,8 | 8,6 |
+| Mueren en el Norte / Centro / Patagonia | 9 / 1 / 7 | 9 / 4 / 7 |
+
+**Lectura honesta:**
+- Por primera vez el bot vence al jefe final, y las dos victorias duran 52 y 85 s, dentro de la meta de 45 a 90 s.
+- La meta era 15–30 % de victorias con el bot medio y 40–60 % con el experto; estamos en 10 % y 0 %. Pocas partidas llegan al jefe (35 a 45 %), así que la muestra es muy chica (4 y 5 peleas). No toqué más el jefe para no ajustar sobre ruido.
+- El Alicanto volvió a matar 9 de 20 porque el bot ahora se acerca a los jefes (como lo haría una persona): confirma que sigue siendo el primer escalón difícil y que conviene revisarlo con partidas humanas.
+- El experto no gana al medio: el bot no distingue bien a los jefes por patrón. Con una persona real el resultado puede ser muy distinto.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

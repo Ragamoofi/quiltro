@@ -1,4 +1,4 @@
-﻿/** La Cucha: permanent upgrades and idle neighbours (GDD "Meta incremental"). */
+/** La Cucha: permanent upgrades and idle neighbours (GDD "Meta incremental"). */
 export interface UpgradeEffect {
   readonly maxHp?: number;
   readonly armor?: number;
