@@ -82,8 +82,9 @@ export const ARMAS: readonly WeaponDef[] = [
     takesSlot: true,
     // Fase 9.2: 8 → 12 and +20 % → +40 % per damage level. The bot measured the kite at ~1/25 of
     // the fireworks' damage and ~1/5 of the average weapon.
-    base: { damage: 15, count: 3 },
-    levels: [{ count: 1 }, { damageMult: 0.4 }, { count: 1 }, { damageMult: 0.4 }],
+    // Fase 11.10: one kite to start; every level adds one (five at level 5), and La jauría more.
+    base: { damage: 20, count: 1 },
+    levels: [{ count: 1 }, { count: 1, damageMult: 0.25 }, { count: 1 }, { count: 1, damageMult: 0.35 }],
     evolvesWith: 'laOnce',
   },
   {

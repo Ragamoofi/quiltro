@@ -141,7 +141,8 @@ export class RoadEvents {
   }
 
   private spawn(ctx: RunContext): void {
-    const kind: EventKind = (['cofre', 'animita', 'feriante'] as const)[this.rng.weighted([40, 35, 25])] ?? 'cofre';
+    // The animitas now live on their own as shrines (systems/shrines.ts); the road keeps the chest and the stall.
+    const kind: EventKind = (['cofre', 'animita', 'feriante'] as const)[this.rng.weighted([55, 0, 45])] ?? 'cofre';
     this.place(ctx, kind);
   }
 

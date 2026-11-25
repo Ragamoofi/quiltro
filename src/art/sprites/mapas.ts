@@ -402,7 +402,8 @@ export const DECO_AMBIENTE: Readonly<Record<string, DecoAmbiente>> = {
   ...DECO_EXTREMO,
   desierto: {
     big: ['salitrera', 'torre_mina', 'geoglifo'],
-    medium: ['cactus', 'rocas', 'animita', 'esqueleto', 'cactus'],
+    // No decorative animitas: every animita on the map is a shrine you can pray at.
+    medium: ['cactus', 'rocas', 'esqueleto', 'cactus'],
     small: ['arbusto_seco', 'flor', 'arbusto_seco', 'rocas'],
     cuts: [0.06, 0.22, 0.46],
   },

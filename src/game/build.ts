@@ -287,7 +287,10 @@ export class Build {
     n.cooldown *= stats.cooldownMult * (b.cooldown !== undefined ? 1 + (owned?.cooldownBonus ?? 0) : 1);
     n.area *= stats.areaMult;
     if (id === 'guau') n.cooldown *= 1 + this.base.guauCooldownMult;
-    if (def.takesSlot && b.count !== undefined) n.count += stats.projectiles;
+    // La jauría (and the Barrio pillar) give every weapon one more of whatever it throws; the bark,
+    // which throws nothing, barks 15 % harder per point instead.
+    if (def.takesSlot) n.count += stats.projectiles;
+    else if (id === 'guau') n.damage *= 1 + 0.15 * stats.projectiles;
     if (owned && owned.extra > 0) {
       if (b.count !== undefined) n.count += owned.extra;
       else if (b.chains !== undefined) n.chains += owned.extra;

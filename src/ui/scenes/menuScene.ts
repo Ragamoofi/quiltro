@@ -1,17 +1,15 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
-import { SUELO_CENTRO_PESOS } from '../../art/sprites/suelos.ts';
 import type { Sfx } from '../../audio/sfx.ts';
 import type { Input } from '../../core/input.ts';
 import type { Scene } from '../../core/scene.ts';
 import { PERSONAJES, type CharacterDef } from '../../data/personajes.ts';
 import { CIUDADES } from '../../data/zonas.ts';
-import { FloorLayer } from '../../game/world/floor.ts';
-import { Horizon, HORIZON_H } from '../../game/world/horizon.ts';
 import { formatNumber, t } from '../../i18n/index.ts';
 import type { SaveData } from '../../meta/save.ts';
 import { dailyNumber, dailyToday } from '../../meta/daily.ts';
 import { achievementsView } from '../achievementsView.ts';
+import { chilePanorama, drawFlag, panoramaLayout } from '../chilePanorama.ts';
 import { logoSprite } from '../logo.ts';
 import { PixelText } from '../text.ts';
 import { Button, C, FocusList } from '../widgets.ts';
@@ -42,8 +40,15 @@ export class MenuScene implements Scene {
   private readonly data: SaveData;
   private readonly hooks: MenuHooks;
   private readonly sfx: Sfx;
-  private readonly floor = new FloorLayer('suelo_centro', SUELO_CENTRO_PESOS, 11);
-  private readonly horizon = new Horizon();
+  /** Fase 11.10: the whole of Chile as a postcard behind the menu. */
+  private readonly backdrop = new Sprite();
+  private readonly flag = new Graphics();
+  private logo: Sprite | null = null;
+  private logoY = 0;
+  private flagAt = { x: 0, y: 0 };
+  private kites: { sprite: Sprite; anim: Anim; x: number; y: number; phase: number }[] = [];
+  private readonly strings = new Graphics();
+  private anchorAt = { x: 0, y: 0 };
   private readonly layer = new Container();
   private readonly overlay = new Container();
   private readonly focus = new FocusList();
@@ -51,7 +56,6 @@ export class MenuScene implements Scene {
   private dog: { sprite: Sprite; sleep: Anim; stretch: Anim; idle: Anim } | null = null;
   private awakeAt = -1;
   private walkers: Walker[] = [];
-  private kite: { sprite: Sprite; anim: Anim } | null = null;
   private time = 0;
   private w = 480;
   private h = 270;
@@ -60,7 +64,7 @@ export class MenuScene implements Scene {
     this.data = data;
     this.hooks = hooks;
     this.sfx = sfx;
-    this.root.addChild(this.floor.root, this.horizon.root, this.layer, this.overlay);
+    this.root.addChild(this.backdrop, this.layer, this.overlay);
     for (const code of ['ArrowUp', 'ArrowLeft']) input.onPress(code, () => this.focus.move(-1));
     for (const code of ['ArrowDown', 'ArrowRight']) input.onPress(code, () => this.focus.move(1));
     input.onPress('Enter', () => (this.overlay.children.length ? this.closeOverlay() : this.focus.press()));
@@ -78,17 +82,22 @@ export class MenuScene implements Scene {
   resize(width: number, height: number): void {
     this.w = width;
     this.h = height;
-    this.floor.resize(width, height);
-    this.horizon.setZone('centro', width);
+    if (this.backdrop.texture !== Texture.EMPTY) this.backdrop.texture.destroy(true);
+    this.backdrop.texture = chilePanorama(width, height);
     this.build();
   }
 
   private build(): void {
-    this.layer.removeChildren().forEach((c) => c !== this.cables && c.destroy({ children: true }));
+    this.layer.removeChildren().forEach((c) => c !== this.cables && c !== this.flag && c !== this.strings && c.destroy({ children: true }));
     const { w, h } = this;
     const portrait = h > w;
-    const logo = logoSprite(portrait ? 2 : 3);
-    logo.position.set(Math.round((w - logo.width) / 2), HORIZON_H + 4);
+    // A big logo that breathes, with the tagline under it.
+    const logo = logoSprite(portrait ? 3 : w >= 560 ? 5 : 4);
+    this.logoY = portrait ? 22 : 16;
+    logo.position.set(Math.round((w - logo.width) / 2), this.logoY);
+    this.logo = logo;
+    const tagline = new PixelText(t('menu.lema'), { color: 'W', outline: 'k' });
+    tagline.position.set(Math.round((w - tagline.width) / 2), this.logoY + logo.height + 3);
     const lucas = new PixelText(t('meta.lucas', { n: formatNumber(this.data.lucas) }), { color: 'a', outline: 'k' });
     lucas.position.set(4, 4);
     const city = CIUDADES.find((c) => c.id === this.data.best.city);
@@ -97,30 +106,30 @@ export class MenuScene implements Scene {
       { color: 'w', outline: 'k' },
     );
     rec.position.set(w - rec.width - 4, 4);
-    this.layer.addChild(this.cables, logo, lucas, rec);
+    this.layer.addChild(this.strings, this.flag, logo, tagline, lucas, rec);
 
-    // The street scene: house, sleeping dog, pole with the tangled kite.
+    // The meadow: the Cucha, the flag of Chile and kites in the sky (it is always Dieciocho here).
+    const groundY = panoramaLayout(w, h).groundY;
     const cx = portrait ? Math.round(w / 2) : Math.round(w * 0.3);
-    const cy = portrait ? Math.round(h * 0.52) : Math.round(h * 0.78);
+    const cy = portrait ? groundY + 26 : Math.round(groundY + (h - groundY) * 0.62);
     const house = new Sprite(anim('cucha', 'quieto').textures[0]);
     house.anchor.set(0.5, 1);
     house.position.set(cx, cy);
-    const poleX = cx + 70;
-    const pole = new Sprite(anim('poste', 'quieto').textures[0]);
-    pole.anchor.set(0.5, 1);
-    pole.position.set(poleX, cy - 6);
-    this.layer.addChild(house, pole);
-    this.cables.clear();
-    for (let i = 0; i < 3; i++) {
-      this.cables.moveTo(poleX - 6 + i * 6 + 0.5, cy - 44 + 0.5).lineTo(poleX - 120 + 0.5, cy - 54 + i * 4 + 0.5).stroke({ width: 1, color: C(i === 1 ? 'K' : 'k') });
-      this.cables.moveTo(poleX - 6 + i * 6 + 0.5, cy - 44 + 0.5).lineTo(w + 0.5, cy - 64 + i * 5 + 0.5).stroke({ width: 1, color: C(i === 1 ? 'K' : 'k') });
-    }
-    const kiteAnim = anim('volantin', 'v1');
-    const kite = new Sprite(kiteAnim.textures[0]);
-    kite.anchor.set(0.5);
-    kite.position.set(poleX + 30, cy - 52);
-    this.layer.addChild(kite);
-    this.kite = { sprite: kite, anim: kiteAnim };
+    this.layer.addChild(house);
+    this.flagAt = { x: cx - 46, y: cy };
+    this.anchorAt = { x: cx + 40, y: cy - 6 };
+    this.kites = [
+      { x: w * 0.36, y: h * 0.28, v: 'v0', phase: 0 },
+      { x: w * 0.44, y: h * 0.46, v: 'v2', phase: 1.7 },
+      { x: w * 0.22, y: h * 0.4, v: 'v1', phase: 3.1 },
+    ].map((k) => {
+      const a = anim('volantin', k.v);
+      const sp = new Sprite(a.textures[0]);
+      sp.anchor.set(0.5);
+      sp.scale.set(2);
+      this.layer.addChild(sp);
+      return { sprite: sp, anim: a, x: k.x, y: k.y, phase: k.phase };
+    });
 
     const ch = this.character();
     const suffix = ch.id === 'quiltro' && this.data.bandana !== 'b' ? `@${this.data.bandana}` : '';
@@ -154,7 +163,7 @@ export class MenuScene implements Scene {
     // Sticker buttons.
     const bx = portrait ? 20 : Math.round(w * 0.6);
     const bw = portrait ? w - 40 : Math.round(w * 0.34);
-    let by = portrait ? Math.round(h * 0.6) : HORIZON_H + 56;
+    let by = portrait ? Math.round(h * 0.6) : Math.max(this.logoY + 60, Math.round(h * 0.3));
     const buttons: Button[] = [];
     const add = (label: string, fn: () => void, fill: string, text: string, height = 20, enabled = true): void => {
       const b = new Button(label, bw, height, fn, fill, text);
@@ -183,7 +192,8 @@ export class MenuScene implements Scene {
   private wake(): void {
     if (this.awakeAt >= 0) return;
     this.awakeAt = this.time;
-    this.sfx.play('guau', { pitch: 1.3, gain: 0.5 });
+    const v = this.character().voice;
+    this.sfx.play(v?.sound ?? 'guau', { pitch: (v?.pitch ?? 1) * 1.1, gain: 0.5 });
     this.build();
   }
 
@@ -206,19 +216,29 @@ export class MenuScene implements Scene {
   }
 
   render(): void {
-    this.floor.update(0, 0);
-    this.horizon.update(this.time * 6, this.time);
+    if (this.logo) this.logo.y = this.logoY + Math.round(Math.sin(this.time * 1.6) * 1.5);
+    this.flag.clear();
+    drawFlag(this.flag, this.flagAt.x, this.flagAt.y, this.time, this.h > 300 ? 1.3 : 1);
+    this.strings.clear();
+    for (const k of this.kites) {
+      const kx = Math.round(k.x + Math.sin(this.time * 0.9 + k.phase) * 6);
+      const ky = Math.round(k.y + Math.sin(this.time * 1.3 + k.phase) * 4);
+      k.sprite.position.set(kx, ky);
+      k.sprite.rotation = Math.sin(this.time * 1.1 + k.phase) * 0.15;
+      const tex = k.anim.textures[frameAt(k.anim, this.time + k.phase)];
+      if (tex) k.sprite.texture = tex;
+      // The line sags down to the dog.
+      const mx = (kx + this.anchorAt.x) / 2;
+      const my = Math.max(ky, this.anchorAt.y) - 6;
+      this.strings.moveTo(kx + 0.5, ky + 6.5).quadraticCurveTo(mx, my, this.anchorAt.x + 0.5, this.anchorAt.y + 0.5).stroke({ width: 1, color: C('W'), alpha: 0.8 });
+    }
     if (this.dog) {
       const since = this.awakeAt >= 0 ? this.time - this.awakeAt : -1;
       const a = since < 0 ? this.dog.sleep : since < 1 ? this.dog.stretch : this.dog.idle;
       const tex = a.textures[frameAt(a, since < 0 ? this.time : since)];
       if (tex) this.dog.sprite.texture = tex;
     }
-    if (this.kite) {
-      const tex = this.kite.anim.textures[frameAt(this.kite.anim, this.time)];
-      if (tex) this.kite.sprite.texture = tex;
-    }
-    const groundY = this.h > this.w ? Math.round(this.h * 0.57) : this.h - 10;
+    const groundY = this.h - 10;
     for (const p of this.walkers) {
       const tex = p.anim.textures[frameAt(p.anim, p.t * 0.6)];
       if (tex) p.sprite.texture = tex;

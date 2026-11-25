@@ -15,18 +15,18 @@ describe('build', () => {
     expect(b.slotWeapons).toHaveLength(1);
   });
 
-  it('applies the volantín level table (GDD shape; Fase 9.2 raised damage 8 → 15 and +20 % → +40 %)', () => {
+  it('applies the volantín level table (Fase 11.10: one kite to start, one more every level)', () => {
     const b = new Build();
-    expect(b.numbers('volantin').count).toBe(3);
+    expect(b.numbers('volantin').count).toBe(1);
     levelUp(b, 'volantin'); // nv 2: +1
-    expect(b.numbers('volantin').count).toBe(4);
-    levelUp(b, 'volantin'); // nv 3: +40 % daño
-    expect(b.numbers('volantin').damage).toBeCloseTo(15 * 1.4);
+    expect(b.numbers('volantin').count).toBe(2);
+    levelUp(b, 'volantin'); // nv 3: +1 and +25 % damage
+    expect(b.numbers('volantin').damage).toBeCloseTo(20 * 1.25);
     levelUp(b, 'volantin');
     levelUp(b, 'volantin');
     expect(b.weapon('volantin')?.level).toBe(5);
     expect(b.numbers('volantin').count).toBe(5);
-    expect(b.numbers('volantin').damage).toBeCloseTo(15 * 1.4 * 1.4);
+    expect(b.numbers('volantin').damage).toBeCloseTo(20 * 1.25 * 1.35);
   });
 
   it('traits stack, rarity scales them, cooldowns have a floor', () => {
@@ -38,18 +38,20 @@ describe('build', () => {
     expect(b.stats().cooldownMult).toBeCloseTo(0.6);
   });
 
-  it('La jauría gives +1 projectile at levels 2 and 4 to every weapon with projectiles', () => {
+  it('La jauría gives +1 at levels 2 and 4 to every weapon, also the ones without projectiles', () => {
     const b = new Build();
     levelUp(b, 'laJauria', 'trait');
     expect(b.stats().projectiles).toBe(0);
     levelUp(b, 'laJauria', 'trait');
     expect(b.stats().projectiles).toBe(1);
-    expect(b.numbers('volantin').count).toBe(4);
+    expect(b.numbers('volantin').count).toBe(2);
+    for (const id of ['pandero', 'cacerola', 'cables', 'chaya']) expect(b.numbers(id).count, id).toBe(2);
     levelUp(b, 'laJauria', 'trait');
     levelUp(b, 'laJauria', 'trait');
     expect(b.stats().projectiles).toBe(2);
-    // The bark is not a projectile weapon.
+    // The bark throws nothing: it barks harder instead.
     expect(b.numbers('guau').count).toBe(1);
+    expect(b.numbers('guau').damage).toBeGreaterThan(new Build().numbers('guau').damage);
   });
 
   it('offers distinct cards and respects the 4 + 4 slots', () => {

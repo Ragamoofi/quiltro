@@ -11,16 +11,8 @@ import type { Weapon } from './weapon.ts';
 const HIT_COOLDOWN = 0.22;
 const KITE_RADIUS = 5;
 const TAIL = 10;
-/**
- * Fase 11.7 — the dive: every so often one kite leaves its orbit, swoops on the nearest enemy and
- * comes back, hitting harder on the way. And every cut has weight: the line flashes white and the
- * kite is tugged back for a moment.
- */
-const DIVE_TIME = 0.6;
-const DIVE_EVERY = 1.1;
-const DIVE_DAMAGE = 1.6;
-const DIVE_REACH = 190;
-const smooth = (t: number): number => t * t * (3 - 2 * t);
+/* Fase 11.7: every cut has weight (the line flashes white and the kite is tugged back). The dive of
+ * the same batch was taken out in 11.10: the player did not like a kite leaving its orbit. */
 /** Height of the line's anchor on the dog (its back). */
 const HAND_Y = 12;
 const LINE = hexToNumber(colorOf('w')?.hex ?? '#FBF3E4');
@@ -36,10 +28,6 @@ interface Kite {
   tailX: number[];
   tailY: number[];
   tailColor: number;
-  /** Seconds left of a dive (0 = in orbit) and where it is heading. */
-  dive: number;
-  tx: number;
-  ty: number;
   /** The white flash of a cut and the tug back, both in 0..1. */
   flash: number;
   tug: number;
@@ -63,8 +51,6 @@ export class Volantin implements Weapon {
   /** Debug override for the number of kites (0 = use the build). */
   forceCount = 0;
   private evolved = false;
-  private diveClock = 2;
-  private nextDive = 0;
 
   constructor() {
     this.root.addChild(this.lines);
@@ -87,9 +73,6 @@ export class Volantin implements Weapon {
         tailX: [],
         tailY: [],
         tailColor: hexToNumber(colorOf(VOLANTIN_COLA[variant] ?? 'r')?.hex ?? '#E63946'),
-        dive: 0,
-        tx: 0,
-        ty: 0,
         flash: 0,
         tug: 0,
       });
@@ -134,26 +117,6 @@ export class Volantin implements Weapon {
     const cy = p.y - HAND_Y;
     const damage = n.damage * (1 + VOLANTIN_ORBIT.shortDamageBonus * (1 - this.hilo));
 
-    // The dive: one kite at a time, while the line is short.
-    this.diveClock -= dt;
-    if (this.diveClock <= 0 && !p.dead && this.hilo < 0.5 && this.count > 0) {
-      this.diveClock = DIVE_EVERY;
-      const foe = ctx.enemies.nearest(cx, cy, px(DIVE_REACH));
-      if (foe) {
-        for (let j = 0; j < this.count; j++) {
-          const idx = (this.nextDive + j) % this.count;
-          const kite = this.kites[idx];
-          if (!kite || kite.dive > 0) continue;
-          kite.dive = DIVE_TIME;
-          kite.tx = foe.x;
-          kite.ty = foe.y;
-          this.nextDive = (idx + 1) % this.count;
-          ctx.sfx.play('golpe', { pitch: 1.5, gain: 0.45 });
-          break;
-        }
-      }
-    }
-
     for (let i = 0; i < this.count; i++) {
       const k = this.kites[i];
       if (!k) continue;
@@ -162,21 +125,8 @@ export class Volantin implements Weapon {
       k.flash = Math.max(0, k.flash - dt / 0.1);
       k.tug = Math.max(0, k.tug - dt / 0.16);
       const a = this.angle + (i / this.count) * Math.PI * 2;
-      const ox = cx + Math.cos(a) * r;
-      const oy = cy + Math.sin(a) * r;
-      let diving = false;
-      if (k.dive > 0 && !p.dead) {
-        k.dive -= dt;
-        const phase = 1 - Math.max(0, k.dive) / DIVE_TIME;
-        const t = phase < 0.5 ? smooth(phase * 2) : smooth(1 - (phase - 0.5) * 2);
-        k.x = ox + (k.tx - ox) * t;
-        k.y = oy + (k.ty - oy) * t;
-        diving = true;
-      } else {
-        k.dive = 0;
-        k.x = ox;
-        k.y = oy;
-      }
+      k.x = cx + Math.cos(a) * r;
+      k.y = cy + Math.sin(a) * r;
       k.tailX.unshift(k.x);
       k.tailY.unshift(k.y);
       const tail = this.evolved ? TAIL * 2 : TAIL;
@@ -186,9 +136,8 @@ export class Volantin implements Weapon {
       }
       if (p.dead) continue;
       // Two samples per step so fast kites do not tunnel through small enemies.
-      const dmg = diving ? damage * DIVE_DAMAGE : damage;
-      this.hitAt((k.x + k.prevX) / 2, (k.y + k.prevY) / 2, dmg, ctx, k);
-      this.hitAt(k.x, k.y, dmg, ctx, k);
+      this.hitAt((k.x + k.prevX) / 2, (k.y + k.prevY) / 2, damage, ctx, k);
+      this.hitAt(k.x, k.y, damage, ctx, k);
     }
   }
 

@@ -162,6 +162,20 @@
       "perfume": "Perfume"
     }
   },
+  "animitas": {
+    "aparece": "Apareció una animita",
+    "bendicion": "¡La animita te bendijo!",
+    "lista": "Gracias",
+    "dano": "+8% daño",
+    "vida": "+15 vida máxima",
+    "velocidad": "+6% velocidad",
+    "area": "+8% área",
+    "espera": "-6% espera",
+    "critico": "+4% crítico",
+    "iman": "+20% imán",
+    "armadura": "+1 armadura",
+    "exp": "+10% experiencia"
+  },
   "pausa": {
     "stats": "Tu quiltro",
     "pilares": "Pilares",
@@ -394,7 +408,8 @@
     "rutaEtiquetaPractica": "Ruta del día #{n} · práctica"
   },
   "menu": {
-    "tocaParaDespertar": "Toca para despertar al quiltro",
+    "tocaParaDespertar": "¡Tócalo para despertarlo!",
+    "lema": "Un quiltro. 4.300 km de Chile. Puro aguante.",
     "pronto": "Pronto",
     "elegir": "Elegir personaje",
     "partir": "¡Partir!",

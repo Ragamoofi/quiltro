@@ -4,6 +4,18 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Menú chileno, animitas como altares y volantín rehecho (Fase 11.10)
+
+#### Cambiado
+- **Menú principal nuevo:** un logo más grande que respira, el lema del juego y de fondo una postal de todo Chile dibujada en pixel art: la cordillera nevada, las Torres del Paine, un volcán del sur con humo, araucarias, los cerros de casitas de colores de Valparaíso y un prado con copihues, con la bandera flameando junto a la Cucha y tres volantines encumbrados.
+- **La intro aparece al apretar ¡Viajar! la primera vez**, ya no antes del menú.
+- **Volantín:** se sacó la picada. Partes con **un solo volantín** y cada nivel suma otro (cinco en el nivel 5); La jauría y el pilar Barrio suman más.
+- **La jauría sirve para todas las armas:** el Pandero suena en más direcciones, la Cacerola golpea más veces, los Cables y la Chaya suman rayos y estelas, y el ¡GUAU! pega 15 % más por punto.
+- **Animitas como los altares de Megabonk:** aparecen solas cerca tuyo (la primera a los 25 s y después cada 40 s), muestran arriba lo que dan (+8 % daño, +15 vida, +6 % velocidad, +8 % área, −6 % espera, +4 % crítico, +20 % imán, +1 armadura o +10 % experiencia) y tienen un círculo dorado en el suelo: quédate adentro 4 s y el bono queda para todo el viaje (se suma si encuentras otra igual). Se quitaron las animitas decorativas del Norte, que eran las que no hacían nada.
+
+#### Equilibrio
+- Bot medio, 16 viajes: 19 % de victorias, 11,2 min de promedio y 63 % llega a Patagonia (antes 19 %, 10,6 min y 56 %).
+
 ### Revisión visual y personajes con voz propia (Fase 11.9)
 
 #### Arreglado

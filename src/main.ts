@@ -280,12 +280,17 @@ async function boot(): Promise<void> {
     music.setScene('menu');
     switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => goSelect() }));
   };
+  /** Fase 11.10: the intro comic plays the first time the player presses Viajar, not before the menu. */
+  const travel = (): void => {
+    if (!data.introSeen) goIntro(() => (data.totals.runs === 0 ? restart() : goSelect()));
+    else goSelect();
+  };
   const goMenu = (): void => {
     music.setScene('menu');
     switchTo(
       () =>
         new MenuScene(input, sfx, data, {
-          travel: () => goSelect(),
+          travel: () => travel(),
           daily: () => goDaily(),
           cucha: () => goCucha(),
           options: () => goOptions(),
@@ -314,15 +319,12 @@ async function boot(): Promise<void> {
         }),
     );
   };
-  // Loading (< 2 s) → first time: the intro (one tap skips it) and straight into the trip;
-  // afterwards: the main menu.
+  // Loading (< 2 s) → the main menu (the intro waits for the first Viajar).
   run = makeRun();
   switchTo(
     () =>
       new LoadingScene(() => {
-        if (!data.introSeen) goIntro(() => restart());
-        else if (data.totals.runs === 0) restart();
-        else goMenu();
+        goMenu();
       }, Math.floor(Math.random() * 7)),
   );
   window.addEventListener('beforeunload', () => {

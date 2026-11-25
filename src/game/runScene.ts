@@ -27,6 +27,7 @@ import { Build, type Offer } from './build.ts';
 import type { Music } from '../audio/music.ts';
 import { setForZone } from '../audio/musicData.ts';
 import { baseMods, type Loadout } from './loadout.ts';
+import { Shrines } from './systems/shrines.ts';
 import { Tutorial } from './tutorial.ts';
 import { OptionsView, type OptionsHooks } from '../ui/optionsView.ts';
 import { ComicScene } from '../ui/scenes/comicScene.ts';
@@ -132,6 +133,8 @@ export class RunScene implements Scene {
   private readonly passives = new Passives(this.sorted);
   /** Chests, animitas and ferias on the road (Fase 11.3). */
   readonly events: RoadEvents;
+  /** Fase 11.10: animitas as shrines with a prayer circle. */
+  readonly shrines: Shrines;
   private readonly ambient: AmbientLife;
   private readonly weather = new Weather();
   private readonly hazards = new Hazards(this.sorted);
@@ -310,6 +313,8 @@ export class RunScene implements Scene {
     });
 
     this.events = new RoadEvents(opts.seed, (n) => this.spawner.ring(ctx, n, this.journey.zone.id), this.sorted);
+    this.shrines = new Shrines(opts.seed, this.sorted);
+    this.shadows.addChildAt(this.shrines.ground, 1);
     this.worldRoot.addChild(
       this.weapons.floor,
       ctx.telegraphs.root,
@@ -533,6 +538,7 @@ export class RunScene implements Scene {
     this.journey.update(dt, real, ctx);
     if (this.mode === 'end') return;
     this.events.update(dt, ctx, this.journey.bossActive);
+    this.shrines.update(dt, ctx, this.journey.bossActive);
     // City scenery: landmark on the horizon, local props on the ground, and the small events.
     const km = this.journey.km(ctx.time);
     if (!this.santiagoSeen && km >= (CIUDADES.find((c) => c.id === 'santiago')?.km ?? Infinity)) {
@@ -852,6 +858,7 @@ export class RunScene implements Scene {
     p.render(a);
     ctx.enemies.render(a);
     ctx.food.render(a);
+    this.shrines.render();
     this.weapons.render(a, ctx);
     this.passives.render(a, ctx);
     this.ambient.render();

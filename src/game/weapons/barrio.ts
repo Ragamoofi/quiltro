@@ -179,7 +179,12 @@ export class Pandero implements Weapon {
       const foe = ctx.enemies.nearest(p.x, p.y - 8, px(n.area) * 1.4);
       const angle = foe ? Math.atan2(foe.y - (p.y - 8), foe.x - p.x) : Math.atan2(this.aim.y, this.aim.x);
       const radius = px(n.area);
-      this.pulses.push({ angle, age: 0, delay: 0, full: evo, fired: false, radius, damage: n.damage });
+      // One pulse per count (La jauría adds more), spread around the dog.
+      const pulses = Math.max(1, n.count);
+      for (let i = 0; i < pulses; i++) {
+        const a = angle + (i * Math.PI * 2) / pulses;
+        this.pulses.push({ angle: a, age: 0, delay: i * 0.08, full: evo, fired: false, radius, damage: n.damage });
+      }
       if (evo) this.pulses.push({ angle, age: 0, delay: 0.3, full: true, fired: false, radius: radius * 1.2, damage: n.damage });
     }
     const cx = p.x;
@@ -257,6 +262,8 @@ export class Cacerola implements Weapon {
   private readonly cd = new Cooldown();
   private readonly near: number[] = [];
   private lastHp = -1;
+  private queued = 0;
+  private queueT = 0;
   private guard = 0;
   private bonks: Bonk[] = [];
 
@@ -294,7 +301,17 @@ export class Cacerola implements Weapon {
         this.guard = 0.5;
         this.bang(ctx, radius * 1.25, (n.damage + lost * 1.5) * (evo ? 1.5 : 1), evo);
       } else if (this.cd.tick(dt, n.cooldown)) {
-        this.bang(ctx, radius, n.damage * 0.8 * (evo ? 1.5 : 1), evo);
+        // One bang per count (La jauría adds more), in quick succession.
+        this.queued = Math.max(1, n.count);
+        this.queueT = 0;
+      }
+      if (this.queued > 0) {
+        this.queueT -= dt;
+        if (this.queueT <= 0) {
+          this.queued--;
+          this.queueT = 0.18;
+          this.bang(ctx, radius, n.damage * 0.8 * (evo ? 1.5 : 1), evo);
+        }
       }
     }
     this.lastHp = p.hp;
