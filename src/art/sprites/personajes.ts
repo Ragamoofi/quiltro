@@ -113,27 +113,35 @@ function legs(p: Pix, pose: Pose, xs: readonly number[], top: number, color: str
   });
 }
 
-// ---- La Quiltra del Chalequito: quiltra clarita de oreja caída con chaleco tejido ----
+// ---- La Quiltra: una fox terrier chilena (Fase 11.13): blanca, cabeza negra con mejillas fuego,
+// orejas dobladas, una mancha negra en el lomo, cola corta parada y collar rosado con moño ----
 const quiltra: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
   const lie = pose.legs === 'lie';
-  // Curled tail.
-  p.rect(2, 8 + y + (pose.wiggle ? 1 : 0), 2, 5, 'n').rect(2, 7 + y + (pose.wiggle ? 1 : 0), 2, 1, 'o');
-  // Body, cream belly and the knitted vest (red with wine stripes and a gold button).
-  p.ellipse(10, 15 + y, 6.5, lie ? 3 : 3.8, 'n').ellipse(11, 17 + y, 4.5, 1.4, 'w');
-  p.rect(6, 12 + y, 8, 5, 'r');
-  for (let x = 7; x < 14; x += 2) p.rect(x, 12 + y, 1, 5, 'R');
-  p.rect(6, 12 + y, 8, 1, 'y').set(10, 15 + y, 'y');
-  // Head with a lighter muzzle and one long floppy ear.
-  p.disc(16, 10 + y, 3.8, 'n').rect(18, 11 + y, 3, 2, 'w').set(21, 11 + y, 'k');
-  p.rect(13, 8 + y, 3, 6, 'o').set(13, 14 + y, 'o');
-  p.rect(17, 5 + y, 2, 2, 'o');
-  if (pose.eye === 'open') p.rect(18, 9 + y, 2, 2, 'k').set(18, 9 + y, 'W');
-  else if (pose.eye === 'closed') p.rect(18, 10 + y, 2, 1, 'k');
-  else p.set(18, 9 + y, 'k').set(19, 10 + y, 'k');
-  if (pose.mouth) p.rect(19, 13 + y, 2, 2, 'R').set(20, 13 + y, 'r');
-  legs(p, pose, [5, 8, 13, 16], 18 + y, 'n', 'o');
+  const tw = pose.wiggle ? 1 : 0;
+  // Short upright tail, white with a tan tip.
+  p.rect(3 - tw, 6 + y, 2, 6, 'w').rect(3 - tw, 6 + y, 2, 1, 'o');
+  // Slim white body with a little grey under the belly and the black saddle patch.
+  p.ellipse(10, 14 + y, 6.5, lie ? 2.8 : 3.4, 'w').ellipse(10, 16.5 + y, 5, 1, 'G');
+  p.ellipse(7, 12 + y, 2.6, 1.6, 'K');
+  // Neck and the black head with tan cheeks and brows, a white blaze and muzzle.
+  p.rect(13, 9 + y, 3, 4, 'w');
+  p.disc(16.5, 8 + y, 3.4, 'K');
+  p.rect(18, 8 + y, 4, 3, 'w').set(21, 8 + y, 'k');
+  p.rect(17, 7 + y, 3, 2, 'o');
+  p.set(18, 5 + y, 'w').set(18, 6 + y, 'w');
+  p.set(16, 5 + y, 'o');
+  // Folded ears (they tip forward).
+  p.rows(13, 3 + y, ['KK..', 'KKK.', '.KK.']);
+  p.rows(18, 3 + y, ['KK.', '.KK']);
+  if (pose.eye === 'open') p.set(18, 7 + y, 'k').set(19, 7 + y, 'W');
+  else if (pose.eye === 'closed') p.rect(17, 7 + y, 3, 1, 'K');
+  else p.set(17, 7 + y, 'k').set(19, 8 + y, 'k');
+  if (pose.mouth) p.rect(19, 10 + y, 3, 1, 'R').set(21, 10 + y, 'k');
+  // Pink collar with a bow.
+  p.rect(13, 11 + y, 3, 1, 'p').set(12, 11 + y, 'r').set(12, 12 + y, 'r');
+  legs(p, pose, [5, 8, 12, 15], 17 + y, 'w', 'G', true);
   return p;
 };
 
@@ -165,30 +173,38 @@ const gato: Draw = (pose) => {
   return p;
 };
 
-// ---- El Pudú: el ciervo más chico, con cuernos, orejas grandes y un copihue ----
+// ---- El Pudú (Fase 11.13): el ciervo más chico del mundo. Redondo y bajito, pelaje café rojizo,
+// cabeza gacha, orejas grandes y redondas, cuernitos cortos, ojazos y patas cortas ----
 const pudu: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
   const lie = pose.legs === 'lie';
-  p.ellipse(10, 15 + y, 6, lie ? 2.5 : 3.5, 'C').ellipse(10, 14 + y, 4.5, 1.2, 'c');
-  p.set(4, 13 + y, 'w').set(4, 14 + y, 'w').set(3, 13 + y, 'w');
-  p.disc(15.5, 10 + y, 3.6, 'C').ellipse(16.8, 11.4 + y, 2.4, 1.6, 'c');
-  // Big round ears with a pink inside.
-  p.rect(12, 6 + y, 3, 4, 'C').set(13, 7 + y, 'p').set(13, 8 + y, 'p').rect(17, 6 + y, 3, 4, 'C').set(18, 7 + y, 'p');
-  // Small forked antlers.
-  p.rect(14, 2 + y, 1, 4, 'd').rect(18, 2 + y, 1, 4, 'd').set(13, 2 + y, 'd').set(19, 2 + y, 'd').set(15, 3 + y, 'd');
-  // A copihue (the red bell flower of Chile) tucked behind the ear.
-  p.rect(11, 9 + y, 2, 2, 'r').set(11, 9 + y, 'y').set(10, 10 + y, 'v');
+  // Round body, arched back: dark along the spine, warm on the sides, paler underneath; tiny tail.
+  p.ellipse(9.5, 14 + y, 6.5, lie ? 3.2 : 3.9, 'O');
+  p.ellipse(9, 11.2 + y, 5, 1.3, 'd');
+  p.ellipse(10, 16.8 + y, 4.2, 0.9, 'C');
+  p.rect(2, 12 + y + (pose.wiggle ? 1 : 0), 2, 1, 'd');
+  // Short neck and a small head held low, with a pointed dark snout and a black nose.
+  p.rect(14, 11 + y, 2, 3, 'O');
+  p.disc(16.5, 10.5 + y, 2.9, 'O');
+  p.rect(18, 11 + y, 3, 2, 'd').set(20, 11 + y, 'k').set(19, 13 + y, 'd');
+  // Big round ears with pink inside.
+  p.ellipse(14, 7 + y, 1.7, 2.2, 'O').rect(14, 6 + y, 1, 2, 'p');
+  p.ellipse(18.5, 7.5 + y, 1.6, 2, 'O').set(18, 7 + y, 'p');
+  // Two short spike antlers between the ears.
+  p.rect(15, 4 + y, 1, 3, 'd').rect(17, 4 + y, 1, 3, 'd');
+  // Big shiny eye.
   if (pose.eye === 'open') p.rect(16, 9 + y, 2, 2, 'k').set(16, 9 + y, 'W');
   else if (pose.eye === 'closed') p.rect(16, 10 + y, 2, 1, 'k');
   else p.set(16, 9 + y, 'k').set(17, 10 + y, 'k');
-  p.set(19, 12 + y, 'k');
-  if (pose.mouth) p.rect(18, 13 + y, 2, 1, 'R');
-  legs(p, pose, [6, 8, 12, 14], 18 + y, 'd', 'k', true);
+  if (pose.mouth) p.rect(19, 13 + y, 2, 1, 'R');
+  // Thin short legs with dark hooves.
+  legs(p, pose, [5, 7, 11, 13], 18 + y, 'd', 'k', true);
   return p;
 };
 
-// ---- El Pingüino de Humboldt: de pie, banda negra en el pecho y una bufanda a rayas ----
+// ---- El Pingüino de Humboldt (Fase 11.13): espalda y cabeza negras, la franja blanca que baja
+// desde el ojo, la piel rosada en la base del pico, el pico negro y la banda negra en el pecho ----
 const pinguino: Draw = (pose) => {
   const p = new Pix(22, 22);
   const lie = pose.legs === 'lie';
@@ -196,23 +212,27 @@ const pinguino: Draw = (pose) => {
   const y = pose.dy + (pose.legs === 'tuck' ? 1 : 0);
   if (lie) {
     // Belly-down slide.
-    p.ellipse(11, 17, 9, 3.5, 'K').ellipse(11, 19, 7, 1.5, 'w').disc(18, 15, 3, 'K').rect(20, 15, 2, 1, 'M');
-    p.rect(14, 13, 5, 2, 'r').set(15, 13, 'w').set(17, 13, 'w');
+    p.ellipse(11, 17, 9, 3.5, 'K').ellipse(11, 19, 7, 1.5, 'w').disc(18, 15, 3, 'K').rect(20, 15, 2, 1, 'k');
+    p.set(17, 14, 'w').set(18, 15, 'p');
     return p;
   }
-  p.ellipse(11 + sway, 13 + y, 5.5, 7.5, 'K');
-  p.ellipse(12.5 + sway, 14 + y, 3.5, 6, 'w');
-  p.rect(10 + sway, 10 + y, 6, 1, 'k');
-  p.disc(12 + sway, 5 + y, 4, 'K');
-  p.rows(9 + sway, 2 + y, ['..www', '.w...', 'w....']);
-  p.set(15 + sway, 6 + y, 'p').rect(16 + sway, 6 + y, 3, 1, 'o');
-  if (pose.mouth) p.rect(16 + sway, 7 + y, 3, 1, 'o').set(17 + sway, 7 + y, 'R');
-  if (pose.eye === 'open') p.set(14 + sway, 4 + y, 'W');
-  else if (pose.eye === 'hurt') p.set(14 + sway, 4 + y, 'r');
-  // The scarf: red with white stripes and a tail that flaps.
-  p.rect(8 + sway, 9 + y, 8, 2, 'r').set(9 + sway, 9 + y, 'w').set(11 + sway, 9 + y, 'w').set(13 + sway, 9 + y, 'w').set(10 + sway, 10 + y, 'w').set(12 + sway, 10 + y, 'w');
-  p.rect(6 + sway, 10 + y + (pose.wiggle ? 1 : 0), 3, 2, 'r');
-  p.ellipse(6 + sway + (pose.wiggle ? -1 : 0), 14 + y, 1.8, 4.2, 'K');
+  const x = sway;
+  // Black body and head, white belly.
+  p.ellipse(11 + x, 13 + y, 5.5, 7.5, 'K');
+  p.ellipse(12.5 + x, 14.5 + y, 3.6, 5.8, 'w');
+  p.disc(12 + x, 5 + y, 4, 'K');
+  // The white stripe: from above the eye, round the cheek and down the neck.
+  p.rows(10 + x, 2 + y, ['..www.', '.w....', 'w.....', 'w.....', '.w....']);
+  // The black breast band across the white belly, and a few black spots under it.
+  p.rows(10 + x, 10 + y, ['.KKKKK', 'K....K']);
+  p.set(13 + x, 14 + y, 'K').set(14 + x, 16 + y, 'K');
+  // Pink skin at the base of the beak and the black beak.
+  p.set(15 + x, 6 + y, 'p').rect(16 + x, 5 + y, 3, 2, 'k').set(18 + x, 5 + y, 'K');
+  if (pose.mouth) p.rect(16 + x, 7 + y, 3, 1, 'k').set(17 + x, 7 + y, 'R');
+  if (pose.eye === 'open') p.set(14 + x, 4 + y, 'W');
+  else if (pose.eye === 'hurt') p.set(14 + x, 4 + y, 'r');
+  // Flipper that swings with the walk.
+  p.ellipse(6 + x + (pose.wiggle ? -1 : 0), 13 + y, 1.8, 4.2, 'k');
   const fy = 20;
   p.rect(9 + (pose.legs === 'a' ? -1 : 0), fy, 3, 2, 'p').rect(13 + (pose.legs === 'b' ? 1 : 0), fy, 3, 2, 'p');
   return p;
@@ -244,45 +264,67 @@ const palomaRebelde: Draw = (pose) => {
   return p;
 };
 
-// ---- El Zorro Culpeo: esbelto, rojizo, cola tupida con punta negra y calcetines oscuros ----
+// ---- El Zorro Culpeo (Fase 11.13): lomo gris canoso sobre pelaje rojizo, cabeza y patas color
+// fuego, garganta blanca, orejas grandes de reverso negro, hocico largo, calcetines negros y una cola
+// muy tupida, gris con la punta negra, separada del cuerpo por una sombra ----
 const zorro: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
   const lie = pose.legs === 'lie';
   const tw = pose.wiggle ? 1 : 0;
-  // Bushy tail with a dark tip.
-  p.ellipse(4 + tw, 13 + y, 4, 5, 'O').ellipse(3 + tw, 14 + y, 2.4, 3.6, 'o').disc(2.5 + tw, 17.5 + y, 2, 'K');
-  // Slim body, darker back, white chest and belly.
-  p.ellipse(10, 15 + y, 6.5, lie ? 3 : 3.7, 'o').rect(6, 12 + y, 8, 1, 'O').ellipse(12, 17 + y, 4.5, 1.4, 'w');
-  p.ellipse(14, 14 + y, 2.5, 2.5, 'w');
-  // Long face, white cheek, dark nose and big pointed ears.
-  p.disc(16, 10 + y, 3.3, 'o').rect(18, 10 + y, 3, 2, 'o').rect(17, 12 + y, 3, 1, 'w').set(21, 10 + y, 'k');
-  p.rect(14, 5 + y, 2, 3, 'O').set(14, 4 + y, 'O').rect(17, 5 + y, 2, 3, 'O').set(18, 4 + y, 'O').set(15, 6 + y, 'k').set(18, 6 + y, 'k');
+  // The big brush of a tail, held low and out behind, grizzled grey with a black tip.
+  p.ellipse(4 - tw * 0.5, 15 + y, 4, 2.6, 'm').ellipse(4.5 - tw * 0.5, 14.3 + y, 3, 1.2, 'n');
+  p.disc(1.5 - tw * 0.5, 16 + y, 1.6, 'k');
+  // A dark seam where the tail meets the body, so the two never read as one shape.
+  p.rect(7, 12 + y, 1, 5, 'd');
+  // Slim body: rusty sides, the grey saddle on the back, white chest.
+  p.ellipse(11, 14.5 + y, 5.5, lie ? 3 : 3.4, 'O');
+  p.ellipse(11, 12 + y, 4.5, 1.4, 'm');
+  p.ellipse(14.5, 14.5 + y, 2, 2.4, 'w');
+  // Long fiery face, white cheek and chin, black nose.
+  p.disc(16, 9.5 + y, 3.2, 'o').rect(18, 10 + y, 4, 2, 'o').rect(17, 12 + y, 4, 1, 'w').set(21, 10 + y, 'k');
+  // Big pointed ears with black backs.
+  p.rows(13, 3 + y, ['k...k.', 'Ok..Ok', 'OO..OO']);
+  p.set(14, 5 + y, 'k').set(18, 5 + y, 'k');
   if (pose.eye === 'open') p.set(17, 9 + y, 'a').set(18, 9 + y, 'k');
   else if (pose.eye === 'closed') p.rect(17, 9 + y, 2, 1, 'k');
   else p.set(17, 8 + y, 'k').set(18, 10 + y, 'k');
-  if (pose.mouth) p.rect(19, 12 + y, 2, 2, 'R');
-  legs(p, pose, [5, 8, 13, 16], 18 + y, 'K', 'k', true);
+  if (pose.mouth) p.rect(19, 12 + y, 2, 1, 'R');
+  // Legs rusty on top, black socks below.
+  legs(p, pose, [8, 10, 13, 15], 17 + y, 'o', 'k', true);
+  if (!lie && pose.legs !== 'tuck') for (const lx of [8, 10, 13, 15]) {
+    const sw = pose.legs === 'a' ? ([8, 13].includes(lx) ? -1 : 1) : pose.legs === 'b' ? ([8, 13].includes(lx) ? 1 : -1) : 0;
+    p.rect(lx + sw, 19 + y, 1, 2, 'k');
+  }
   return p;
 };
 
-// ---- El Chingue: negro con franja blanca, cola enorme y alzada ----
+// ---- El Chingue (Fase 11.13): el zorrillo de Chile. Pelaje negro con dos franjas blancas que van
+// de la frente a la cola, hocico largo de cerdito con nariz rosada, orejas chicas y una cola tupida
+// que se arquea sobre el lomo ----
 const chingue: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
   const lie = pose.legs === 'lie';
   const tw = pose.wiggle ? 1 : 0;
-  // The huge tail with its white stripe, held high.
-  p.ellipse(4 + tw, 9 + y, 3.6, 7, 'k').rect(3 + tw, 3 + y, 2, 9, 'w').ellipse(5 + tw, 11 + y, 2, 3, 'K');
-  // Round body with two stripes along the back.
-  p.ellipse(10, 15 + y, 6.5, lie ? 3 : 4, 'k').rect(6, 11 + y, 9, 1, 'w').rect(7, 12 + y, 7, 1, 'w').ellipse(10, 17 + y, 4, 1.4, 'K');
-  // Small head with the white blaze, round ears and a pink nose.
-  p.disc(16.5, 11 + y, 3.2, 'k').rect(16, 7 + y, 2, 5, 'w').set(14, 8 + y, 'k').set(19, 8 + y, 'k').set(20, 12 + y, 'p').rect(19, 12 + y, 2, 1, 'K');
-  if (pose.eye === 'open') p.rect(18, 10 + y, 2, 2, 'W').set(19, 11 + y, 'k');
-  else if (pose.eye === 'closed') p.rect(18, 11 + y, 2, 1, 'g');
-  else p.set(18, 10 + y, 'r').set(19, 11 + y, 'r');
-  if (pose.mouth) p.rect(19, 13 + y, 2, 2, 'R');
-  legs(p, pose, [6, 9, 13, 16], 18 + y, 'K', 'k');
+  // The plume: it rises from the rump and curls forward over the back, with white along it.
+  p.ellipse(4.5 - tw * 0.5, 9 + y, 4, 6, 'K');
+  p.ellipse(5.5 - tw * 0.5, 4.5 + y, 3, 2.4, 'K');
+  p.rect(4 - tw, 4 + y, 1, 9, 'w').rect(5 - tw, 3 + y, 2, 1, 'w');
+  p.set(2 - tw, 6 + y, 'g').set(7 - tw, 8 + y, 'g');
+  // Low, long body with the two white stripes along the back.
+  p.ellipse(11, 15 + y, 6.5, lie ? 2.8 : 3.4, 'K');
+  p.rect(7, 12 + y, 9, 1, 'w').rect(8, 13 + y, 7, 1, 'K').rect(8, 14 + y, 6, 1, 'w');
+  // Small head with the white blaze, a long pig-like snout and a pink nose; small round ears.
+  p.disc(17, 12 + y, 2.8, 'K');
+  p.rect(16, 9 + y, 2, 3, 'w');
+  p.rect(19, 13 + y, 3, 1, 'K').set(21, 13 + y, 'p').set(21, 12 + y, 'p');
+  p.set(15, 9 + y, 'K').set(18, 9 + y, 'K');
+  if (pose.eye === 'open') p.set(18, 12 + y, 'W');
+  else if (pose.eye === 'closed') p.set(18, 12 + y, 'g');
+  else p.set(18, 12 + y, 'r');
+  if (pose.mouth) p.rect(19, 14 + y, 2, 1, 'R');
+  legs(p, pose, [7, 10, 13, 16], 18 + y, 'K', 'k');
   return p;
 };
 
@@ -338,7 +380,8 @@ export const personajesSprites: SpriteDef[] = [
   character('gato', gato),
   // The pudú runs in little hops.
   character('pudu', pudu, (pose) => ({
-    trotar: { fps: 9, frames: [pose({ legs: 'tuck', dy: 1 }), pose({ legs: 'a', dy: -2 }), pose({ legs: 'stand', dy: -3, wiggle: 1 }), pose({ legs: 'b', dy: -1 })] },
+    // In the air the legs fold under the body; they reach the ground only when it lands.
+    trotar: { fps: 9, frames: [pose({ legs: 'a', dy: 0 }), pose({ legs: 'tuck', dy: -2 }), pose({ legs: 'tuck', dy: -3, wiggle: 1 }), pose({ legs: 'b', dy: 0 })] },
   })),
   character('pinguino', pinguino),
   // The pigeon walks when it stands still and flies when it moves.

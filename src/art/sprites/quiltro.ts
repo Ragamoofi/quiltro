@@ -1,11 +1,12 @@
 import { recolor, shiftY, silhouette, withRows, type Frame, type SpriteDef } from '../types.ts';
 
 /*
- * El Quiltro: caramelo, pañoleta azul, mirando a la derecha (se espeja en el juego).
+ * El Quiltro: caramelo, orejas paradas y un collar con placa, mirando a la derecha (se espeja en el juego).
+ * (Fase 11.13: la pañoleta pasó a ser un collar; el color se sigue eligiendo en La Cucha.)
  * 24×24, contorno de tinta (k). Pivote en las patas.
  * Proporciones a lo Brotato: cabeza grande, ojo de 2×2 con brillo, lomo redondo, patas cortas.
  *
- * Leyenda rápida: k tinta · c caramelo · C caramelo tostado · l crema · b/B pañoleta · W brillo · R boca
+ * Leyenda rápida: k tinta · c caramelo · C caramelo tostado · l crema · b collar · a placa · W brillo · R boca
  * Las matrices se escriben con los pies en la fila 20 y se bajan 1 px al exportar.
  */
 const EMPTY = '........................';
@@ -14,8 +15,8 @@ const STAND_RAW: Frame = [
   EMPTY,
   EMPTY,
   EMPTY,
-  EMPTY,
-  '.............kk..kk.....',
+  '.............k...k......',
+  '............kCk.kCk.....',
   '............kCCkkCCk....',
   '..k........kcccccccck...',
   '.kck.......kccllccccck..',
@@ -23,10 +24,10 @@ const STAND_RAW: Frame = [
   '..kck......kcccckkllllk.',
   '..kck......kcccccllllk..',
   '...kckkkkkkkbbbbkkkkk...',
-  '....klllllcbbbbbk.......',
-  '...kccccccccbbbbck......',
-  '...kCcccccccbbBcck......',
-  '...kCCccccccbBccck......',
+  '....klllllcccacck.......',
+  '...kccccccccccllck......',
+  '...kCcccccccccllck......',
+  '...kCCccccccccllck......',
   '....kCCllllllllcck......',
   '....kckkCkkkCkkck.......',
   '....kckkCk.kCkkck.......',
@@ -39,7 +40,8 @@ const STAND_RAW: Frame = [
 
 /** While trotting (and charging) the ears fly one pixel back. */
 const EARS_BACK = {
-  4: '............kk..kk......',
+  3: '............k...k.......',
+  4: '...........kCk.kCk......',
   5: '...........kCCkkCCk.....',
 };
 
@@ -53,7 +55,7 @@ const SQUINT = {
 const MOUTH_OPEN = {
   10: '..kck......kcccccRRRRk..',
   11: '...kckkkkkkkbbbbkllllk..',
-  12: '....klllllcbbbbbkkkkk...',
+  12: '....klllllcccacckkkkk...',
 };
 
 /** Crouch: body one pixel lower, legs one pixel shorter (row 18 removed). */
@@ -102,14 +104,17 @@ const RAW = {
     withRows(STAND_RAW, {
       ...SQUINT,
       ...EARS_BACK,
-      6: EMPTY,
-      7: EMPTY,
+      3: EMPTY,
+      4: EMPTY,
+      5: EMPTY,
+      6: '............kCk.kCk.....',
+      7: '...........kCCkkCCk.....',
       8: '...........kcccckkcccckk',
       9: '...........kccccccllllk.',
       10: '...........kcccccllllk..',
       11: '..kkkkkkkkkkbbbbkkkkk...',
-      12: '.kcklllllcbbbbbk........',
-      13: '..kkccccccccbbbbck......',
+      12: '.kcklllllcccacck........',
+      13: '..kkccccccccccllck......',
     }),
   ),
   /** Asleep in front of La Cucha: lying, eyes shut, ears down when breathing out. */
