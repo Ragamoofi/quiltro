@@ -106,8 +106,8 @@ export class GranTemblor extends Boss {
   private rocks(ctx: RunContext): void {
     const p = ctx.player;
     for (let i = 0; i < 6; i++) {
-      const rx = p.x + ctx.rng.range(-80, 80);
-      const ry = p.y + ctx.rng.range(-60, 60);
+      const rx = p.x + ctx.rngDirector.range(-80, 80);
+      const ry = p.y + ctx.rngDirector.range(-60, 60);
       ctx.telegraphs.circle(rx, ry, 14, 1 + i * 0.1, () => {
         ctx.enemies.slam(rx, ry - 8, 14, 14 * this.dmg, ctx);
         ctx.particles.burst(ctx.rng, rx, ry, 8, ['m', 'M', 'n'], 50, 0.35);
@@ -118,7 +118,7 @@ export class GranTemblor extends Boss {
   /** Phase 2 aftershock: get into a green safe zone or take the hit. */
   private aftershock(ctx: RunContext): void {
     const p = ctx.player;
-    const safes = [0, 1].map(() => ({ x: p.x + ctx.rng.range(-80, 80), y: p.y + ctx.rng.range(-55, 55) }));
+    const safes = [0, 1].map(() => ({ x: p.x + ctx.rngDirector.range(-80, 80), y: p.y + ctx.rngDirector.range(-55, 55) }));
     for (const s of safes) ctx.telegraphs.circle(s.x, s.y, 22, 1.7, null, 'v');
     ctx.banner(t('jefes.granTemblor.linea'), 'r');
     ctx.telegraphs.circle(p.x, p.y, 4, 1.7, () => {

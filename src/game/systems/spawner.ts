@@ -54,30 +54,30 @@ export class Spawner {
     const weights = pool.map((id) => this.weight(id));
     this.acc += spawnPerSecond(minutes) * (bossActive ? 0.4 : 1) * dt;
     while (this.acc >= 1) {
-      const group = Math.min(Math.floor(this.acc), ctx.rng.int(1, 4));
+      const group = Math.min(Math.floor(this.acc), ctx.rngDirector.int(1, 4));
       this.acc -= group;
       if (ctx.enemies.activeCount >= this.cap) continue;
-      const a = ctx.rng.range(0, Math.PI * 2);
+      const a = ctx.rngDirector.range(0, Math.PI * 2);
       const cx = p.x + Math.cos(a) * edge;
       const cy = p.y + Math.sin(a) * edge;
-      const kind = pool[ctx.rng.weighted(weights)] ?? 'zancudo';
+      const kind = pool[ctx.rngDirector.weighted(weights)] ?? 'zancudo';
       // Big ones come alone.
       const n = this.weight(kind) < 3 ? 1 : group;
       for (let i = 0; i < n; i++) {
-        ctx.enemies.spawn(kind, cx + ctx.rng.range(-10, 10), cy + ctx.rng.range(-10, 10), minutes, ctx);
+        ctx.enemies.spawn(kind, cx + ctx.rngDirector.range(-10, 10), cy + ctx.rngDirector.range(-10, 10), minutes, ctx);
       }
     }
 
     if ((zoneId === 'centro' || zoneId === 'antartica') && ctx.time >= this.nextFlock && !bossActive) {
-      this.nextFlock = ctx.time + ctx.rng.range(16, 24) / (1 + minutes * 0.08);
+      this.nextFlock = ctx.time + ctx.rngDirector.range(16, 24) / (1 + minutes * 0.08);
       this.flock(ctx, viewW, viewH);
     }
 
     if (ctx.time >= this.nextElite) {
       // Catch-up guard (debug jumps): never fire a backlog of elites at once.
       this.nextElite = Math.max(this.nextElite + ELITE.every, ctx.time + ELITE.every * 0.5);
-      const a = ctx.rng.range(0, Math.PI * 2);
-      const kind = zoneId === 'patagonia' ? ELITE.patagoniaElite : ctx.rng.pick(pool);
+      const a = ctx.rngDirector.range(0, Math.PI * 2);
+      const kind = zoneId === 'patagonia' ? ELITE.patagoniaElite : ctx.rngDirector.pick(pool);
       ctx.enemies.spawn(kind, p.x + Math.cos(a) * edge, p.y + Math.sin(a) * edge, minutes, ctx, true);
       // A gong, panned to the side it comes from: you know an elite arrived without looking.
       ctx.sfx.play('elite', { pan: Math.cos(a) });
@@ -96,9 +96,9 @@ export class Spawner {
 
   flock(ctx: RunContext, viewW: number, viewH: number): void {
     const p = ctx.player;
-    const a = ctx.rng.range(0, Math.PI * 2);
+    const a = ctx.rngDirector.range(0, Math.PI * 2);
     const r = Math.hypot(viewW, viewH) / 2 + 30;
-    const size = ctx.rng.int(8, 15) + Math.floor(ctx.time / 60);
+    const size = ctx.rngDirector.int(8, 15) + Math.floor(ctx.time / 60);
     ctx.enemies.spawnFlock(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, size, ctx.time / 60, ctx);
   }
 

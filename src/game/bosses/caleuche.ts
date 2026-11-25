@@ -60,8 +60,8 @@ export class Caleuche extends Boss {
       ctx.particles.burst(ctx.rng, this.x + this.facing * 40, this.y + 8, 8, ['G', 'g', 'W'], 40, 0.5);
       ctx.sfx.play('puf', { pitch: 0.35, gain: 1.6 });
       for (let i = 0; i < 3; i++) {
-        const cx = p.x + ctx.rng.range(-45, 45);
-        const cy = p.y + ctx.rng.range(-35, 35);
+        const cx = p.x + ctx.rngDirector.range(-45, 45);
+        const cy = p.y + ctx.rngDirector.range(-35, 35);
         ctx.telegraphs.circle(cx, cy, 18, 1.2 + i * 0.15, () => {
           ctx.enemies.slam(cx, cy - 8, 18, 16 * this.dmg, ctx);
           ctx.particles.burst(ctx.rng, cx, cy, 10, ['K', 'g', 'W'], 60, 0.35);
@@ -73,13 +73,13 @@ export class Caleuche extends Boss {
       this.summonT -= dt;
       if (this.summonT <= 0) {
         this.summonT = 6;
-        for (let i = 0; i < 3; i++) ctx.enemies.spawn('chonchon', this.x + ctx.rng.range(-30, 30), this.y + 20, ctx.time / 60, ctx);
+        for (let i = 0; i < 3; i++) ctx.enemies.spawn('chonchon', this.x + ctx.rngDirector.range(-30, 30), this.y + 20, ctx.time / 60, ctx);
         ctx.sfx.play('tuetue', { pitch: 0.9 });
       }
       this.fogT -= dt;
       if (this.fogT <= 0) {
         this.fogT = 6;
-        this.setFog(ctx.rng.chance(0.5) ? -1 : 1);
+        this.setFog(ctx.rngDirector.chance(0.5) ? -1 : 1);
       }
     }
   }

@@ -53,6 +53,14 @@ export class Rng {
   }
 }
 
+/** Independent stream seed from a base seed: same result on every device. */
+export function deriveSeed(seed: number, stream: number): number {
+  let h = (seed ^ Math.imul(stream + 1, 0x9e3779b1)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
 /** Turns any string (e.g. a date '2026-11-24') into a 32-bit seed (FNV-1a). */
 export function seedFromString(text: string): number {
   let h = 0x811c9dc5;

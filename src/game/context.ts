@@ -15,7 +15,16 @@ import type { Telegraphs } from './systems/telegraphs.ts';
 
 /** Everything a system may need during a run, passed instead of globals. */
 export interface RunContext {
+  /**
+   * Three random streams, all from the run's seed. `rngDirector` decides what
+   * attacks and when (enemies, elites, flocks, bosses, hazards) and `rngCards`
+   * deals the level-up and box cards, so the Ruta del día gives everybody the
+   * same trip. `rng` is for everything cosmetic or skill-dependent (crits,
+   * loot, particles).
+   */
   readonly rng: Rng;
+  readonly rngDirector: Rng;
+  readonly rngCards: Rng;
   readonly sfx: Sfx;
   readonly particles: Particles;
   readonly numbers: DamageNumbers;

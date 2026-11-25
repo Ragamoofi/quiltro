@@ -49,7 +49,7 @@ export class Journey {
   constructor(ctx: RunContext, hooks: JourneyHooks) {
     this.hooks = hooks;
     const [a, b] = TEMBLOR_WINDOW_MIN;
-    this.temblorAt = ctx.rng.range(a, b) * 60;
+    this.temblorAt = ctx.rngDirector.range(a, b) * 60;
   }
 
   get zone(): ZoneDef {
@@ -133,16 +133,16 @@ export class Journey {
       this.fireworkT -= realDt;
       if (this.fireworkT <= 0) {
         this.fireworkT = 0.12;
-        const colors = ctx.rng.pick([['r', 'y', 'W'], ['b', 's', 'W'], ['p', 't', 'W'], ['a', 'y', 'W']]);
-        ctx.particles.burst(ctx.rng, this.boss.x + ctx.rng.range(-50, 50), this.boss.y + ctx.rng.range(-40, 20), 20, colors, 110, 0.6);
-        ctx.sfx.play('puf', { pitch: 0.6 + ctx.rng.range(0, 0.4), gain: 1.2 });
+        const colors = ctx.rngDirector.pick([['r', 'y', 'W'], ['b', 's', 'W'], ['p', 't', 'W'], ['a', 'y', 'W']]);
+        ctx.particles.burst(ctx.rng, this.boss.x + ctx.rngDirector.range(-50, 50), this.boss.y + ctx.rngDirector.range(-40, 20), 20, colors, 110, 0.6);
+        ctx.sfx.play('puf', { pitch: 0.6 + ctx.rngDirector.range(0, 0.4), gain: 1.2 });
       }
       if (this.deathT < 0) this.finishBoss(ctx);
     }
 
     // Secret: after 2 minutes on the ice, a hint points west, to the island of the guardians.
     if (this.antartica && !this.rapaNui && ctx.time - this.zoneStart > 120) {
-      this.rapaNui = { x: p.x - 900, y: p.y + ctx.rng.range(-200, 200), found: false };
+      this.rapaNui = { x: p.x - 900, y: p.y + ctx.rngDirector.range(-200, 200), found: false };
       ctx.banner(t('meta.rapaNuiPista'), 'i');
     }
     if (this.rapaNui && !this.rapaNui.found && (p.x - this.rapaNui.x) ** 2 + (p.y - this.rapaNui.y) ** 2 < 70 ** 2) {

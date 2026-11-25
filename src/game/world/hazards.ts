@@ -106,13 +106,13 @@ export class Hazards {
     switch (this.active) {
       case 'remolinos':
         if (this.timer <= 0) {
-          this.timer = ctx.rng.range(7, 11);
+          this.timer = ctx.rngDirector.range(7, 11);
           this.spawnDevil(ctx);
         }
         break;
       case 'microQueNoPara':
         if (this.timer <= 0) {
-          this.timer = ctx.rng.range(12, 16);
+          this.timer = ctx.rngDirector.range(12, 16);
           this.spawnBus(ctx);
         }
         break;
@@ -120,7 +120,7 @@ export class Hazards {
         this.windTimer -= dt;
         if (this.windTimer <= 0) {
           this.windTimer = 8;
-          const a = ctx.rng.range(0, Math.PI * 2);
+          const a = ctx.rngDirector.range(0, Math.PI * 2);
           const s = px(70);
           this.windTarget = { x: Math.cos(a) * s, y: Math.sin(a) * s * 0.6 };
         }
@@ -179,7 +179,7 @@ export class Hazards {
 
   private spawnDevil(ctx: RunContext): void {
     const p = ctx.player;
-    const a = ctx.rng.range(0, Math.PI * 2);
+    const a = ctx.rngDirector.range(0, Math.PI * 2);
     const r = 200;
     const sprite = new Sprite();
     sprite.anchor.set(0.5, 1);
@@ -187,7 +187,7 @@ export class Hazards {
     this.world.addChild(sprite);
     const sx = p.x + Math.cos(a) * r;
     const sy = p.y + Math.sin(a) * r * 0.7;
-    const to = Math.atan2(p.y - sy, p.x - sx) + ctx.rng.range(-0.3, 0.3);
+    const to = Math.atan2(p.y - sy, p.x - sx) + ctx.rngDirector.range(-0.3, 0.3);
     const s = px(70);
     this.devils.push({ x: sx, y: sy, vx: Math.cos(to) * s, vy: Math.sin(to) * s, life: 8, sprite });
   }
@@ -195,10 +195,10 @@ export class Hazards {
   private spawnBus(ctx: RunContext): void {
     const p = ctx.player;
     // A horizontal or diagonal avenue through the dog's position, announced 0.8 s ahead.
-    const angle = ctx.rng.pick([0, Math.PI, 0.35, Math.PI - 0.35, -0.35, Math.PI + 0.35]);
+    const angle = ctx.rngDirector.pick([0, Math.PI, 0.35, Math.PI - 0.35, -0.35, Math.PI + 0.35]);
     const dx = Math.cos(angle);
     const dy = Math.sin(angle);
-    const off = ctx.rng.range(-20, 20);
+    const off = ctx.rngDirector.range(-20, 20);
     const sx = p.x - dx * 320 - dy * off;
     const sy = p.y - 8 - dy * 320 + dx * off;
     const horn = MICRO?.params?.hornTime ?? 0.8;
