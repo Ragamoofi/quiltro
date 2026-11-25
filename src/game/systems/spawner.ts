@@ -79,6 +79,8 @@ export class Spawner {
       const a = ctx.rng.range(0, Math.PI * 2);
       const kind = zoneId === 'patagonia' ? ELITE.patagoniaElite : ctx.rng.pick(pool);
       ctx.enemies.spawn(kind, p.x + Math.cos(a) * edge, p.y + Math.sin(a) * edge, minutes, ctx, true);
+      // A gong, panned to the side it comes from: you know an elite arrived without looking.
+      ctx.sfx.play('elite', { pan: Math.cos(a) });
     }
 
     for (const m of RING_WAVES_MIN) {
@@ -87,6 +89,7 @@ export class Spawner {
         if (bossActive || minutes - m > 0.25) continue;
         this.ring(ctx, 24 + m * 3, zoneId);
         ctx.banner(t('ui.rodeado'), 'r');
+        ctx.sfx.play('alarma');
       }
     }
   }

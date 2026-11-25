@@ -203,7 +203,9 @@ export class Hazards {
     const sy = p.y - 8 - dy * 320 + dx * off;
     const horn = MICRO?.params?.hornTime ?? 0.8;
     ctx.telegraphs.line(sx, sy, sx + dx * 640, sy + dy * 640, 22, horn, null);
-    ctx.sfx.play('bocina');
+    const pan = Math.max(-1, Math.min(1, (sx - p.x) / 200));
+    ctx.sfx.play('bocina', { pan });
+    ctx.sfx.play('motor', { pan });
     const sprite = new Sprite();
     sprite.anchor.set(0.5);
     sprite.scale.x = dx >= 0 ? 1 : -1;

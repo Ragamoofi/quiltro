@@ -19,6 +19,8 @@ import { PauseView } from '../ui/pauseView.ts';
 import { LOGROS } from '../data/logros.ts';
 import type { RunResult, RunRewards } from '../meta/progress.ts';
 import { Build, type Offer } from './build.ts';
+import type { Music } from '../audio/music.ts';
+import { setForZone } from '../audio/musicData.ts';
 import { baseMods, type Loadout } from './loadout.ts';
 import { Tutorial } from './tutorial.ts';
 import { OptionsView, type OptionsHooks } from '../ui/optionsView.ts';
@@ -140,7 +142,13 @@ export class RunScene implements Scene {
   private readonly options: OptionsView;
   private comic: ComicScene | null = null;
 
-  constructor(input: Input, sfx: Sfx, opts: RunOptions) {
+  private readonly music: Music;
+  private muffledNow = false;
+  private heartbeat = 0;
+  private intensityT = 0;
+
+  constructor(input: Input, sfx: Sfx, music: Music, opts: RunOptions) {
+    this.music = music;
     this.input = input;
     this.opts = opts;
     this.sorted.sortableChildren = true;
@@ -202,7 +210,11 @@ export class RunScene implements Scene {
       hitstop: (s) => {
         this.freeze = Math.max(this.freeze, s);
       },
-      banner: (text, color, subtitle) => this.banner.show(text, color, subtitle),
+      banner: (text, color, subtitle) => {
+        this.banner.show(text, color, subtitle);
+        // An important sign is on screen: the effects step back 30 % so it is heard (GDD "Mezcla").
+        sfx.duck(1.8);
+      },
       openCaja: (golden) => this.openCaja(golden),
       debug: { invincible: false, hitboxes: false },
     };
@@ -240,6 +252,17 @@ export class RunScene implements Scene {
         this.horizon.setZone(z.id, this.viewW);
         this.weather.setZone(z.id, this.viewW, this.viewH, ctx.rng);
         this.hazards.setZone(z.hazard, ctx);
+        // Each zone has its own music (2 s crossfade) and a short jingle when you arrive.
+        this.music.setScene(setForZone(z.id));
+        if (ctx.time > 1) sfx.play('zona');
+      },
+      onBoss: (on) => {
+        this.music.setBoss(on);
+        if (on) {
+          // Boss intro: swell + timpani roll, effects ducked so the roll is heard.
+          sfx.play('jefe');
+          sfx.duck(2.4);
+        }
       },
       onVictory: () => this.finish(true),
       setTimeScale: (v) => this.setTimeScale(v),
@@ -344,6 +367,8 @@ export class RunScene implements Scene {
 
   enter(): void {
     this.camera.snapTo(this.ctx.player.x, this.ctx.player.y);
+    this.music.setBoss(false);
+    this.music.setMuffled(false);
     this.journey.begin(this.ctx);
   }
 
@@ -381,6 +406,12 @@ export class RunScene implements Scene {
   update(dt: number): void {
     this.input.poll();
     const ctx = this.ctx;
+    // Pause, cards and the box put the music behind a door (low-pass); playing opens it again.
+    const muffle = this.mode === 'paused' || this.mode === 'cards' || this.mode === 'caja';
+    if (muffle !== this.muffledNow) {
+      this.muffledNow = muffle;
+      this.music.setMuffled(muffle);
+    }
     const real = dt / Math.max(0.05, this.timeScale);
     this.banner.update(real);
     ctx.screen.updateReal(real);
@@ -480,6 +511,18 @@ export class RunScene implements Scene {
       if (e.active && e.def.id === 'zancudo' && Math.abs(e.x - p.x) < 120 && Math.abs(e.y - p.y) < 90) near++;
     }
     ctx.sfx.setBuzz(near / 12);
+
+    // Music intensity follows the crowd; low health beats like a heart (sound alone tells you).
+    this.intensityT -= dt;
+    if (this.intensityT <= 0) {
+      this.intensityT = 0.4;
+      this.music.setIntensity(ctx.enemies.activeCount);
+    }
+    this.heartbeat -= dt;
+    if (!p.dead && p.hp / p.maxHp < 0.25 && this.heartbeat <= 0) {
+      this.heartbeat = 0.55 + (p.hp / p.maxHp) * 2;
+      ctx.sfx.play('latido');
+    }
   }
 
   // ---------------------------------------------------------------- level up
@@ -492,7 +535,8 @@ export class RunScene implements Scene {
     ctx.screen.levelUp(ctx.player.x, ctx.player.y);
     const shouts = tList('ui.subirNivel');
     this.banner.show(shouts[ctx.rng.int(0, Math.max(0, shouts.length - 1))] ?? '¡Wena!', 'a');
-    ctx.sfx.play('cargaLista', { pitch: 1.2 });
+    // Level up: an ascending guitar strum.
+    ctx.sfx.play('guitarra');
   }
 
   private showCards(fresh: boolean): void {
@@ -500,7 +544,11 @@ export class RunScene implements Scene {
     this.mode = 'cards';
     this.input.clear();
     this.ctx.sfx.setBuzz(0);
-    if (this.offers.some((o) => o.rarity === 'legendaria')) this.ctx.sfx.play('cargaLista', { pitch: 2 });
+    if (fresh && this.offers.some((o) => o.rarity === 'legendaria')) {
+      // Legendary card: a happy accordion and "¡Bacán!".
+      this.ctx.sfx.play('acordeon');
+      window.setTimeout(() => this.ctx.sfx.play('bacan'), 450);
+    }
     this.levelUp.show(
       this.offers,
       this.ctx.progress.level,
@@ -588,6 +636,8 @@ export class RunScene implements Scene {
       rewards.push(offer);
       count = Math.max(1, count - 1);
       ctx.banner(t(evo.nameKey), 'a', t('ui.evoluciona'));
+      // Cielo del Dieciocho: 20 s of cueca in 6/8 with palmas (GDD "Música").
+      if (evo.id === 'cieloDelDieciocho') this.music.startCueca(20);
     }
     for (let i = 0; i < count; i++) {
       const offer = ctx.build.offers(ctx.rng, 1)[0];
@@ -605,8 +655,8 @@ export class RunScene implements Scene {
       golden,
       this.viewW,
       this.viewH,
-      () => ctx.sfx.play('carga', { pitch: 2 }),
-      () => ctx.sfx.play('cargaLista', { pitch: 1.3 }),
+      () => ctx.sfx.play('ruleta', { pitch: 0.9 + ctx.rng.range(0, 0.3) }),
+      () => ctx.sfx.play(evo ? 'evolucion' : 'cargaLista', { pitch: evo ? 1 : 1.3 }),
     );
   }
 
@@ -682,6 +732,9 @@ export class RunScene implements Scene {
     this.mode = 'end';
     this.setTimeScale(1);
     ctx.sfx.setBuzz(0);
+    // The music stops; the fanfare (or the sad "wah-wah" of the cumbia) says how it went.
+    this.music.stop();
+    ctx.sfx.play(victory ? 'victoria' : 'derrota');
     const km = this.journey.km(ctx.time);
     // Only what is new since the last report counts (a run that continued into Antarctica reports twice).
     const r = this.reported;
@@ -724,7 +777,7 @@ export class RunScene implements Scene {
       this.viewW,
       this.viewH,
       () => this.opts.onRestart(),
-      () => ctx.sfx.play('comida', { pitch: 1.5 + ctx.rng.range(0, 0.3) }),
+      () => ctx.sfx.play('moneda', { pitch: 0.9 + ctx.rng.range(0, 0.4) }),
       victory && !this.journey.antartica ? () => this.continueToAntarctica() : undefined,
       this.opts.onCucha ?? undefined,
       () => this.opts.onMenu(),
@@ -737,6 +790,7 @@ export class RunScene implements Scene {
   private continueToAntarctica(): void {
     this.end.hide();
     this.victory = false;
+    // The old music was stopped at the end screen; entering the zone starts the new one.
     this.journey.continueToAntarctica(this.ctx);
     this.resume();
   }

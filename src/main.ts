@@ -1,7 +1,10 @@
 import { Application, TextureStyle } from 'pixi.js';
 import { loadSprites } from './art/assets.ts';
 import { COLORS } from './art/palette.ts';
-import { Sfx } from './audio/sfx.ts';
+import { AudioEngine } from './audio/engine.ts';
+import { Music } from './audio/music.ts';
+import { PRIORITY, Sfx, type SoundId } from './audio/sfx.ts';
+import { SET_IDS, type SetId } from './audio/musicData.ts';
 import { fitDisplay, type DisplayFit } from './core/display.ts';
 import { Emitter, type GameEvents } from './core/events.ts';
 import { Input } from './core/input.ts';
@@ -39,7 +42,16 @@ async function boot(): Promise<void> {
 
   const events = new Emitter<GameEvents>();
   const debug = new DebugPanel();
-  const sfx = new Sfx();
+  // Audio: one shared context. Tone.js downloads in the background; nothing starts before the first touch.
+  const engine = new AudioEngine();
+  engine.preload();
+  const sfx = new Sfx(engine);
+  const music = new Music(engine);
+  music.onAmbient = (id, pan) => {
+    // The neighbourhood behind the menu: far-off dogs, birds, a bus.
+    if (id === 'bocina') sfx.play('bocina', { gain: 0.12, pitch: 0.85, pan });
+    else sfx.play(id, { gain: id === 'pajaro' ? 0.8 : 0.5, pan, pitch: 0.9 + Math.random() * 0.25 });
+  };
   let fit: DisplayFit = fitDisplay(window.innerWidth, window.innerHeight, window.devicePixelRatio);
 
   const app = new Application();
@@ -107,6 +119,7 @@ async function boot(): Promise<void> {
   /** Applies the saved options to everything outside a run (volume, controls). */
   const applySettings = (): void => {
     sfx.setVolume(data.settings.sfx);
+    music.setVolume(data.settings.music);
     input.holdMode = data.settings.holdMode;
     input.joystickMode = data.settings.joystick;
   };
@@ -149,7 +162,7 @@ async function boot(): Promise<void> {
   };
 
   const makeRun = (): RunScene =>
-    new RunScene(input, sfx, {
+    new RunScene(input, sfx, music, {
       seed: Date.now() >>> 0,
       mobile: isMobile(),
       loadout: loadout(),
@@ -172,9 +185,11 @@ async function boot(): Promise<void> {
     switchTo(() => (run = makeRun()));
   };
   const goCucha = (): void => {
+    music.setScene('menu');
     switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => goSelect() }));
   };
   const goMenu = (): void => {
+    music.setScene('menu');
     switchTo(
       () =>
         new MenuScene(input, sfx, data, {
@@ -185,15 +200,18 @@ async function boot(): Promise<void> {
     );
   };
   const goOptions = (): void => {
+    music.setScene('menu');
     switchTo(() => new OptionsScene(input, data.settings, { ...optionHooks, close: () => goMenu() }));
   };
   const goSelect = (): void => {
+    music.setScene('menu');
     switchTo(() => new SelectScene(input, sfx, data, { go: () => goMap(), back: () => goMenu(), save: persist }));
   };
   const goMap = (): void => {
     switchTo(() => new MapScene(input, data, () => restart()));
   };
   const goIntro = (then: () => void): void => {
+    music.setScene('menu');
     switchTo(
       () =>
         new ComicScene(input, sfx, 'intro', () => {
@@ -222,7 +240,7 @@ async function boot(): Promise<void> {
   window.addEventListener('resize', applyFit);
 
   // Audio can only start after a user gesture.
-  const unlock = (): void => sfx.unlock();
+  const unlock = (): void => engine.unlock();
   window.addEventListener('pointerdown', unlock);
   window.addEventListener('keydown', unlock);
 
@@ -233,12 +251,12 @@ async function boot(): Promise<void> {
       pausedByVisibility = true;
       if (scenes.active === run) run.pauseIfPlaying();
       loop.stop();
-      sfx.suspend();
+      engine.suspend();
       events.emit('pause', { paused: true });
     } else if (pausedByVisibility) {
       pausedByVisibility = false;
       loop.start();
-      sfx.resume();
+      engine.resume();
       events.emit('pause', { paused: false });
     }
   });
@@ -360,7 +378,21 @@ async function boot(): Promise<void> {
   debug.slider('Ajustes', 'sacudida', { min: 0, max: 1, step: 0.1 }, () => ctx().shake.amount, (v) => {
     ctx().shake.amount = v;
   });
-  debug.slider('Ajustes', 'volumen', { min: 0, max: 1, step: 0.05 }, () => sfx.volume, (v) => sfx.setVolume(v));
+  debug.slider('Ajustes', 'volumen efectos', { min: 0, max: 1, step: 0.05 }, () => sfx.volume, (v) => sfx.setVolume(v));
+  debug.slider('Ajustes', 'volumen música', { min: 0, max: 1, step: 0.05 }, () => data.settings.music, (v) => {
+    data.settings.music = v;
+    music.setVolume(v);
+  });
+  debug.stat('Audio', 'motor', () => (engine.ready ? `listo (${engine.ctx?.state})` : 'esperando un toque'));
+  debug.stat('Audio', 'nivel de salida', () => engine.level().toFixed(3));
+  debug.stat('Audio', 'música', () => {
+    const s = music.state();
+    return `${s.set ?? '—'}${s.boss ? ' +jefe' : ''}${s.cueca ? ' +cueca' : ''} [${s.layers.base.toFixed(1)} ${s.layers.ritmo.toFixed(1)} ${s.layers.melodia.toFixed(1)}]`;
+  });
+  debug.select('Audio', 'Tocar música…', SET_IDS, (id) => music.setScene(id as SetId));
+  debug.button('Audio', 'Jefe on/off', () => music.setBoss(!music.state().boss));
+  debug.button('Audio', 'Cueca 20 s', () => music.startCueca(20));
+  debug.select('Audio', 'Tocar efecto…', Object.keys(PRIORITY), (id) => sfx.play(id as SoundId));
   debug.toggleControl('Ajustes', 'Números de daño', () => ctx().numbers.enabled, (v) => {
     ctx().numbers.enabled = v;
   });
@@ -371,6 +403,7 @@ async function boot(): Promise<void> {
   // Test hook (only with ?debug): advance the simulation without waiting for frames.
   if (new URLSearchParams(location.search).has('debug')) {
     Object.assign(window, {
+      __quiltroAudio: { engine, music, sfx },
       __quiltro: {
         step(seconds: number): void {
           const n = Math.round(seconds * 60);

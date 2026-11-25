@@ -18,6 +18,8 @@ export interface JourneyHooks {
   setHalfFog(side: number): void;
   /** Places the friendly moais (secret achievement). */
   addMoais(x: number, y: number): void;
+  /** A boss fight starts (true) or ends (false): music and intro sound. */
+  onBoss(on: boolean): void;
 }
 
 const BOSS_DEATH_SLOWMO = 1;
@@ -189,6 +191,7 @@ export class Journey {
     this.boss = boss;
     this.deathT = -1;
     this.hooks.addBoss(boss.root);
+    this.hooks.onBoss(true);
     ctx.banner(t(`${def.i18n}.nombre`), 'r', t(`${def.i18n}.linea`));
   }
 
@@ -206,6 +209,7 @@ export class Journey {
     boss.dispose(ctx);
     this.boss = null;
     this.deathT = -1;
+    this.hooks.onBoss(false);
     if (boss.def.id === 'granTemblor' && !this.antartica) {
       this.hooks.onVictory();
       return;
@@ -224,6 +228,7 @@ export class Journey {
     if (this.boss) {
       this.boss.dispose(ctx);
       this.boss = null;
+      this.hooks.onBoss(false);
     }
     ctx.time = minutes * 60;
     const index = Math.max(0, ZONAS.findIndex((z) => minutes >= z.startMin && minutes < z.endMin));

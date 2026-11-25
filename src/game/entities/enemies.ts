@@ -434,7 +434,12 @@ export class Enemies {
           e.ty = uy;
           e.facing = Math.sign(ux) || 1;
           ctx.telegraphs.line(e.x, e.y, e.x + ux * 220, e.y + uy * 220, e.radius * 2, wind, null);
-          if (e.def.behavior === 'embestir') ctx.sfx.play('bocina');
+          if (e.def.behavior === 'embestir') {
+            // Horn + engine 0.8 s before the charge, panned to where the bus is (GDD "Efectos").
+            const pan = Math.max(-1, Math.min(1, (e.x - p.x) / 160));
+            ctx.sfx.play('bocina', { pan });
+            ctx.sfx.play('motor', { pan });
+          }
           return { x: 0, y: 0, direct: true };
         }
         return chase();
