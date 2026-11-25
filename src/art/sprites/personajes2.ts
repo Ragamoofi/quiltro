@@ -354,9 +354,10 @@ const vizcacha: Draw = (pose) => {
 const capibara: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
-  const L = quad(14, 5, 14, 'O', 'd', 'd');
+  // Short, stubby legs: the body sits low (2 px lower than before).
+  const L = quad(14, 5, 17, 'O', 'd', 'd');
   stepLegs(p, pose, L.far);
-  p.rows(0, 3 + y, [
+  p.rows(0, 6 + y, [
     '...............aa',
     '..............aaAa',
     '.............CC.CCCC',
@@ -370,11 +371,11 @@ const capibara: Draw = (pose) => {
     '.OCCCCCCCCCCCccc',
     '..OOcccccccccc',
   ]);
-  p.set(13, 5 + y, 'O').set(20, 7 + y, 'd');
-  if (pose.eye === 'open') p.set(16, 6 + y, 'k').rect(15, 5 + y, 2, 1, 'O');
-  else if (pose.eye === 'closed') p.rect(15, 6 + y, 2, 1, 'O');
-  else p.set(16, 5 + y, 'k').set(15, 6 + y, 'k');
-  if (pose.mouth) p.rect(18, 10 + y, 2, 1, 'R');
+  p.set(13, 8 + y, 'O').set(20, 10 + y, 'd');
+  if (pose.eye === 'open') p.set(16, 9 + y, 'k').rect(15, 8 + y, 2, 1, 'O');
+  else if (pose.eye === 'closed') p.rect(15, 9 + y, 2, 1, 'O');
+  else p.set(16, 8 + y, 'k').set(15, 9 + y, 'k');
+  if (pose.mouth) p.rect(18, 13 + y, 2, 1, 'R');
   stepLegs(p, pose, L.near);
   return p;
 };
