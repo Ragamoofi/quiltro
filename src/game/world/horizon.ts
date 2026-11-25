@@ -17,6 +17,12 @@ interface Look {
   sun?: boolean;
   /** The far layer is the sea (a band of waves) instead of distant hills. */
   sea?: boolean;
+  /** With sea: fresh water (teal) instead of the Pacific. */
+  lake?: boolean;
+  /** A plume of volcano smoke over the first cone. */
+  smoke?: boolean;
+  /** A fringe of dark conifers along the foot of the hills (the rainforest). */
+  forest?: boolean;
   aurora?: readonly string[];
   /** A band of dithered haze over the lower part of the far layer (smog). */
   haze?: string;
@@ -25,13 +31,13 @@ interface Look {
 const LOOKS: Record<string, Look> = {
   norte: { sky: 's', sun: true, far: 'R', near: 'O', shape: 'cerros' },
   centro: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera' },
-  sur: { sky: 'G', far: 'g', near: 'F', cap: 'w', shape: 'volcanes' },
+  sur: { sky: 'G', far: 'g', near: 'F', cap: 'w', shape: 'volcanes', smoke: true, forest: true },
   patagonia: { sky: 's', far: 'i', near: 'K', cap: 'W', shape: 'torres' },
   antartica: { sky: 'k', stars: ['w', 'i'], far: 'I', near: 'i', shape: 'hielo', aurora: ['t', 'v', 'V'] },
   // Fase 10.5: one look per environment.
   santiago: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera', haze: 'n' },
   costa: { sky: 's', sea: true, far: 'b', near: 'v', shape: 'valpo' },
-  lagos: { sky: 'G', far: 'I', near: 'f', cap: 'w', shape: 'volcanes' },
+  lagos: { sky: 'G', sea: true, lake: true, far: 'I', near: 'f', cap: 'w', shape: 'volcanes' },
 };
 
 /**
@@ -116,6 +122,12 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
         put(look.stars[i % look.stars.length] ?? 'w', x, y);
       }
     }
+    if (look.smoke) {
+      // Smoke from the volcano: soft puffs drifting up and to the right, in a dither.
+      for (const [px0, py0, r] of [[80, 7, 3.4], [84, 4, 3.8], [89, 2, 4.2], [96, 1, 4.6]] as const) {
+        for (let y = -2; y < 12; y++) for (let x = px0 - 6; x <= px0 + 6; x++) if (Math.hypot(x - px0, y - py0) < r && (x + y) % 2 === 0) put(Math.hypot(x - px0, y - py0) < r - 1.6 ? 'w' : 'G', x, y);
+      }
+    }
     if (look.sun) {
       // The desert sun: a bright disc with a dithered halo around it.
       const sx = 150;
@@ -138,7 +150,8 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
       for (let y = HORIZON_H - 10; y < HORIZON_H; y++) {
         for (let x = 0; x < W; x++) {
           const swell = Math.sin(x * 0.45 + y * 1.7) + Math.sin(x * 0.17 - y);
-          put(swell > 1.25 ? 'W' : swell > 0.55 ? 's' : y % 3 === 0 ? 'B' : 'b', x, y);
+          const [hi, mid, lo, base] = look.lake ? (['W', 't', 'T', 'I'] as const) : (['W', 's', 'B', 'b'] as const);
+          put(swell > 1.25 ? hi : swell > 0.55 ? mid : y % 3 === 0 ? lo : base, x, y);
         }
       }
       return finish(canvas);
@@ -225,7 +238,16 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
       put(ch, x, y);
     }
   }
-  return finish(canvas);
+  if (look.forest) {
+    // Conifers along the bottom: little triangles of dark green with a lighter edge.
+    for (let x = 0; x < W; x += 3) {
+      const ht = 5 + ((x * 7) % 4);
+      for (let k = 0; k < ht; k++) {
+        const half = Math.max(0, Math.round((ht - k) / 2.4));
+        for (let dx = -half; dx <= half; dx++) put(dx === -half && half > 0 ? 'f' : 'F', (x + dx + W) % W, HORIZON_H - 4 - k);
+      }
+    }
+  }  return finish(canvas);
 }
 
 function finish(canvas: HTMLCanvasElement): Texture {

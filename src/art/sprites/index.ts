@@ -20,6 +20,7 @@ import { bolitas, emboqueBola } from './armas3.ts';
 import { enemigosCiudad } from './enemigos3.ts';
 import { vidaSprites } from './vida.ts';
 import { mapasSprites } from './mapas.ts';
+import { mapasSurSprites } from './mapas2.ts';
 
 /** Every sprite in the game. The build script and /sprites.html read this list. */
 export const SPRITES: readonly SpriteDef[] = [
@@ -81,4 +82,5 @@ export const SPRITES: readonly SpriteDef[] = [
   ...enemigosCiudad,
   ...vidaSprites,
   ...mapasSprites,
+  ...mapasSurSprites,
 ];

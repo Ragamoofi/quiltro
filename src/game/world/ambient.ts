@@ -3,7 +3,7 @@ import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
 import { deriveSeed, Rng } from '../../core/rng.ts';
 
-type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa' | 'llama';
+type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa' | 'llama' | 'oveja';
 
 interface Rule {
   kind: Kind;
@@ -32,7 +32,10 @@ const RULES: Readonly<Record<string, readonly Rule[]>> = {
     { kind: 'peaton', rate: 0.14, max: 3 },
   ],
   araucania: [{ kind: 'mariposa', rate: 0.4, max: 4 }],
-  lagos: [{ kind: 'mariposa', rate: 0.3, max: 3 }],
+  lagos: [
+    { kind: 'mariposa', rate: 0.3, max: 3 },
+    { kind: 'oveja', rate: 0.07, max: 3 },
+  ],
 };
 
 const AUTOS = ['rojo', 'azul', 'turquesa', 'rosado'] as const;
@@ -159,6 +162,11 @@ export class AmbientLife {
         m.vy = r.range(-4, 4);
         m.anim = anim('gaviota', 'volar');
         m.y = oy + r.range(50, vh * 0.7);
+        break;
+      case 'oveja':
+        m.vx = dir * r.range(7, 11);
+        m.anim = anim('oveja', 'caminar');
+        m.life = 80;
         break;
       case 'llama':
         m.vx = dir * r.range(9, 14);

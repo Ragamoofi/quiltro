@@ -12,6 +12,13 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Mapas vivos, segunda tanda: el Sur (Fase 11.1b)
+
+#### Añadido
+- **Araucanía:** un volcán con su columna de humo en el horizonte y una franja de coníferas al pie de los cerros; en el suelo, bosque más denso con coihues, araucarias, troncos caídos con musgo, helechos, hongos, copihues y rukas de paja.
+- **Lagos y Chiloé:** un lago de aguas verdeazuladas al fondo, y en el suelo palafitos de tres colores sobre pilotes con su muelle, iglesias de madera, lanchas, muelles, lagunitos con juncos, barriles y copihues. Cruzan ovejas caminando.
+- Neutral para el equilibrio: el bot da exactamente lo mismo (10 %, 6,37 min). Contraste 59/59.
+
 ### Mapas vivos, primera tanda: el Norte, Valparaíso y Viña del Mar (Fase 11.1b)
 
 #### Añadido
