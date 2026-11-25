@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { hexToRgb, PALETTE } from '../src/art/palette.ts';
 import { SPRITES } from '../src/art/sprites/index.ts';
 import { encodePng } from './png.ts';
-import { editableAnims, stripName, stripRgba } from './sprite-retouch.ts';
+import { baseFrame, editableAnims, sheetRgba, stripName, stripRgba } from './sprite-retouch.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'sprites-editables');
@@ -19,8 +19,20 @@ const scale = Math.max(1, Math.floor(Number(process.argv[2] ?? '1')) || 1);
 rmSync(out, { recursive: true, force: true });
 let count = 0;
 for (const def of SPRITES) {
-  const dir = join(out, def.group);
+  // One folder per sprite: its base frame, its whole sheet and each animation on its own.
+  const dir = join(out, def.group, def.name);
   mkdirSync(dir, { recursive: true });
+  const base = baseFrame(def);
+  if (base) {
+    const img = stripRgba([base], scale);
+    writeFileSync(join(dir, `${def.name}__base.png`), encodePng(img.width, img.height, img.rgba));
+  }
+  const sheet = sheetRgba(def, scale);
+  if (sheet.rows.length > 1) {
+    writeFileSync(join(dir, `${def.name}__HOJA.png`), encodePng(sheet.width, sheet.height, sheet.rgba));
+    const lines = sheet.rows.map((a, i) => `${i + 1}. ${a} (${def.animations[a]?.frames.length ?? 0} cuadros)`);
+    writeFileSync(join(dir, `${def.name}__HOJA.txt`), [`Filas de ${def.name}__HOJA.png, de arriba hacia abajo:`, ...lines, ''].join('\r\n'));
+  }
   for (const anim of editableAnims(def)) {
     const a = def.animations[anim];
     if (!a || a.frames.length === 0) continue;

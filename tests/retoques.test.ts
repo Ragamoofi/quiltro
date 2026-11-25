@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SPRITES } from '../src/art/sprites/index.ts';
 import { decodePng, encodePng } from '../scripts/png.ts';
-import { nearestChar, stripRgba, stripToFrames } from '../scripts/sprite-retouch.ts';
+import { baseFrame, nearestChar, propagate, sheetAnims, sheetRgba, sheetToAnims, stripRgba, stripToFrames } from '../scripts/sprite-retouch.ts';
 
 const quieto = SPRITES.find((s) => s.name === 'quiltro')?.animations.quieto;
 
@@ -29,5 +29,31 @@ describe('sprites retocados a mano', () => {
   it('a strip with the wrong size explains what size it should have', () => {
     const img = { width: 10, height: 24, rgba: new Uint8Array(10 * 24 * 4) };
     expect(() => stripToFrames(img, 2, 24, 24)).toThrow(/ancho/);
+  });
+
+  it('a whole sheet (one animation per row) comes back as the same animations', () => {
+    const gato = SPRITES.find((x) => x.name === 'gato');
+    if (!gato) throw new Error('falta el gato');
+    const sheet = sheetRgba(gato, 2);
+    const { anims, adjusted } = sheetToAnims(decodePng(encodePng(sheet.width, sheet.height, sheet.rgba)), gato);
+    expect(adjusted).toBe(0);
+    for (const a of sheetAnims(gato)) expect(anims[a], a).toEqual(gato.animations[a]?.frames);
+  });
+
+  it('a change to the base frame reaches the other frames, also when the body is a pixel higher', () => {
+    const base = ['....', '.ab.', '.cd.', '....'];
+    const up = ['.ab.', '.cd.', '....', '....'];
+    const closed = ['....', '.ab.', '.kk.', '....'];
+    const anims = { quieto: { fps: 1, frames: [base] }, saltar: { fps: 1, frames: [up] }, ojo: { fps: 1, frames: [closed] } };
+    const edited = ['....', '.ab.', '.cr.', '....'];
+    const res = propagate(anims, ['quieto', 'saltar', 'ojo'], base, edited);
+    expect(res.anims.quieto?.frames[0]).toEqual(edited);
+    expect(res.anims.saltar?.frames[0]).toEqual(['.ab.', '.cr.', '....', '....']);
+    // Where that pixel is drawn differently (an eye closed), the frame keeps its own drawing.
+    expect(res.anims.ojo?.frames[0]).toEqual(closed);
+  });
+
+  it('every sprite has a base frame to export', () => {
+    for (const def of SPRITES) expect(baseFrame(def), def.name).toBeDefined();
   });
 });

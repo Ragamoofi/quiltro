@@ -16,6 +16,18 @@ En la carpeta del juego (`Documentos\QUILTRO`) hay tres archivos que se usan con
 
    Cada imagen es **una animación**, con sus cuadros uno al lado del otro. Por ejemplo, `personajes\gato__trotar.png` es el gato trotando: 4 dibujos de 24×24 píxeles en fila. También está `_paleta.png` con los 32 colores del juego.
 
+   Cada sprite tiene su propia carpeta (por ejemplo `personajes\gato\`) con tres tipos de archivo. **Elige el que te acomode:**
+
+   | Archivo | Qué es | Cuándo usarlo |
+   | --- | --- | --- |
+   | `gato__base.png` | **Un solo dibujo** del gato (de pie). | **El más rápido.** Lo que cambies aquí (la cara, un sombrero, el color de los ojos) se copia solo a **todos** los cuadros de **todas** las animaciones donde ese pedazo aparece igual, aunque el cuerpo esté un par de píxeles más arriba o más abajo. |
+   | `gato__HOJA.png` | **Todas** las animaciones del gato en una imagen, una por fila. El orden de las filas está en `gato__HOJA.txt`. | Para retocar varias animaciones a la vez, viéndolas todas juntas. |
+   | `gato__trotar.png` (y las demás) | **Una** animación, con sus cuadros en fila. | Para arreglar una animación puntual. |
+
+   Si usas varios para el mismo sprite, se aplican en ese orden: primero el `base`, después la `HOJA` y al final las animaciones sueltas (la más específica gana).
+
+   **Ojo con el `base`:** el cambio solo se pega donde el cuadro tenía lo mismo que el dibujo original. Así, si le cambias el color de ojos al gato, no le aparece un ojo abierto cuando parpadea o duerme. En la ventana negra te dice en cuántos cuadros entró (por ejemplo «el cambio entró en 23 de 25 cuadros») y en cuáles no calzó; esos los retocas en la hoja o en su animación.
+
 2. **Copia** (no muevas) a `sprites-retocados` solo las imágenes que quieras cambiar.
 
 3. **Ábrelas en tu programa de dibujo** (Aseprite, Piskel, Photoshop, Krita, Paint.NET…), dibuja y **guarda como PNG**. Reglas:
