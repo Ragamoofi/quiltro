@@ -4,6 +4,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.1 — Lectura visual de los suelos
+
+#### Agregado
+- `npm run contraste` (`scripts/contraste.ts`): mide, para cada zona, si el contorno tinta de cada enemigo, del quiltro y de la comida se separa del suelo (razón de contraste ≥ 3) y si el cuerpo no se funde con él. Forma parte de `npm run check`.
+
+#### Cambiado
+- Suelos rehechos: Norte pasa de café oscuro a tierra roja clara (contorno 1,7 → 9,6), Sur de bosque oscuro a pasto con matas (2,5 → 4,9), Patagonia y La Antártica a tonos claros (7 → 13). Antes, 27 de 53 combinaciones fallaban; ahora pasan las 43 que se miden.
+- Excepciones declaradas: los témpanos (hechos de hielo a propósito) y la comida (que brilla) solo se miden por el contorno.
+
 ### Fase 9.0 — Herramientas de balance
 
 #### Agregado

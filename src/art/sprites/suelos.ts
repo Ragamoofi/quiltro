@@ -1,4 +1,4 @@
-import type { SpriteDef } from '../types.ts';
+﻿import type { SpriteDef } from '../types.ts';
 
 /*
  * Baldosas de suelo 16×16. Colores apagados para que todo lo que se mueve resalte.
@@ -138,36 +138,41 @@ const zoneFloor = (name: string, frames: string[][]): SpriteDef => ({
   animations: { variantes: { fps: 1, frames } },
 });
 
-/** Norte: tierra roja del desierto con piedrecitas, grietas y una flor del desierto florido. */
+/**
+ * Los suelos son de tono medio-claro y poco ruido, para que el contorno tinta de
+ * todo lo que se mueve se vea (`npm run contraste` lo mide por zona).
+ *
+ * Norte: arena clara del desierto con piedrecitas, grietas y una flor del desierto florido.
+ */
 export const sueloNorte = zoneFloor('suelo_norte', [
-  toFrame(speckled('d', ['O', 'K'], 0.05, 1)),
-  toFrame(stamp(speckled('d', ['O'], 0.04, 2), 2, 4, ['K......', '.KK....', '...K...', '....KK.', '......K'])),
-  toFrame(stamp(speckled('d', ['O', 'K'], 0.05, 3), 6, 6, ['.O.', 'OnO', '.O.'])),
-  toFrame(stamp(speckled('d', ['O'], 0.04, 4), 5, 5, ['.p.', 'pyp', '.p.', '.v.', 'vv.'])),
+  toFrame(speckled('O', ['o', 'd'], 0.06, 1)),
+  toFrame(stamp(speckled('O', ['o'], 0.05, 2), 2, 4, ['d......', '.dd....', '...d...', '....dd.', '......d'])),
+  toFrame(stamp(speckled('O', ['o', 'd'], 0.05, 3), 6, 6, ['.n.', 'nwn'])),
+  toFrame(stamp(speckled('O', ['o'], 0.05, 4), 5, 5, ['.p.', 'pyp', '.p.', '.v.', 'vv.'])),
 ]);
 
-/** Sur: pasto húmedo con barro y briznas. */
+/** Sur: pasto húmedo con matas más oscuras, barro y briznas. */
 export const sueloSur = zoneFloor('suelo_sur', [
-  toFrame(speckled('f', ['F', 'v'], 0.12, 5)),
-  toFrame(stamp(speckled('f', ['F'], 0.1, 6), 3, 5, ['.dddd.', 'ddMddd', 'dddddd', '.dddd.'])),
-  toFrame(stamp(speckled('f', ['F', 'v'], 0.1, 7), 6, 4, ['v.v', 'v.v', '.v.'])),
-  toFrame(stamp(speckled('f', ['F', 'v'], 0.1, 8), 4, 6, ['.r.', 'rrr', '.v.'])),
+  toFrame(speckled('v', ['f', 'f', 'V'], 0.2, 5)),
+  toFrame(stamp(speckled('v', ['f', 'V'], 0.16, 6), 3, 5, ['.dddd.', 'ddMddd', 'dddddd', '.dddd.'])),
+  toFrame(stamp(speckled('v', ['f', 'V'], 0.16, 7), 6, 4, ['f.f', 'f.f', '.f.'])),
+  toFrame(stamp(speckled('v', ['f', 'V'], 0.16, 8), 4, 6, ['.r.', 'rrr', '.f.'])),
 ]);
 
-/** Patagonia: nieve vieja con sombras y matas de coirón asomando. */
+/** Patagonia: nieve clara con sombras suaves y matas de coirón asomando. */
 export const sueloPatagonia = zoneFloor('suelo_patagonia', [
-  toFrame(speckled('G', ['g', 'i'], 0.05, 9)),
-  toFrame(stamp(speckled('G', ['g'], 0.04, 10), 3, 6, ['o.o.o', '.ooo.', 'nonon'])),
-  toFrame(stamp(speckled('G', ['i'], 0.05, 11), 1, 3, ['gggg.......', '....gggg...', '........ggg'])),
-  toFrame(speckled('G', ['g', 'i', 'W'], 0.07, 12)),
+  toFrame(speckled('w', ['G', 'i'], 0.07, 9)),
+  toFrame(stamp(speckled('w', ['G'], 0.05, 10), 3, 6, ['o.o.o', '.ooo.', 'nonon'])),
+  toFrame(stamp(speckled('w', ['i'], 0.06, 11), 1, 3, ['GGGG.......', '....GGGG...', '........GGG'])),
+  toFrame(speckled('w', ['G', 'i', 'W'], 0.08, 12)),
 ]);
 
-/** La Antártica: hielo azul con grietas claras. */
+/** La Antártica: hielo claro con grietas azules. */
 export const sueloAntartica = zoneFloor('suelo_antartica', [
-  toFrame(speckled('I', ['i', 's'], 0.05, 13)),
-  toFrame(stamp(speckled('I', ['s'], 0.04, 14), 1, 2, ['i.......', '.i......', '..ii....', '....i...', '....i...', '.....ii.'])),
-  toFrame(speckled('I', ['i', 'W'], 0.06, 15)),
-  toFrame(stamp(speckled('I', ['s'], 0.04, 16), 4, 4, ['.ss.', 'sIIs', 'sIIs', '.ss.'])),
+  toFrame(speckled('i', ['s', 'W'], 0.06, 13)),
+  toFrame(stamp(speckled('i', ['s'], 0.05, 14), 1, 2, ['s.......', '.s......', '..ss....', '....s...', '....s...', '.....ss.'])),
+  toFrame(speckled('i', ['s', 'W'], 0.07, 15)),
+  toFrame(stamp(speckled('i', ['s'], 0.05, 16), 4, 4, ['.ss.', 'siis', 'siis', '.ss.'])),
 ]);
 
 export const SUELO_PESOS: Readonly<Record<string, readonly number[]>> = {
@@ -177,3 +182,4 @@ export const SUELO_PESOS: Readonly<Record<string, readonly number[]>> = {
   patagonia: [16, 3, 3, 3],
   antartica: [16, 3, 3, 2],
 };
+
