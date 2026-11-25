@@ -14,7 +14,7 @@ En la carpeta del juego (`Documentos\QUILTRO`) hay tres archivos que se usan con
    - **`sprites-editables`**: todos los dibujos del juego, ordenados en subcarpetas (`personajes`, `enemigos`, `armas`, `decoracion`…).
    - **`sprites-retocados`**: esta carpeta, donde van tus versiones.
 
-   Cada imagen es **una animación**, con sus cuadros uno al lado del otro. Por ejemplo, `personajes\gato__trotar.png` es el gato trotando: 4 dibujos de 24×24 píxeles en fila. También está `_paleta.png` con los 32 colores del juego.
+   En `sprites-editables` también está `_paleta.png` con los 32 colores del juego.
 
    Cada sprite tiene su propia carpeta (por ejemplo `personajes\gato\`) con tres tipos de archivo. **Elige el que te acomode:**
 
