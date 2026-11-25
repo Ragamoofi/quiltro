@@ -157,8 +157,8 @@ describe('La Cucha', () => {
     expect(s.characters).toContain('quiltra');
     s.totals.sopaipillas = 5000;
     s.bossesBeaten.push('caleuche');
-    // The Gato now asks for 3.000 enemies, the Chingue for the 5.000 sopaipillas.
-    expect(checkUnlocks(s).sort()).toEqual(['chingue', 'pinguino']);
+    // The Gato now asks for 3.000 enemies, the Chingue for the 5.000 sopaipillas (and the Chinchilla for 2.000).
+    expect(checkUnlocks(s).sort()).toEqual(['chinchilla', 'chingue', 'pinguino']);
   });
 
   it('neighbours: 10 lucas/h, max 8 h, never more than 30 % of a good run', () => {

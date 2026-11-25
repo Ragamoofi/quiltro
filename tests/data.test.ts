@@ -61,7 +61,7 @@ describe('content data', () => {
     expect(JEFES).toHaveLength(4);
     expect(EVOLUCIONES).toHaveLength(16);
     expect(MEJORAS).toHaveLength(12);
-    expect(PERSONAJES).toHaveLength(10);
+    expect(PERSONAJES).toHaveLength(26);
   });
 
   it('evolutions reference real weapons and traits', () => {

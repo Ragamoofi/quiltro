@@ -16,15 +16,15 @@ const build = (id: string): Build => {
 };
 
 describe('personajes', () => {
-  it('there are ten, each with its own starting weapon, name and passive text', () => {
-    expect(PERSONAJES).toHaveLength(10);
-    expect(new Set(PERSONAJES.map((p) => p.id)).size).toBe(10);
-    const weapons = PERSONAJES.map((p) => p.startingWeapon);
-    expect(new Set(weapons).size).toBe(10);
+  it('there are twenty-six, each with a weapon that exists, a name and a passive text', () => {
+    expect(PERSONAJES).toHaveLength(26);
+    expect(new Set(PERSONAJES.map((p) => p.id)).size).toBe(26);
+    // The first ten keep a starting weapon each.
+    expect(new Set(PERSONAJES.slice(0, 10).map((p) => p.startingWeapon)).size).toBe(10);
     for (const p of PERSONAJES) {
       expect(ARMAS.find((a) => a.id === p.startingWeapon)?.takesSlot, p.id).toBe(true);
       expect(hasKey(p.nameKey), p.id).toBe(true);
-      expect(hasKey(`personajesPasiva.${p.id}`), p.id).toBe(true);
+      expect(hasKey('personajesPasiva.' + p.id), p.id).toBe(true);
     }
   });
 
@@ -36,24 +36,36 @@ describe('personajes', () => {
     }
   });
 
-  it('unlocks by the new conditions, in order of difficulty', () => {
+  it('unlocks by the conditions, in order of difficulty, up to the special ones of the pasajes', () => {
     const s = defaultSave();
+    s.best.km = 600; // Antofagasta
+    expect(checkUnlocks(s)).toEqual(['flamenco']);
     s.best.km = 1100; // Santiago
     expect(checkUnlocks(s)).toEqual(['quiltra']);
+    s.best.km = 1700; // Valparaíso
+    expect(checkUnlocks(s)).toEqual(['loboMarino']);
     s.totals.kills = 3000;
     expect(checkUnlocks(s)).toEqual(['gato']);
+    s.bossesBeaten.push('alicanto');
+    expect(checkUnlocks(s)).toEqual(['puma']);
     s.best.km = 2200; // Temuco
     expect(checkUnlocks(s)).toEqual(['zorro']);
-    s.best.km = 2950; // Chiloé
-    expect(checkUnlocks(s)).toEqual(['pudu']);
+    s.best.km = 2950; // Puerto Montt and Chiloé
+    expect(checkUnlocks(s).sort()).toEqual(['capibara', 'monito', 'pudu']);
     s.totals.sopaipillas = 5000;
     s.bossesBeaten.push('caleuche', 'taco');
-    expect(checkUnlocks(s).sort()).toEqual(['chingue', 'condor', 'pinguino']);
-    s.best.km = 4300; // Punta Arenas
-    expect(checkUnlocks(s)).toEqual(['guanaco']);
+    expect(checkUnlocks(s).sort()).toEqual(['chinchilla', 'chingue', 'condor', 'pinguino']);
+    s.best.km = 4300; // Coyhaique and Punta Arenas
+    expect(checkUnlocks(s).sort()).toEqual(['guanaco', 'huemul']);
     s.bossesBeaten.push('caiCai');
     expect(checkUnlocks(s)).toEqual(['paloma']);
-    expect(s.characters).toHaveLength(10);
+    s.pasajesGanados = 3;
+    expect(checkUnlocks(s).sort()).toEqual(['caleuchito', 'pillan', 'trauco']);
+    s.totals.kills = 50000;
+    s.totals.sopaipillas = 50000;
+    s.totals.palomas = 500;
+    checkUnlocks(s);
+    expect(s.characters).toHaveLength(26);
   });
 
   it('the unique passives reach the build', () => {
