@@ -12,3 +12,5 @@ dev-dist/
 .DS_Store
 .claude/settings.local.json
 .claude/launch.json
+# Exported by npm run sprites:exportar (a fresh copy to edit; your edits go in sprites-retocados/)
+sprites-editables/

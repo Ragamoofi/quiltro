@@ -6,12 +6,17 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SPRITES } from '../src/art/sprites/index.ts';
+import { SPRITES as DRAWN } from '../src/art/sprites/index.ts';
 import { layoutSheet, rasterize, spritesheetJson, validateSprites } from '../src/art/sheet.ts';
 import { encodePng } from './png.ts';
+import { applyRetouches } from './sprite-retouch.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'public', 'assets');
+
+// Hand-retouched strips in sprites-retocados/ replace the drawing of the code (scripts/sprite-retouch.ts).
+const { sprites: SPRITES, report } = applyRetouches(DRAWN, join(root, 'sprites-retocados'));
+if (report.length > 0) console.warn(`[sprites] retocados:\n  ${report.join('\n  ')}`);
 
 const errors = validateSprites(SPRITES);
 if (errors.length > 0) {

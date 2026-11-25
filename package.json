@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "sprites": "node scripts/build-sprites.ts",
+    "sprites:exportar": "node scripts/export-sprites.ts",
     "contraste": "node scripts/contraste.ts --quiet",
     "dev": "vite",
     "build": "npm run sprites && tsc --noEmit && vite build",

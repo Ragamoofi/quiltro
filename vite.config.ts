@@ -19,7 +19,9 @@ function spriteSheet(): Plugin {
       build();
     },
     handleHotUpdate({ file, server }) {
-      if (file.replace(/\\/g, '/').includes('/src/art/')) {
+      const path = file.replace(/\\/g, '/');
+      // Art drawn in code and hand-retouched PNGs (sprites-retocados/) both rebuild the sheet.
+      if (path.includes('/src/art/') || path.includes('/sprites-retocados/')) {
         try {
           build();
           server.ws.send({ type: 'full-reload' });

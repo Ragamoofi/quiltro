@@ -19,6 +19,7 @@ npm run build      # build de producción en dist/
 
 - **F1** (o `?debug` en la URL, o tres toques en la esquina superior izquierda): panel de depuración.
 - **Sprites:** se dibujan como texto en `src/art/sprites/`. El servidor de desarrollo regenera la hoja al guardar.
+- **Retocar sprites a mano:** `npm run sprites:exportar`, copia a `sprites-retocados/` los PNG que quieras cambiar, edítalos y quedan en el juego (instrucciones en [sprites-retocados/LEEME.md](sprites-retocados/LEEME.md)).
 - **Contenido:** `src/data/`. **Textos:** `src/i18n/es-CL.json`.
 
 ## Publicación
