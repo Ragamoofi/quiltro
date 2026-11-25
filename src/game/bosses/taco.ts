@@ -54,7 +54,8 @@ export class Taco extends Boss {
     this.heading = Math.atan2(ctx.player.y - y, ctx.player.x - x);
     this.trail = [];
     for (let i = 0; i < SEGMENTS * SPACING; i++) this.trail.push({ x: x - Math.cos(this.heading) * i, y: y - Math.sin(this.heading) * i });
-    for (let i = 0; i < SEGMENTS; i++) this.addPart(11, 16, ctx);
+    // Contact damage 16 → 12 (Fase 9.2c); HP 4000 → 3000 in data/jefes.ts.
+    for (let i = 0; i < SEGMENTS; i++) this.addPart(11, 12, ctx);
     this.placeSegments();
   }
 

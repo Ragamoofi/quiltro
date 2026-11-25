@@ -4,6 +4,11 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.2c — Muro del Centro
+
+#### Cambiado
+- Micro: daño 18 → 14. Lobo marino: daño 20 → 15 y vida 140 → 110. Taco: vida 4.000 → 3.000 y daño por contacto 16 → 12. Con el bot, las muertes en el Centro bajan de 6 a 3 (medio) y de 8 a 4 (experto) de cada 20, y el experto llega a Patagonia el 55 % de las veces (antes 25 %). Detalle en `docs/BALANCE.md`.
+
 ### Fase 9.2b — Banco de armas y Alicanto
 
 #### Agregado

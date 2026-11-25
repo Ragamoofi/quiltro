@@ -122,6 +122,26 @@ Causa: más de la mitad del daño de los viajes que mueren en el Norte venía de
 El objetivo era menos de 25 % de muertes en el Norte (5 de 20); queda en 35 %. Mejor, pero no cumplido del todo.
 **Nuevo muro: el Centro.** Mueren ahí 6 a 8 de 20 (micros del camino y lobos marinos), y el Taco dura 131 s con el bot medio (meta 45 a 90 s). Es el siguiente a atacar. Nadie vence al jefe final todavía.
 
+## 9.2c — El muro del Centro
+
+**Dónde se perdía:** en los viajes que morían en el Centro, el daño recibido venía de los micros (~1.700 en 8 viajes del experto) y los lobos marinos (~1.450), dos tercios del total. Además, con el bot medio el Taco duró 391 y 573 s en dos viajes (nunca lo derrotó): sus 4.600 de vida más 12 cuerpos que dañan por contacto.
+
+**Cambios** (`data/enemigos.ts`, `data/jefes.ts`, `bosses/taco.ts`):
+- Micro: daño 18 → 14.
+- Lobo marino: daño 20 → 15 y vida 140 → 110.
+- Taco: vida 4.000 → 3.000 y contacto de cada cuerpo 16 → 12.
+
+| 20 viajes | Medio antes | Medio ahora | Experto antes | Experto ahora |
+| --- | --- | --- | --- | --- |
+| Mueren en el Centro | 6 | **3** | 8 | **4** |
+| Llegan al Sur (min 6) | 50 % | 55 % | 55 % | **70 %** |
+| Llegan a Patagonia (min 9) | 45 % | 55 % | 25 % | **55 %** |
+| Minuto promedio de muerte | 9,1 | 9,6 | 8,0 | **10,4** |
+| Taco: duración media | 131 s | 123 s | 28 s | 34 s |
+
+Meta cumplida en el Centro (≤ 20 % de muertes). **El Taco con el bot medio sigue lento** (123 s promedio, con peleas de más de 300 s): el bot medio le pega poco. Con una persona que apunta, el tiempo debería parecerse más al del experto, pero es algo que hay que mirar jugando.
+**Dónde se pierde ahora:** Patagonia (4 a 9 de 20 muertes, por el Gran Temblor y los témpanos) y el Norte (5 a 8, Alicanto). Nadie vence todavía al jefe final. El Gran Temblor se reemplaza en la 9.4b, así que lo reviso entonces con el jefe nuevo.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.
