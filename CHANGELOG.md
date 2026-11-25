@@ -12,6 +12,19 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Eventos en el camino (Fase 11.3)
+
+#### Añadido
+- **Tres eventos** que aparecen de a uno y nunca durante un jefe: el primero a los 50 s y después cada 70–100 s; cada uno espera 45 s a que lo uses y avisa con un cartel.
+  - **Cofre del camino:** se paga con sopaipillas (el 35 % de lo que pide tu nivel, y cada cofre abierto sube el precio 35 %) y abre una Caja del Almacén. Si te faltan, te dice cuántas.
+  - **Una animita:** quédate 3 segundos a su lado (un círculo se va llenando) y te da una bendición al azar: un escudo gratis, viento a favor (30 % más rápido por 30 s), recuperar 40 % de vida o una lluvia de sopaipillas.
+  - **Un feriante:** su trato te da una lluvia de comida y un mote, pero atrás llega todo el barrio (unos 18 enemigos alrededor).
+- Los eventos usan sus propios dados: en la ruta del día salen igual para todos. En el panel de depuración se pueden forzar (`run.events.force`).
+- Pruebas nuevas (`tests/eventos.test.ts`).
+
+#### Equilibrio
+- Bot (medio, 20 viajes, semillas 7000–7019): de 10 % de victorias y 6,37 min a **15 % y 7,25 min**, y 35 % llega a Patagonia (antes 30 %). Los eventos ayudan un poco más de lo que cuestan; el bot no los busca a propósito, así que una persona los aprovechará más. Nueva línea base de referencia.
+
 ### Logros y bestiario (Fase 11.2)
 
 #### Añadido

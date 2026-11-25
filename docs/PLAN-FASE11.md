@@ -46,7 +46,7 @@ Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos 
 - Recompensas: lucas, bandanas y algún desbloqueo (un arma o un fondo de Cucha), nada que desequilibre.
 - **Listo cuando:** cada logro tiene una prueba que lo dispara, aparece en la pantalla de logros y el bestiario sobrevive al guardado/carga.
 
-### 11.3 — Eventos y cofres en el camino (2 jornadas)
+### 11.3 — Eventos y cofres en el camino (2 jornadas) — HECHO (2026-11-25: cofre, animita y feriante; nueva línea base del bot 15 % y 7,25 min)
 - **Cofre de la ruta:** aparece cada ~90 s, se abre con lucas del propio viaje y su precio sube con cada apertura (idea de Megabonk).
 - **Animita:** santuario gratis; quedarse cerca unos segundos da una bendición temporal.
 - **Feriante:** trato con riesgo (más botín, enemigos extra o menos vida un rato).

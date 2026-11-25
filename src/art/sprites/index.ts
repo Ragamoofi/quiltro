@@ -23,6 +23,7 @@ import { mapasSprites } from './mapas.ts';
 import { mapasSurSprites } from './mapas2.ts';
 import { mapasPatagoniaSprites } from './mapas3.ts';
 import { mapasSantiagoSprites } from './mapas4.ts';
+import { eventosSprites } from './eventos.ts';
 
 /** Every sprite in the game. The build script and /sprites.html read this list. */
 export const SPRITES: readonly SpriteDef[] = [
@@ -87,4 +88,5 @@ export const SPRITES: readonly SpriteDef[] = [
   ...mapasSurSprites,
   ...mapasPatagoniaSprites,
   ...mapasSantiagoSprites,
+  ...eventosSprites,
 ];

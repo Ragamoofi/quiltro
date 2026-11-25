@@ -482,7 +482,29 @@
     "malDePalomas": { "nombre": "Mal de palomas", "desc": "Derrotar a 150 palomas en un viaje" },
     "pacifista": { "nombre": "Pacifista del barrio", "desc": "Llegar a Santiago con menos de 150 enemigos derrotados" }
   },
-  "intro": ["Arica. Dieciocho.", "¡Nooo, mi volantín!", "Yo lo traigo."],
+  "eventos": {
+    "cofre": {
+      "nombre": "Cofre del camino",
+      "aviso": "Se abre con sopaipillas. ¡Acércate!",
+      "precio": "{n} sopaipillas",
+      "faltan": "Faltan {n} sopaipillas",
+      "faltanSub": "Junta más comida y vuelve.",
+      "abierto": "¡Cofre abierto!"
+    },
+    "animita": {
+      "nombre": "Una animita",
+      "aviso": "Quédate un ratito a su lado.",
+      "escudo": "Te cuida: un escudo gratis",
+      "viento": "Viento a favor: más rápido por 30 segundos",
+      "abrigo": "Te abrigan: recuperas vida",
+      "fervor": "Te llueven sopaipillas"
+    },
+    "feriante": {
+      "nombre": "¡Un feriante!",
+      "aviso": "Lleva, lleva… pero ojo.",
+      "trato": "¡Buen trato! Pero atrás viene todo el barrio."
+    }
+  },  "intro": ["Arica. Dieciocho.", "¡Nooo, mi volantín!", "Yo lo traigo."],
   "final": ["...", "¡VOLVISTE!", "De Arica a Punta Arenas. Y de vuelta. Puro aguante."],
   "datosCarga": [
     "Chile mide más de 4.000 km de largo y en promedio unos 177 km de ancho.",

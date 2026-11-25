@@ -256,6 +256,10 @@ Bot medio, Quiltro, 20 viajes (semillas 7000–7019), 16 minutos máximo:
 
 **Qué significa para las cifras anteriores:** las mediciones de la Fase 9 y 10 se hicieron con este ruido (con la pestaña a la vista o no, el resultado podía cambiar mucho). Sus conclusiones generales sirven, pero las comparaciones finas entre personajes y armas hay que repetirlas. **Línea base nueva, repetible: bot medio, Quiltro, 20 viajes = 10 % de victorias, 6,37 min.**
 
+## 11.3 — Eventos en el camino (nueva línea base)
+
+Bot medio, Quiltro, 20 viajes (semillas 7000–7019): **15 % vencen al jefe final, minuto de muerte 7,25, 2.207 km, nivel 21, 35 % llega a Patagonia.** Antes de los eventos: 10 %, 6,37 min, 30 %. Los cofres, las animitas y el feriante ayudan un poco más de lo que cuestan; el bot los toma solo si pasa por encima. **Línea base vigente desde la 11.3.**
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

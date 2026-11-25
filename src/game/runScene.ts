@@ -50,6 +50,7 @@ import { Decor } from './world/decor.ts';
 import { FloorLayer } from './world/floor.ts';
 import { Hazards } from './world/hazards.ts';
 import { Passives } from './systems/passives.ts';
+import { RoadEvents } from './systems/roadEvents.ts';
 import { AmbientLife } from './world/ambient.ts';
 import { AnimatedMoai } from './world/moai.ts';
 import { Cities } from './world/cities.ts';
@@ -128,6 +129,8 @@ export class RunScene implements Scene {
   /** The environment (Santiago, the coast…) whose floor, horizon and weather are on screen. */
   private envId = '';
   private readonly passives = new Passives();
+  /** Chests, animitas and ferias on the road (Fase 11.3). */
+  readonly events: RoadEvents;
   private readonly ambient: AmbientLife;
   private readonly weather = new Weather();
   private readonly hazards = new Hazards();
@@ -302,6 +305,8 @@ export class RunScene implements Scene {
       },
     });
 
+    this.events = new RoadEvents(opts.seed, (n) => this.spawner.ring(ctx, n, this.journey.zone.id));
+    this.sorted.addChild(this.events.root);
     this.sorted.addChild(this.hazards.world);
     this.hazards.world.sortableChildren = true;
     this.worldRoot.addChild(
@@ -526,6 +531,7 @@ export class RunScene implements Scene {
     this.weather.update(dt, ctx.wind.x, ctx.rng);
     this.journey.update(dt, real, ctx);
     if (this.mode === 'end') return;
+    this.events.update(dt, ctx, this.journey.bossActive);
     // City scenery: landmark on the horizon, local props on the ground, and the small events.
     const km = this.journey.km(ctx.time);
     if (!this.santiagoSeen && km >= (CIUDADES.find((c) => c.id === 'santiago')?.km ?? Infinity)) {
