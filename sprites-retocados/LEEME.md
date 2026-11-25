@@ -1,33 +1,36 @@
-# Sprites retocados a mano
+# Cómo retocar los sprites (sin terminal)
 
-Aquí van los sprites que retoques en cualquier programa (Aseprite, Piskel, Photoshop, Krita, GIMP, Paint.NET…). Lo que pongas en esta carpeta reemplaza el dibujo hecho en código.
+En la carpeta del juego (`Documentos\QUILTRO`) hay tres archivos que se usan con **doble clic**:
 
-## Cómo se hace
+| Archivo | Para qué sirve |
+| --- | --- |
+| `1 - Sacar los sprites.bat` | Saca todos los dibujos del juego como imágenes PNG y abre dos carpetas. |
+| `2 - Probar el juego en mi PC.bat` | Abre el juego en tu navegador con tus retoques puestos. |
+| `3 - Subir mis retoques.bat` | Sube tus retoques a la página publicada del juego. |
 
-1. Exporta los sprites como imágenes:
+## Paso a paso
 
-   ```
-   npm run sprites:exportar
-   ```
+1. **Doble clic en `1 - Sacar los sprites.bat`.** Se abre una ventana negra que trabaja unos segundos y luego se abren dos carpetas:
+   - **`sprites-editables`**: todos los dibujos del juego, ordenados en subcarpetas (`personajes`, `enemigos`, `armas`, `decoracion`…).
+   - **`sprites-retocados`**: esta carpeta, donde van tus versiones.
 
-   Se crea la carpeta `sprites-editables/`, ordenada por grupo (`personajes`, `enemigos`, `armas`, `decoracion`…). Cada archivo es **una animación** con sus cuadros uno al lado del otro, por ejemplo `personajes/gato__trotar.png` (el gato trotando, 4 cuadros de 24×24). También queda `_paleta.png` con los 32 colores del juego.
+   Cada imagen es **una animación**, con sus cuadros uno al lado del otro. Por ejemplo, `personajes\gato__trotar.png` es el gato trotando: 4 dibujos de 24×24 píxeles en fila. También está `_paleta.png` con los 32 colores del juego.
 
-   Si prefieres editar en grande: `node scripts/export-sprites.ts 4` las exporta a ×4.
+2. **Copia** (no muevas) a `sprites-retocados` solo las imágenes que quieras cambiar.
 
-2. **Copia** a esta carpeta (`sprites-retocados/`) solo las que quieras cambiar. Puedes hacer subcarpetas si quieres ordenarlas.
+3. **Ábrelas en tu programa de dibujo** (Aseprite, Piskel, Photoshop, Krita, Paint.NET…), dibuja y **guarda como PNG**. Reglas:
+   - No cambies el **nombre** del archivo.
+   - No cambies el **tamaño** de la imagen ni la cantidad de cuadros. Dibuja dentro de cada cuadro lo que quieras.
+   - Usa los colores de `_paleta.png`. Si usas otro, el juego lo cambia por el más parecido de la paleta.
+   - Lo que dejes transparente queda transparente en el juego.
 
-3. Edítalas y guárdalas como **PNG**, sin cambiar el nombre ni el tamaño (puede ser ×1 o el mismo ×2, ×4… con que lo exportaste).
+4. **Doble clic en `2 - Probar el juego en mi PC.bat`.** Se abre una ventana negra (déjala abierta) y a los segundos el navegador con dos pestañas: el juego y una página con todos los sprites animados. Mientras esa ventana esté abierta, **cada vez que guardes un PNG el juego se recarga solo** con el cambio. Para terminar, cierra la ventana negra.
 
-4. Listo: con el juego abierto en modo desarrollo (`npm run dev`) se actualiza solo al guardar. Si no, corre `npm run sprites`. En la consola sale una línea por archivo:
-   - `✓ gato__trotar.png` → entró al juego.
-   - `✓ … (12 píxeles pasados al color más cercano de la paleta)` → usaste colores fuera de la paleta y se ajustaron al más parecido.
-   - `✗ …` → algo no calza (nombre o tamaño) y explica qué.
+5. **Cuando te guste, doble clic en `3 - Subir mis retoques.bat`.** Revisa tus imágenes y las sube; en unos 2 minutos aparecen en la página del juego (si no las ves, recarga con Ctrl+F5).
 
-## Reglas
+## Si algo no sale
 
-- **Mismo tamaño y misma cantidad de cuadros** que la imagen exportada. Puedes dibujar dentro de cada cuadro lo que quieras, pero no agregar ni quitar cuadros.
-- **Colores:** se pasan al color más cercano de la paleta del juego para que todo combine. Para tener exactamente el color que quieres, usa los de `_paleta.png`.
-- **Transparencia:** lo que tenga menos de la mitad de opacidad queda transparente.
-- El destello blanco al recibir daño, el borde dorado de los élites y los colores de pañoleta del quiltro se generan solos a partir de tu dibujo.
-- Para volver al dibujo original, borra el archivo de esta carpeta.
-- Para ver el resultado: `http://localhost:5173/sprites.html` muestra todos los sprites animados.
+- En la ventana negra aparece una línea por imagen: **✓** si entró al juego, **✗** si hay un problema, con la explicación (casi siempre el nombre o el tamaño).
+- Para volver al dibujo original de una imagen, bórrala de `sprites-retocados`.
+- El destello blanco al recibir daño, el borde dorado de los élites y los colores de pañoleta del quiltro se generan solos a partir de tu dibujo: no hay que dibujarlos aparte.
+- Si una imagen es demasiado chica para editarla cómodo, tu programa puede hacer zoom (en Aseprite y Piskel es lo normal: se dibuja píxel a píxel con zoom).
