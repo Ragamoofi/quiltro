@@ -3,7 +3,44 @@
  * older versions, a backup copy of the previous save, and export/import as a
  * text code for the Opciones screen. Pure data + functions; no rendering.
  */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
+
+/** Player options (GDD "Opciones"). */
+export interface Settings {
+  music: number;
+  sfx: number;
+  /** Screen shake 0..1. */
+  shake: number;
+  damageNumbers: boolean;
+  /** Photosensitivity: no inverted frames, no blackout flashes. */
+  reduceFlashes: boolean;
+  /** Colour-blind mode: danger/safety also shown with shapes. */
+  colorblind: boolean;
+  /** 'mantener' = hold to give line; 'alternar' = tap to toggle. */
+  holdMode: 'mantener' | 'alternar';
+  /** Touch joystick: appears where you touch, or fixed in the corner. */
+  joystick: 'flotante' | 'fijo';
+  quality: 'auto' | 'alta' | 'baja';
+  language: string;
+  /** Show the tutorial tips. */
+  tips: boolean;
+}
+
+export function defaultSettings(): Settings {
+  return {
+    music: 0.6,
+    sfx: 0.7,
+    shake: 1,
+    damageNumbers: true,
+    reduceFlashes: false,
+    colorblind: false,
+    holdMode: 'mantener',
+    joystick: 'flotante',
+    quality: 'auto',
+    language: 'es-CL',
+    tips: true,
+  };
+}
 const KEY = 'quiltro.save';
 const BACKUP_KEY = 'quiltro.save.bak';
 
@@ -29,6 +66,10 @@ export interface SaveData {
   lastSeen: number;
   /** Best lucas earned in one run (caps the neighbours to 30 % of it). */
   bestRunLucas: number;
+  settings: Settings;
+  /** Tutorial tips already shown (each appears once). */
+  tipsShown: string[];
+  introSeen: boolean;
 }
 
 export function defaultSave(now = Date.now()): SaveData {
@@ -48,6 +89,9 @@ export function defaultSave(now = Date.now()): SaveData {
     antartica: false,
     lastSeen: now,
     bestRunLucas: 0,
+    settings: defaultSettings(),
+    tipsShown: [],
+    introSeen: false,
   };
 }
 
@@ -57,6 +101,11 @@ type Migration = (old: Record<string, unknown>) => Record<string, unknown>;
 const MIGRATIONS: Record<number, Migration> = {
   // v0 = anything without a version (never shipped; kept as the pattern for the future).
   0: (old) => ({ ...defaultSave(), ...old, version: 1 }),
+  // v2 (Phase 5): options, tutorial tips and the intro. Players with runs already saw the game.
+  1: (old) => {
+    const runs = ((old.totals as { runs?: number } | undefined)?.runs ?? 0) > 0;
+    return { ...old, settings: defaultSettings(), tipsShown: [], introSeen: runs, version: 2 };
+  },
 };
 
 /** Brings any old save up to date and fills missing fields with defaults. */
@@ -74,6 +123,7 @@ export function migrate(raw: unknown): SaveData {
   const merged = { ...base, ...data } as SaveData;
   merged.totals = { ...base.totals, ...(data.totals as object | undefined) };
   merged.best = { ...base.best, ...(data.best as object | undefined) };
+  merged.settings = { ...base.settings, ...(data.settings as object | undefined) };
   merged.version = SAVE_VERSION;
   if (!merged.characters.includes('quiltro')) merged.characters.unshift('quiltro');
   if (!merged.vecinos.includes('almacen')) merged.vecinos.unshift('almacen');
