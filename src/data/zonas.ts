@@ -24,7 +24,7 @@ export const ZONAS: readonly ZoneDef[] = [
   { id: 'norte', i18n: 'zonas.norte', startMin: 0, endMin: 3, hazard: 'remolinos', boss: 'alicanto', enemies: ['zancudo', 'jote', 'guanaco'], shareSquare: '🟨' },
   { id: 'centro', i18n: 'zonas.centro', startMin: 3, endMin: 6, hazard: 'microQueNoPara', boss: 'taco', enemies: ['paloma', 'micro', 'colectivo', 'rata', 'gaviota', 'loboMarino'], shareSquare: '🟦' },
   { id: 'sur', i18n: 'zonas.sur', startMin: 6, endMin: 9, hazard: 'neblina', boss: 'caleuche', enemies: ['chonchon', 'camahueto', 'basilisco', 'loboMarino'], shareSquare: '🟩' },
-  { id: 'patagonia', i18n: 'zonas.patagonia', startMin: 9, endMin: 12, hazard: 'viento', boss: 'vecinoViral', enemies: ['tempano', 'chingue'], shareSquare: '⬜' },
+  { id: 'patagonia', i18n: 'zonas.patagonia', startMin: 9, endMin: 12, hazard: 'viento', boss: 'caiCai', enemies: ['tempano', 'chingue'], shareSquare: '⬜' },
   { id: 'antartica', i18n: 'zonas.antartica', startMin: 12, endMin: Number.POSITIVE_INFINITY, hazard: 'rotativo', boss: null, enemies: [], shareSquare: '⬜' },
 ];
 

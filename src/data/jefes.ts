@@ -14,7 +14,7 @@ export const JEFES: readonly BossDef[] = [
   { id: 'alicanto', i18n: 'jefes.alicanto', zone: 'norte', hp: 1500, phase2At: 0.5, introSeconds: 2 },
   { id: 'taco', i18n: 'jefes.taco', zone: 'centro', hp: 3000, phase2At: 0.5, introSeconds: 2 },
   { id: 'caleuche', i18n: 'jefes.caleuche', zone: 'sur', hp: 8000, phase2At: 0.5, introSeconds: 2 },
-  { id: 'vecinoViral', i18n: 'jefes.vecinoViral', zone: 'patagonia', hp: 9000, phase2At: 0.5, introSeconds: 2 },
+  { id: 'caiCai', i18n: 'jefes.caiCai', zone: 'patagonia', hp: 9000, phase2At: 0.5, introSeconds: 2 },
 ];
 
 /** La Antártica: previous bosses return upgraded every 3 minutes. */

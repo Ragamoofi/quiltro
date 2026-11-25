@@ -102,79 +102,60 @@ const caleuche = (lights: [string, string, string]): Frame => {
   return outlined(p.frame());
 };
 
-// ---- El Tío René: el tío del barrio con megáfono (rediseño completo) ----
-// Gorro azul, polera a rayas con chaleco, bermudas, calcetines altos con sandalias, el dedo en
-// alto ("¡atención, atención!") y el megáfono. Un personaje inventado: no copia a nadie.
-const tioRene = (pose: 'quieto' | 'quieto2' | 'grito' | 'grito2'): Frame => {
-  const shout = pose === 'grito' || pose === 'grito2';
-  const alt = pose === 'quieto2' || pose === 'grito2';
-  const p = new Pix(72, 94);
-  // Legs: calves, high white socks and dark sandals.
-  p.rect(24, 66, 10, 10, 'l').rect(38, 66, 10, 10, 'l').rect(31, 66, 2, 10, 'c').rect(45, 66, 2, 10, 'c');
-  p.rect(24, 76, 10, 10, 'w').rect(38, 76, 10, 10, 'w').rect(24, 76, 10, 1, 'g').rect(38, 76, 10, 1, 'g').rect(24, 80, 10, 1, 'G').rect(38, 80, 10, 1, 'G');
-  p.rect(22, 86, 13, 5, 'd').rect(37, 86, 13, 5, 'd').rect(22, 90, 13, 2, 'k').rect(37, 90, 13, 2, 'k').rect(24, 86, 9, 1, 'C').rect(39, 86, 9, 1, 'C');
-  // Bermudas with a belt.
-  p.ellipse(36, 62, 18, 9, 'n').rect(18, 57, 36, 8, 'n').rect(35, 62, 2, 6, 'o').rect(18, 56, 36, 2, 'd').rect(34, 56, 4, 2, 'a');
-  p.rect(18, 64, 36, 1, 'o');
-  // Striped shirt over a round belly, and an open vest with pockets.
-  p.ellipse(36, 42, 19, 19, 'y').ellipse(36, 50, 17, 12, 'y').ellipse(44, 48, 9, 13, 'A');
-  for (const y of [35, 40, 45, 50]) p.rect(20, y, 32, 1, 'r');
-  p.rect(16, 30, 10, 27, 'g').rect(46, 30, 10, 27, 'g').rect(16, 30, 2, 27, 'K').rect(54, 30, 2, 27, 'K').rect(19, 47, 6, 5, 'K').rect(47, 47, 6, 5, 'K').rect(19, 47, 6, 1, 'G').rect(47, 47, 6, 1, 'G');
-  // Neck and collar.
-  p.rect(30, 27, 12, 5, 'c').rect(28, 30, 16, 2, 'y');
-  // Left arm raised with the index finger up (¡atención!).
-  p.rect(8, 31, 9, 6, 'y').rect(9, 36, 8, 10, 'l').rect(5, 14, 8, 24, 'l').rect(11, 20, 2, 18, 'c');
-  p.ellipse(9, 13, 4.5, 4.5, 'l').rect(alt ? 9 : 8, 3, 3, 11, 'l').rect(alt ? 9 : 8, 2, 3, 2, 'c');
-  // Head: round, shaded, with big ears.
-  p.ellipse(36, 19, 12.5, 12.5, 'l').ellipse(40, 23, 8, 9, 'c').ellipse(36, 19, 12, 12, 'l').ellipse(24, 20, 2.5, 3.5, 'l').ellipse(48, 20, 2.5, 3.5, 'l');
-  p.ellipse(24, 20, 1.2, 2, 'p').ellipse(48, 20, 1.2, 2, 'p');
-  // Blue cap with a brim pointing right.
-  p.ellipse(36, 10, 13, 8, 'b').rect(23, 11, 26, 3, 'b').rect(38, 12, 18, 3, 'B').rect(30, 4, 8, 1, 's').rect(34, 7, 4, 3, 'w');
-  p.rect(23, 14, 26, 1, 'B');
-  // Eyes with eyebrows (angry when shouting), nose, big moustache, cheeks.
-  p.rect(28, 17, 6, 6, 'W').rect(38, 17, 6, 6, 'W').rect(30, 18, 3, 4, 'k').rect(41, 18, 3, 4, 'k').set(30, 18, 'W').set(41, 18, 'W');
-  if (shout) {
-    for (let i = 0; i < 6; i++) p.set(27 + i, 14 + Math.floor(i / 2), 'k').set(44 - i, 14 + Math.floor(i / 2), 'k');
-    p.set(27, 13, 'k').set(44, 13, 'k');
+// ---- Cai Cai Vilú: la serpiente del mar del mito de Chiloé (la que levantó las aguas) ----
+const caiHead = (open: boolean): Frame => {
+  const p = new Pix(38, 34);
+  // Dorsal crest and side fin in blue.
+  for (let i = 0; i < 5; i++) p.rect(6 + i * 4, 2 + (i % 2), 3, 8, 'b').rect(7 + i * 4, 2 + (i % 2), 1, 8, 's').rect(6 + i * 4, 9, 3, 1, 'B');
+  // Head and snout: teal with a lighter top and a pale belly.
+  p.ellipse(18, 19, 16, 12, 'T').ellipse(18, 16, 14, 8.5, 't').ellipse(30, 20, 8, 6, 't').ellipse(21, 26, 11, 3.5, 'n');
+  p.rect(8, 22, 5, 7, 'b').rect(9, 22, 1, 7, 's');
+  // Brow, golden eye with a slit pupil, nostril.
+  p.rect(16, 10, 10, 2, 'T').ellipse(22, 15, 4.2, 4.2, 'y').rect(22, 12, 2, 7, 'k').set(21, 13, 'W').set(34, 17, 'k').set(33, 18, 'k');
+  // The mouth: closed, or open with a red throat and teeth.
+  if (open) {
+    p.rect(22, 23, 15, 5, 'R').rect(22, 23, 15, 1, 'r');
+    for (let x = 23; x < 37; x += 3) p.rect(x, 22, 2, 2, 'W').rect(x + 1, 27, 2, 2, 'W');
+    p.rect(22, 28, 15, 3, 'T');
   } else {
-    p.rect(27, 15, 7, 1, 'k').rect(38, 15, 7, 1, 'k');
+    p.rect(22, 24, 15, 2, 'k').rect(22, 26, 15, 3, 'T');
+    for (let x = 24; x < 36; x += 4) p.rect(x, 25, 1, 2, 'W');
   }
-  p.rect(34, 21, 4, 5, 'c').rect(28, 24, 3, 2, 'p').rect(41, 24, 3, 2, 'p');
-  p.rect(25, 26, 22, 3, 'd').rect(24, 27, 3, 3, 'd').rect(45, 27, 3, 3, 'd').rect(26, 26, 20, 1, 'C');
-  if (shout) {
-    p.rect(30, 29, 12, 7, 'R').rect(31, 29, 10, 2, 'W').rect(33, 34, 6, 2, 'r').rect(30, 29, 1, 7, 'k').rect(41, 29, 1, 7, 'k');
-    p.set(23, 18, 's').set(23, 19, 's').set(23, 20, 's').set(50, 12, 's').set(50, 13, 's').set(21, 24, 's');
-  } else {
-    p.rect(32, 30, 8, 1, 'R').rect(33, 31, 6, 1, 'c');
-  }
-  // Right arm to the megaphone, and the megaphone itself (red and white stripes, silver rim).
-  p.rect(55, 31, 9, 6, 'y').rect(54, 36, 8, 10, 'l').rect(49, 22, 7, 16, 'l').rect(51, 22, 2, 16, 'c');
-  for (let i = 0; i < 25; i++) {
-    const h = 5 + Math.floor(i * 0.6);
-    p.rect(46 + i, 24 - Math.floor(h / 2), 1, h, Math.floor(i / 4) % 2 === 0 ? 'r' : 'w');
-  }
-  p.rect(69, 15, 2, 19, 'G').rect(70, 15, 1, 19, 'g').rect(52, 29, 4, 8, 'k').ellipse(52, 30, 4, 3.5, 'l');
-  const out = new Pix(90, 94);
-  out.rows(6, 0, p.frame());
-  if (shout) {
-    // Sound arcs from the megaphone's mouth.
-    const col = pose === 'grito' ? 'a' : 'W';
-    for (let r = 5; r <= 11; r += 3) {
-      for (let a = -55; a <= 55; a += 7) {
-        const rad = (a * Math.PI) / 180;
-        out.set(77 + Math.cos(rad) * r, 24 + Math.sin(rad) * r * 1.3, col);
-      }
-    }
-  }
-  return outlined(out.frame());
+  // Whiskers (barbels) trailing from the chin.
+  p.rows(26, 30, ['w....', '.ww..', '...ww', '.....w']);
+  p.rows(3, 24, ['.....', 'ww...', '..ww.']);
+  return outlined(p.frame());
 };
 
-const VECINO_A = tioRene('quieto');
-const VECINO_B = tioRene('quieto2');
-const VECINO_G1 = tioRene('grito');
-const VECINO_G2 = tioRene('grito2');
-/** Phase 2 ("en vivo y en directo"): red in the face, red cap, red shirt. */
-const RABIA = { l: 'p', c: 'C', y: 'r', A: 'R', b: 'R', B: 'k', n: 'w' } as const;
+const caiBody = (): Frame => {
+  const p = new Pix(24, 24);
+  p.rect(9, 0, 3, 6, 'b').rect(10, 0, 1, 6, 's').rect(13, 1, 3, 5, 'B');
+  p.ellipse(12, 13, 11, 10, 'T').ellipse(11, 10, 9.5, 6.5, 't').ellipse(12, 19, 8, 3.5, 'n');
+  // Scales: little arcs.
+  for (const [x, y] of [
+    [6, 9],
+    [11, 7],
+    [16, 9],
+    [9, 12],
+    [14, 12],
+  ] as const)
+    p.set(x, y, 'T').set(x + 1, y + 1, 'T').set(x - 1, y + 1, 'T');
+  return outlined(p.frame());
+};
+
+const caiTail = (): Frame => {
+  const p = new Pix(22, 22);
+  p.ellipse(9, 12, 8, 7, 'T').ellipse(8, 10, 6.5, 4.5, 't').ellipse(9, 16, 5, 2.5, 'n');
+  // The tail fin.
+  p.rows(14, 4, ['..bb', '.bbb', 'bbbb', 'bbBb', 'bbbb', 'bbbb', '.bbb', '.bBb', '..bb']);
+  p.rect(14, 8, 1, 4, 's');
+  return outlined(p.frame());
+};
+
+const CAI_HEAD_C = caiHead(false);
+const CAI_HEAD_O = caiHead(true);
+const CAI_BODY = caiBody();
+const CAI_TAIL = caiTail();
 
 const ALICANTO_A = alicanto(true);
 const ALICANTO_B = alicanto(false);
@@ -204,14 +185,7 @@ export const jefesSprites: SpriteDef[] = [
     navegar: { fps: 3, frames: [caleuche(['y', 'a', 'y']), caleuche(['a', 'y', 'a'])] },
     fiesta: { fps: 8, frames: [caleuche(['p', 't', 'y']), caleuche(['t', 'y', 'p']), caleuche(['y', 'p', 't'])] },
   }),
-  boss(
-    'vecinoViral',
-    {
-      quieto: { fps: 3, frames: [VECINO_A, VECINO_B] },
-      grito: { fps: 8, frames: [VECINO_G1, VECINO_G2] },
-      furia: { fps: 4, frames: [recolor(VECINO_A, RABIA), recolor(VECINO_B, RABIA)] },
-      furiaGrito: { fps: 8, frames: [recolor(VECINO_G1, RABIA), recolor(VECINO_G2, RABIA)] },
-    },
-    0.85,
-  ),
+  boss('caiCai', { cabeza: { fps: 3, frames: [CAI_HEAD_C, CAI_HEAD_O] } }),
+  boss('caiCaiCuerpo', { cuerpo: { fps: 1, frames: [CAI_BODY] } }),
+  boss('caiCaiCola', { cola: { fps: 1, frames: [CAI_TAIL] } }),
 ];

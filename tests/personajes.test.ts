@@ -51,7 +51,7 @@ describe('personajes', () => {
     expect(checkUnlocks(s).sort()).toEqual(['chingue', 'condor', 'pinguino']);
     s.best.km = 4300; // Punta Arenas
     expect(checkUnlocks(s)).toEqual(['guanaco']);
-    s.bossesBeaten.push('vecinoViral');
+    s.bossesBeaten.push('caiCai');
     expect(checkUnlocks(s)).toEqual(['paloma']);
     expect(s.characters).toHaveLength(10);
   });

@@ -12,12 +12,12 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
-### El jefe final, rehecho: El Tío René
+### Jefe final nuevo: Cai Cai Vilú
 
 #### Cambiado
-- El jefe final pasa a llamarse **El Tío René** (el id interno sigue siendo `vecinoViral`). Es el tío del barrio con megáfono, **rediseñado desde cero** porque el anterior se veía mal: gorro azul, polera a rayas con chaleco de bolsillos, bermudas, calcetines altos con sandalias, el dedo en alto ("¡atención, atención!"), bigote, gestos de enojo al gritar y gotas de sudor; la fase 2 lo pone rojo de furia. Sprite más grande y con más sombreado; los puntos donde se le pega se ajustaron a su tamaño.
-- Textos: "¡Atención, atención, vecinos! ¡Esto no es un simulacro!", "¡Y ahora, en vivo y en directo!", "¡Llegaron los curiosos!". El logro dice "Vencer al Tío René".
-- Es un personaje inventado con ese nombre: no copia la cara ni la ropa de nadie.
+- Se quita al Vecino Viral / Tío René (no convencía) y el jefe final de la Patagonia pasa a ser **Cai Cai Vilú** (id `caiCai`), la serpiente marina del mito de Chiloé que levantó las aguas. Cuerpo de 8 segmentos que se arrastra siguiendo a la cabeza, da vueltas alrededor del perro y lo cerca.
+- Ataques: **olas** (franjas rosadas con aviso), **remolinos** (círculos con aviso) y, en la fase 2 ("¡Responde Tren Tren!"), el **temblor de Tren Tren** con dos círculos seguros verdes. Textos en `es-CL.json`; el logro dice "Vencer a Cai Cai Vilú".
+- Sprites en tres piezas (`caiCai`, `caiCaiCuerpo`, `caiCaiCola`). La Paloma rebelde ahora se desbloquea al vencerla.
 
 ### Pantalla en PC (1920×1080)
 

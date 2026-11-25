@@ -160,7 +160,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     id: 'paloma',
     nameKey: 'personajes.paloma',
     sprite: 'palomaRebelde',
-    unlock: { kind: 'vencer', jefe: 'vecinoViral' },
+    unlock: { kind: 'vencer', jefe: 'caiCai' },
     startingWeapon: 'fuegos',
     mods: { speedMult: 1.1, maxHp: 110, damageMult: 0.15, ignoresHazards: true },
   },
