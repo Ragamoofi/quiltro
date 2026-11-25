@@ -44,10 +44,10 @@ Hay 10 armas de espacio, así que cada personaje parte con una distinta. Orden d
 | 7 | **Chingue** (nuevo) | 5.000 sopaipillas (en total) | **Elástico** | **Perfume:** los enemigos que se acercan reciben daño por segundo | velocidad ×0,95, −10 de vida |
 | 8 | **Cóndor** (nuevo) | vencer al Taco | **Trompo** | **Ojo de cóndor:** radio de recoger comida ×1,6 y ve venir los avisos más temprano | +20 % de daño, −25 de vida, velocidad ×0,9 |
 | 9 | **Guanaco** (nuevo) | llegar a Punta Arenas | **Bolitas** | **Lana gruesa:** un escudo cada 30 s | +40 de vida, +1 armadura, velocidad ×0,88 |
-| 10 | **Paloma rebelde** | vencer al Vecino Viral | Fuegos | **Vuelo:** ignora los peligros del ambiente y atraviesa las nubes | +0 de vida, −20 % de daño |
+| 10 | **Paloma rebelde** | vencer a Cai Cai Vilú | Fuegos | **Vuelo:** ignora los peligros del ambiente y atraviesa las nubes | +0 de vida, −20 % de daño |
 
 Notas:
-- El desbloqueo más difícil (vencer al jefe final) queda para el personaje más raro. La Paloma pasa de "10.000 palomas" a vencer al Vecino Viral, que además es un hito de partida.
+- El desbloqueo más difícil (vencer al jefe final) queda para el personaje más raro. La Paloma pasa de "10.000 palomas" a vencer a Cai Cai Vilú, que además es un hito de partida.
 - Las condiciones usan los totales ya guardados (enemigos, sopaipillas). No hay que migrar la partida: los desbloqueos ya ganados se conservan.
 - Las pasivas únicas son mecánicas reales (escudo, esquivar, aura, segunda vida), no solo números.
 

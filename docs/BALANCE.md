@@ -234,6 +234,20 @@ Bot medio, 12 viajes por personaje (semillas 7000–7011), con el mismo bot que 
 - La Quiltra está en el borde (130 %). El Guanaco, que se mide más cerca de 117 % con otro Quiltro de referencia, también.
 - Esto compara personajes entre sí con un bot; no dice si cada uno es divertido.
 
+## 11.0 — Cai Cai Vilú (jefe final nuevo, reemplaza al Vecino Viral)
+
+Bot medio, Quiltro, 20 viajes (semillas 7000–7019), 16 minutos máximo:
+
+| Medida | Resultado |
+| --- | --- |
+| Vencen al jefe final | **10 % (2 de 20)** |
+| Llegan a Patagonia | 30 % (6 de 20) |
+| Minuto promedio de muerte | 6,4 |
+| Duración de las peleas con Cai Cai Vilú | 25, 38 y 41 s (3 peleas medidas) |
+| Muertes por zona | Norte 11, Centro 3, Sur 2, Patagonia 2 |
+
+**Lectura:** el jefe final no es el muro: de los 6 viajes que llegan a Patagonia, solo 2 mueren ahí. Las peleas medidas duran 25–41 s, **por debajo de la meta de 45–120 s**, así que por ahora no lo subo: la muestra es de 3 peleas, el bot medio no juega bien los patrones y el muro real sigue siendo el Norte (11 de 20 muertes, el Alicanto). Se revisa con tus partidas; si te parece fácil, subo su vida (9.000 base) o acorto el tiempo entre ataques.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

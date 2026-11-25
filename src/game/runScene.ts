@@ -500,7 +500,7 @@ export class RunScene implements Scene {
     if (p.sinceHurt >= 300) this.achieve('puroAguante');
     if (ctx.enemies.activeCount >= 300) this.achieve('paLaFoto');
 
-    // Segunda vida, or the end of the road (victory comes from beating El Vecino Viral).
+    // Segunda vida, or the end of the road (victory comes from beating Cai Cai Vilú).
     if (p.dead && p.deadFor > DEATH_DELAY * 0.7 && this.revives > 0) {
       this.revives--;
       p.revive(ctx, 0.5);
@@ -790,7 +790,7 @@ export class RunScene implements Scene {
   }
 
   private finish(victory: boolean): void {
-    // Beating El Vecino Viral first plays the ending in comic panels.
+    // Beating Cai Cai Vilú first plays the ending in comic panels.
     if (victory && !this.comic && !this.journey.antartica) {
       this.mode = 'comic';
       this.setTimeScale(1);
@@ -908,7 +908,7 @@ export class RunScene implements Scene {
 
   private reported = { km: 0, kills: 0, bosses: 0, food: 0, lucas: 0, killsBy: {} as Record<string, number> };
 
-  /** After beating El Vecino Viral: keep going into the endless south. */
+  /** After beating Cai Cai Vilú: keep going into the endless south. */
   private continueToAntarctica(): void {
     this.end.hide();
     this.victory = false;

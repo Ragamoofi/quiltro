@@ -8,12 +8,21 @@ Meta de la fase: que el juego aguante 20+ partidas sin repetirse, sin romper el 
 
 ### 11.0 — Cierre del jefe y orden de la casa (media jornada)
 - Medir Cai Cai Vilú con el bot (medio y experto, 20 viajes, semillas 7000–7019) y anotar en `docs/BALANCE.md`. Ajustar vida/ataques solo si dura fuera de 45–120 s.
-- Arreglar los textos viejos del "Vecino Viral" que queden en docs y comentarios.
-- **Listo cuando:** número del jefe documentado y `grep` de "Vecino Viral/Tío René" sin resultados fuera del CHANGELOG.
+- Arreglar los textos viejos del "Vecino Viral" en el código y los planes vigentes (los informes históricos de `BALANCE.md` se dejan como estaban).
+- **Listo cuando:** número del jefe documentado y `grep` de "Vecino Viral/Tío René" sin resultados en `src/`.
 
 ### 11.1 — Salud del código (1 jornada)
 - Partir `runScene.ts` (945 líneas) y `main.ts`: sacar eventos de partida, depuración y bot a módulos propios, sin cambiar el comportamiento.
 - **Listo cuando:** ningún archivo de `src/game` pasa de ~600 líneas, 128 pruebas siguen verdes y la partida del bot da los mismos resultados con la misma semilla.
+
+### 11.1b — Mapas vivos y fieles a su lugar (pedido del 2026-11-25; 3–4 jornadas, se hace por ambiente)
+Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos propios y más vida. Se parte por el Norte y Valparaíso y después se recorre el resto, un ambiente por commit y con capturas antes/después.
+
+- **Norte (desierto):** el sol se siente (luz cálida fuerte, brillo y vaho de calor en el horizonte, sombras largas, posible "insolación" suave si te quedas quieto al sol), **tornados / remolinos de polvo mucho mejor dibujados** (embudo con capas, polvo que se levanta, giro animado, aviso claro del peligro), más elementos del desierto: cactus, salares, geoglifos, ruinas de salitreras, esqueletos de animales, minas, camiones mineros lejanos, llamas y vicuñas, volcanes al fondo, cielo despejado con espejismos.
+- **Valparaíso (todo lo icónico):** casas de colores en los cerros, escaleras y pasajes para "caminar entre los cerros", ascensores y funiculares, cables y postes, murales, gatos y perros de cerro, puerto con grúas y barcos, lobos marinos, la playa y el mar, gaviotas; y un tramo de **Viña del Mar** con el **reloj de flores**, palmeras y el borde costero.
+- **Resto de los mapas** (Santiago, Centro, Temuco, Sur, Chiloé, Patagonia, Antártica): revisar cada uno con la misma pregunta "¿esto se ve y se siente como ahí?" y agregar al menos 6–8 elementos propios, vida ambiente (animales, gente, vehículos) y un clima o luz característicos. Santiago ya tiene la Estación Central; se suman cerro San Cristóbal, Costanera y metro. Sur: bosque de lluvia, araucarias, volcán Villarrica. Chiloé: palafitos, iglesias de madera, neblina baja. Patagonia: viento, estepa, torres del Paine, guanacos.
+- Reglas: todo sin imágenes externas (se dibuja con el sistema de sprites propio), sin marcas ni lugares reales con logo; contraste 100 % con `npm run contraste`; sin bajar de 55 fps en el banco de rendimiento; el bot no debe caer más de 10 puntos por el cambio de decorado.
+- **Listo cuando:** cada ambiente tiene capturas antes/después en `docs/` y tú das el visto bueno de que "se siente como ahí".
 
 ### 11.2 — Logros y bestiario (1 jornada)
 - De 7 a ~35 logros: por jefe, por personaje, por arma/evolución, por km, por ambiente, por enemigo, de práctica ("sin recibir daño en un jefe"), secretos (2–3).
@@ -51,7 +60,7 @@ Meta de la fase: que el juego aguante 20+ partidas sin repetirse, sin romper el 
 - **Yo**: ajustar el equilibrio con tus datos, subir capturas a itch.io y publicar.
 
 ## Orden recomendado
-11.0 → 11.1 → 11.2 → 11.3 → 11.4 → 11.5 → 11.6 → 11.7 → 11.8. Los logros van antes que los eventos para poder premiarlos; el código se ordena primero porque los eventos tocan `runScene`.
+11.0 → 11.1 → 11.1b (mapas vivos) → 11.2 → 11.3 → 11.4 → 11.5 → 11.6 → 11.7 → 11.8. Los logros van antes que los eventos para poder premiarlos; el código se ordena primero porque los eventos tocan `runScene`.
 
 ## Lo que necesito que decidas
 1. ¿Apruebas el orden? (si quieres ver novedades jugables rápido, se puede adelantar 11.5 antes que 11.2).
