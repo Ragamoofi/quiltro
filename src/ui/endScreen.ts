@@ -37,6 +37,7 @@ export class EndScreen {
   private glow: Button | null = null;
   readonly focus = new FocusList();
   private glowFocused = false;
+  private note: PixelText | null = null;
 
   show(
     s: RunSummary,
@@ -47,6 +48,8 @@ export class EndScreen {
     onContinue?: () => void,
     onCucha?: () => void,
     onMenu?: () => void,
+    share?: { copy: () => Promise<string>; share: () => Promise<string> },
+    dailyLabel?: string,
   ): void {
     this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.root.visible = true;
@@ -55,6 +58,7 @@ export class EndScreen {
     this.shown = 0;
     this.target = s.lucas;
     this.glow = null;
+    this.note = null;
     this.root.addChild(ditherOverlay(viewW, viewH, 'k', 2));
     this.content = new Container();
     this.root.addChild(this.content);
@@ -81,6 +85,7 @@ export class EndScreen {
       }, 2),
       5,
     );
+    if (dailyLabel) center(new PixelText(dailyLabel, { color: 'i', outline: 'k' }), 3);
     center(new PixelText(`${formatNumber(s.km)} km · ${t('ui.llegasteA', { lugar: s.city })}`, { color: 'w', outline: 'k' }));
     if (s.rewards?.newRecord) center(new PixelText(t('ui.nuevoRecord'), { color: 'a', outline: 'k' }));
     center(
@@ -126,26 +131,48 @@ export class EndScreen {
     if (onContinue) center(new PixelText(t('zonasExtra.antarticaDesbloqueada'), { color: 'i', outline: 'k' }), 3);
     y += 3;
 
-    // Buttons.
-    const buttons: Button[] = [];
+    // Buttons, two rows: play again / La Cucha / Menú, then share / continue.
     const retry = new Button(`${t('ui.otraAlTiro')} (R)`, 0, 22, onRetry, 'a', 'k');
-    buttons.push(retry);
+    const row1: Button[] = [retry];
     if (onCucha) {
       const c = new Button(t('meta.laCucha'), 0, 22, onCucha, 'v', 'w');
-      buttons.push(c);
+      row1.push(c);
       if (rw?.affordable) this.glow = c;
     }
-    if (onContinue) buttons.push(new Button(t('zonasExtra.seguirAntartica'), 0, 22, onContinue, 'b', 'w'));
-    if (onMenu) buttons.push(new Button(t('ui.menu'), 0, 22, onMenu, 'K', 'w'));
-    this.focus.set(buttons);
+    if (onMenu) row1.push(new Button(t('ui.menu'), 0, 22, onMenu, 'K', 'w'));
+    const row2: Button[] = [];
+    if (share) {
+      const note = new PixelText(' ', { color: 'V', outline: 'k' });
+      this.note = note;
+      const say = (p: Promise<string>): void => {
+        void p.then((msg) => {
+          note.text = msg;
+          note.x = Math.round((viewW - note.width) / 2);
+        });
+      };
+      row2.push(new Button(t('compartir.copiar'), 0, 18, () => say(share.copy()), 'b', 'w'));
+      row2.push(new Button(t('compartir.compartir'), 0, 18, () => say(share.share()), 'b', 'w'));
+    }
+    if (onContinue) row2.push(new Button(t('zonasExtra.seguirAntartica'), 0, 18, onContinue, 'a', 'k'));
+    this.focus.set([...row1, ...row2]);
     const gap = 6;
-    const bw = Math.floor((pw - 24 - gap * (buttons.length - 1)) / buttons.length);
-    buttons.forEach((b, i) => {
-      b.resize(bw, 22);
-      b.position.set(px0 + 12 + i * (bw + gap), y);
-      items.push(b);
-    });
-    y += 22;
+    for (const [ri, row] of [row1, row2].entries()) {
+      if (row.length === 0) continue;
+      const h = ri === 0 ? 22 : 18;
+      const bw = Math.floor((pw - 24 - gap * (row.length - 1)) / row.length);
+      row.forEach((b, i) => {
+        b.resize(bw, h);
+        b.position.set(px0 + 12 + i * (bw + gap), y);
+        items.push(b);
+      });
+      y += h + 5;
+    }
+    if (this.note) {
+      this.note.position.set(Math.round(viewW / 2), y);
+      items.push(this.note);
+      y += 10;
+    }
+    y += 0;
 
     // Center the whole block vertically inside a panel.
     const ph = y + 16;

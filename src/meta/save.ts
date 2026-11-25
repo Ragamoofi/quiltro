@@ -3,7 +3,7 @@
  * older versions, a backup copy of the previous save, and export/import as a
  * text code for the Opciones screen. Pure data + functions; no rendering.
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** Player options (GDD "Opciones"). */
 export interface Settings {
@@ -70,6 +70,8 @@ export interface SaveData {
   /** Tutorial tips already shown (each appears once). */
   tipsShown: string[];
   introSeen: boolean;
+  /** Ruta del día: the last date played, whether its counted attempt is used, and its km. */
+  daily: { key: string; counted: boolean; km: number };
 }
 
 export function defaultSave(now = Date.now()): SaveData {
@@ -92,6 +94,7 @@ export function defaultSave(now = Date.now()): SaveData {
     settings: defaultSettings(),
     tipsShown: [],
     introSeen: false,
+    daily: { key: '', counted: false, km: 0 },
   };
 }
 
@@ -106,6 +109,8 @@ const MIGRATIONS: Record<number, Migration> = {
     const runs = ((old.totals as { runs?: number } | undefined)?.runs ?? 0) > 0;
     return { ...old, settings: defaultSettings(), tipsShown: [], introSeen: runs, version: 2 };
   },
+  // v3 (Phase 7): Ruta del día.
+  2: (old) => ({ ...old, daily: { key: '', counted: false, km: 0 }, version: 3 }),
 };
 
 /** Brings any old save up to date and fills missing fields with defaults. */
@@ -124,6 +129,7 @@ export function migrate(raw: unknown): SaveData {
   merged.totals = { ...base.totals, ...(data.totals as object | undefined) };
   merged.best = { ...base.best, ...(data.best as object | undefined) };
   merged.settings = { ...base.settings, ...(data.settings as object | undefined) };
+  merged.daily = { ...base.daily, ...(data.daily as object | undefined) };
   merged.version = SAVE_VERSION;
   if (!merged.characters.includes('quiltro')) merged.characters.unshift('quiltro');
   if (!merged.vecinos.includes('almacen')) merged.vecinos.unshift('almacen');

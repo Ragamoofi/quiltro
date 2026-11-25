@@ -10,6 +10,7 @@ import { FloorLayer } from '../../game/world/floor.ts';
 import { Horizon, HORIZON_H } from '../../game/world/horizon.ts';
 import { formatNumber, t } from '../../i18n/index.ts';
 import type { SaveData } from '../../meta/save.ts';
+import { dailyNumber, dailyToday } from '../../meta/daily.ts';
 import { achievementsView } from '../achievementsView.ts';
 import { logoSprite } from '../logo.ts';
 import { PixelText } from '../text.ts';
@@ -17,6 +18,7 @@ import { Button, C, FocusList } from '../widgets.ts';
 
 export interface MenuHooks {
   travel(): void;
+  daily(): void;
   cucha(): void;
   options(): void;
 }
@@ -163,7 +165,15 @@ export class MenuScene implements Scene {
       buttons.push(b);
     };
     add(t('ui.viajar'), () => this.hooks.travel(), 'a', 'k', 28);
-    add(`${t('ui.rutaDelDia')} (${t('menu.pronto')})`, () => {}, 'b', 'w', 20, false);
+    // Ruta del día: today's number; once the counted attempt is used it shows the km and repeats as practice.
+    const today = dailyToday(this.data);
+    const number = dailyNumber(today.key);
+    add(
+      today.counted ? t('compartir.rutaHecha', { n: number, km: formatNumber(today.km) }) : t('compartir.rutaHoy', { n: number }),
+      () => this.hooks.daily(),
+      'b',
+      'w',
+    );
     add(t('ui.cucha'), () => this.hooks.cucha(), 'v', 'w');
     add(t('ui.logros'), () => this.showAchievements(), 'K', 'w');
     add(t('ui.opciones'), () => this.hooks.options(), 'K', 'w');

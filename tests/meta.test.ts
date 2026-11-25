@@ -33,7 +33,7 @@ const run = (over: Partial<RunResult> = {}): RunResult => ({
 describe('save', () => {
   it('migrates old or partial saves and fills defaults', () => {
     const s = migrate({ lucas: 50 });
-    expect(s.version).toBe(2);
+    expect(s.version).toBe(3);
     expect(s.lucas).toBe(50);
     expect(s.characters).toContain('quiltro');
     expect(s.totals.runs).toBe(0);
@@ -44,7 +44,8 @@ describe('save', () => {
   it('v1 → v2 adds options; players who already played skip the intro', () => {
     const v1 = { version: 1, lucas: 10, totals: { runs: 3, kills: 0, sopaipillas: 0, palomas: 0, lucasEarned: 0 } };
     const s = migrate(v1);
-    expect(s.version).toBe(2);
+    expect(s.version).toBe(3);
+    expect(s.daily.counted).toBe(false);
     expect(s.introSeen).toBe(true);
     expect(s.settings.holdMode).toBe('mantener');
     expect(migrate({ version: 1, lucas: 0 }).introSeen).toBe(false);

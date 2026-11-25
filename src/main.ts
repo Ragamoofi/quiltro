@@ -1,4 +1,4 @@
-import { Application, TextureStyle } from 'pixi.js';
+import { Application, Rectangle, TextureStyle } from 'pixi.js';
 import { loadSprites } from './art/assets.ts';
 import { COLORS } from './art/palette.ts';
 import { AudioEngine } from './audio/engine.ts';
@@ -15,6 +15,8 @@ import { defaultLoadout, type Loadout } from './game/loadout.ts';
 import { t } from './i18n/index.ts';
 import { affordable, applyRun, buy as buyUpgrade, checkUnlocks, metaBonus, type RunResult, type RunRewards } from './meta/progress.ts';
 import { exportCode, importCode, load, save, wipe } from './meta/save.ts';
+import { dailyKey, dailyNumber, finishDaily, startDaily, type DailyRun, type ShareInfo } from './meta/daily.ts';
+import { buildShareCard, CARD_H, CARD_SCALE, CARD_W } from './ui/shareCard.ts';
 import { CuchaScene } from './ui/cuchaScene.ts';
 import { ComicScene } from './ui/scenes/comicScene.ts';
 import { LoadingScene } from './ui/scenes/loadingScene.ts';
@@ -108,14 +110,65 @@ async function boot(): Promise<void> {
     wipe();
     location.reload();
   };
-  const loadout = (): Loadout => ({
-    character: PERSONAJES.find((p) => p.id === data.character && data.characters.includes(p.id)) ?? defaultLoadout().character,
-    meta: metaBonus(data),
+  /**
+   * The Ruta del día is the same for everybody, so it uses the plain Quiltro
+   * with no Cucha upgrades: the result can be compared fairly.
+   */
+  const loadout = (forDaily = false): Loadout => ({
+    character: forDaily
+      ? defaultLoadout().character
+      : (PERSONAJES.find((p) => p.id === data.character && data.characters.includes(p.id)) ?? defaultLoadout().character),
+    meta: forDaily ? defaultLoadout().meta : metaBonus(data),
     bandana: data.bandana,
     known: [...data.achievements],
-    settings: data.settings,
+    settings: forDaily ? { ...data.settings, tips: false } : data.settings,
     tipsShown: [...data.tipsShown],
   });
+
+  // ---- Sharing: text to the clipboard, image through the phone's share sheet or a download ----
+  const copyText = async (text: string): Promise<string> => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return t('compartir.copiado');
+    } catch {
+      window.prompt(t('compartir.copiar'), text);
+      return t('compartir.copiado');
+    }
+  };
+  const renderCard = async (info: ShareInfo): Promise<Blob> => {
+    const card = buildShareCard(info);
+    const canvas = app.renderer.extract.canvas({
+      target: card,
+      frame: new Rectangle(0, 0, CARD_W, CARD_H),
+      resolution: CARD_SCALE,
+    }) as HTMLCanvasElement;
+    const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/png'));
+    card.destroy({ children: true });
+    if (!blob) throw new Error('No se pudo crear la imagen');
+    return blob;
+  };
+  const shareImage = async (info: ShareInfo, text: string): Promise<string> => {
+    try {
+      const blob = await renderCard(info);
+      const file = new File([blob], 'quiltro.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], text });
+        return t('compartir.compartido');
+      }
+      // No share sheet (desktop): save the image and copy the text.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quiltro.png';
+      a.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      await copyText(text);
+      return t('compartir.descargado');
+    } catch (err) {
+      // The player closing the share sheet is not an error.
+      return err instanceof DOMException && err.name === 'AbortError' ? '' : t('compartir.error');
+    }
+  };
   /** Applies the saved options to everything outside a run (volume, controls). */
   const applySettings = (): void => {
     sfx.setVolume(data.settings.sfx);
@@ -161,16 +214,25 @@ async function boot(): Promise<void> {
     scenes.change(scene, fit.width, fit.height);
   };
 
-  const makeRun = (): RunScene =>
+  const makeRun = (daily: DailyRun | null = null): RunScene =>
     new RunScene(input, sfx, music, {
-      seed: Date.now() >>> 0,
+      seed: daily ? daily.seed : Date.now() >>> 0,
       mobile: isMobile(),
-      loadout: loadout(),
+      loadout: loadout(daily !== null),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
-      onRestart: () => restart(),
-      onFinish,
+      // "¡Otra, al tiro!" repeats the route on a daily (without counting again).
+      onRestart: () => (daily ? goDaily() : restart()),
+      onFinish: (result) => {
+        if (daily) {
+          finishDaily(data, daily, result.bestKm ?? result.km);
+          persist();
+        }
+        return onFinish(result);
+      },
+      daily,
+      share: { copy: copyText, image: shareImage },
       onCucha: () => goCucha(),
       onMenu: () => goMenu(),
       onTip: (id) => {
@@ -184,6 +246,12 @@ async function boot(): Promise<void> {
   const restart = (): void => {
     switchTo(() => (run = makeRun()));
   };
+  /** Today's route: the first start of the day counts, the next ones are practice. */
+  const goDaily = (): void => {
+    const daily = startDaily(data);
+    persist();
+    switchTo(() => (run = makeRun(daily)));
+  };
   const goCucha = (): void => {
     music.setScene('menu');
     switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => goSelect() }));
@@ -194,6 +262,7 @@ async function boot(): Promise<void> {
       () =>
         new MenuScene(input, sfx, data, {
           travel: () => goSelect(),
+          daily: () => goDaily(),
           cucha: () => goCucha(),
           options: () => goOptions(),
         }),
@@ -306,6 +375,13 @@ async function boot(): Promise<void> {
     persist();
   });
   debug.button('Progreso', 'La Cucha', () => goCucha());
+  debug.stat('Ruta del día', 'hoy (Chile)', () => `${dailyKey()} · #${dailyNumber(dailyKey())}`);
+  debug.stat('Ruta del día', 'intento', () => (data.daily.key === dailyKey() && data.daily.counted ? `usado (${data.daily.km} km)` : 'disponible'));
+  debug.button('Ruta del día', 'Iniciar la ruta', () => goDaily());
+  debug.button('Ruta del día', 'Devolver el intento de hoy', () => {
+    data.daily = { key: '', counted: false, km: 0 };
+    persist();
+  });
   debug.button('Progreso', 'Desbloquear todo', () => {
     data.characters = PERSONAJES.map((p) => p.id);
     persist();
@@ -404,6 +480,7 @@ async function boot(): Promise<void> {
   if (new URLSearchParams(location.search).has('debug')) {
     Object.assign(window, {
       __quiltroAudio: { engine, music, sfx },
+      __quiltroShare: { renderCard, goDaily },
       __quiltro: {
         step(seconds: number): void {
           const n = Math.round(seconds * 60);

@@ -229,6 +229,29 @@
       "cuentaRut": "+10% lucas por viaje"
     }
   },
+  "compartir": {
+    "titulo": "QUILTRO · Ruta del día #{n}",
+    "tituloPractica": "QUILTRO · Ruta del día #{n} (práctica)",
+    "tituloViaje": "QUILTRO · Mi viaje",
+    "llegue": "Llegué a {lugar} · {km} km",
+    "victoria": "🏆 ¡De Arica a Punta Arenas!",
+    "invitacion": "¿Llegai más lejos? {link}",
+    "copiar": "Copiar para el grupo",
+    "compartir": "Compartir",
+    "copiado": "¡Copiado! Pégalo en el grupo",
+    "compartido": "¡Listo para compartir!",
+    "descargado": "Imagen guardada",
+    "error": "No se pudo compartir",
+    "tarjetaRuta": "RUTA DEL DÍA #{n}",
+    "tarjetaViaje": "MI VIAJE",
+    "tarjetaKm": "{km} KM",
+    "tarjetaLlegue": "LLEGUÉ A {lugar}",
+    "tarjetaInvitacion": "¿LLEGAI MÁS LEJOS?",
+    "rutaHoy": "Ruta del día #{n}",
+    "rutaHecha": "Ruta del día #{n} · {km} km",
+    "rutaPractica": "Repetir la ruta (sin puntuar)",
+    "rutaEtiquetaPractica": "Ruta del día #{n} · práctica"
+  },
   "menu": {
     "tocaParaDespertar": "Toca para despertar al quiltro",
     "pronto": "Pronto",

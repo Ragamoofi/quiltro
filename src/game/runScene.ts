@@ -4,7 +4,7 @@ import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
 import type { Sfx } from '../audio/sfx.ts';
 import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
-import { Rng } from '../core/rng.ts';
+import { deriveSeed, Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
 import { CAJA, ENEMY_CAP, LEVEL_UP, PICKUPS, xpToNext } from '../data/balance.ts';
 import { CIUDADES } from '../data/zonas.ts';
@@ -17,7 +17,9 @@ import { Hud } from '../ui/hud.ts';
 import { LevelUpView } from '../ui/levelUp.ts';
 import { PauseView } from '../ui/pauseView.ts';
 import { LOGROS } from '../data/logros.ts';
-import type { RunResult, RunRewards } from '../meta/progress.ts';
+import { cityAt as cityId, type RunResult, type RunRewards } from '../meta/progress.ts';
+import { shareText, type DailyRun, type ShareInfo } from '../meta/daily.ts';
+import { EVOLUCIONES } from '../data/evoluciones.ts';
 import { Build, type Offer } from './build.ts';
 import type { Music } from '../audio/music.ts';
 import { setForZone } from '../audio/musicData.ts';
@@ -88,6 +90,10 @@ export interface RunOptions {
   onTip: (id: string) => void;
   /** Options screen hooks (shared with the menu). */
   options: Omit<OptionsHooks, 'close'>;
+  /** Ruta del día: set when this trip is today's route (counted or practice). */
+  daily: DailyRun | null;
+  /** Copy the text / share the image card (implemented in main: clipboard, Web Share, download). */
+  share: { copy(text: string): Promise<string>; image(info: ShareInfo, text: string): Promise<string> };
 }
 
 /**
@@ -177,6 +183,8 @@ export class RunScene implements Scene {
 
     const ctx: RunContext = {
       rng: new Rng(opts.seed),
+      rngDirector: new Rng(deriveSeed(opts.seed, 1)),
+      rngCards: new Rng(deriveSeed(opts.seed, 2)),
       sfx,
       particles,
       numbers,
@@ -540,7 +548,7 @@ export class RunScene implements Scene {
   }
 
   private showCards(fresh: boolean): void {
-    if (fresh) this.offers = this.ctx.build.offers(this.ctx.rng, this.cards);
+    if (fresh) this.offers = this.ctx.build.offers(this.ctx.rngCards, this.cards);
     this.mode = 'cards';
     this.input.clear();
     this.ctx.sfx.setBuzz(0);
@@ -582,7 +590,7 @@ export class RunScene implements Scene {
   private reroll(): void {
     if (this.rerolls <= 0) return;
     this.rerolls--;
-    this.offers = this.ctx.build.offers(this.ctx.rng, this.offers.length);
+    this.offers = this.ctx.build.offers(this.ctx.rngCards, this.offers.length);
     this.levelUp.show(this.offers, this.ctx.progress.level, this.rerolls, this.banishes, this.viewW, this.viewH, false);
   }
 
@@ -593,7 +601,7 @@ export class RunScene implements Scene {
     this.ctx.build.banished.add(offer.id);
     const taken = new Set(this.offers.map((o) => ('id' in o ? o.id : o.kind)));
     const replacement = this.ctx.build
-      .offers(this.ctx.rng, 6)
+      .offers(this.ctx.rngCards, 6)
       .find((o) => !taken.has('id' in o ? o.id : o.kind));
     this.offers[i] = replacement ?? { kind: 'lucas', rarity: 'comun' };
     this.levelUp.show(this.offers, this.ctx.progress.level, this.rerolls, this.banishes, this.viewW, this.viewH, false);
@@ -624,7 +632,7 @@ export class RunScene implements Scene {
 
   private openCaja(golden: boolean): void {
     const ctx = this.ctx;
-    const roll = ctx.rng.weighted(CAJA.rewards.map((r) => r.chance));
+    const roll = ctx.rngCards.weighted(CAJA.rewards.map((r) => r.chance));
     let count: number = CAJA.rewards[roll]?.count ?? 1;
     if (golden) count = Math.max(3, count);
     const rewards: Offer[] = [];
@@ -640,7 +648,7 @@ export class RunScene implements Scene {
       if (evo.id === 'cieloDelDieciocho') this.music.startCueca(20);
     }
     for (let i = 0; i < count; i++) {
-      const offer = ctx.build.offers(ctx.rng, 1)[0];
+      const offer = ctx.build.offers(ctx.rngCards, 1)[0];
       if (!offer) break;
       ctx.build.apply(offer);
       rewards.push(offer);
@@ -762,6 +770,9 @@ export class RunScene implements Scene {
       lucas: ctx.progress.lucas,
       killsBy: { ...ctx.stats.killsBy },
     };
+    const info = this.shareInfo(km, victory);
+    const text = shareText(info);
+    const daily = this.opts.daily;
     this.end.show(
       {
         victory,
@@ -781,7 +792,41 @@ export class RunScene implements Scene {
       victory && !this.journey.antartica ? () => this.continueToAntarctica() : undefined,
       this.opts.onCucha ?? undefined,
       () => this.opts.onMenu(),
+      { copy: () => this.opts.share.copy(text), share: () => this.opts.share.image(info, text) },
+      daily ? t(daily.counted ? 'compartir.rutaHoy' : 'compartir.rutaEtiquetaPractica', { n: daily.number }) : undefined,
     );
+  }
+
+  /** What the share text and the image card say about this trip. */
+  private shareInfo(km: number, victory: boolean): ShareInfo {
+    const b = this.ctx.build;
+    const evo = EVOLUCIONES.find((e) => b.evolved.has(e.weapon));
+    let strongest = this.opts.loadout.character.startingWeapon;
+    let most = -1;
+    for (const w of b.slotWeapons) {
+      const dealt = this.ctx.stats.damageBy[w.def.id] ?? 0;
+      if (dealt > most) {
+        most = dealt;
+        strongest = w.def.id;
+      }
+    }
+    const weapon = b.weapon(strongest);
+    const label = evo
+      ? t(evo.nameKey)
+      : weapon
+        ? `${t(`${weapon.def.i18n}.nombre`)} ${t('ui.nivelCorto', { n: weapon.level })}`
+        : '';
+    const city = CIUDADES.find((c) => c.id === cityId(km));
+    return {
+      km,
+      city: city ? t(city.i18n) : '',
+      build: label,
+      icons: [...b.slotWeapons.map((w) => w.def.id), ...b.traits.map((tr) => tr.def.id)],
+      character: this.opts.loadout.character.id,
+      daily: this.opts.daily ? { number: this.opts.daily.number, counted: this.opts.daily.counted } : null,
+      victory,
+      link: `${location.origin}${location.pathname}`,
+    };
   }
 
   private reported = { km: 0, kills: 0, bosses: 0, food: 0, lucas: 0, killsBy: {} as Record<string, number> };
