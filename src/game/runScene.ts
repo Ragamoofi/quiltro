@@ -7,7 +7,7 @@ import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
 import { deriveSeed, Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
-import { ENEMY_CAP, LEVEL_UP, xpToNext } from '../data/balance.ts';
+import { ENEMY_CAP, LEVEL_UP, lucasForRun, xpToNext } from '../data/balance.ts';
 
 import { t, tList } from '../i18n/index.ts';
 import { Banner } from '../ui/banner.ts';
@@ -889,6 +889,8 @@ export class RunScene implements Scene {
         city: cityName(km),
         seconds: ctx.time,
         kills: ctx.stats.kills,
+        lucas: Math.floor(lucasForRun(km, ctx.stats.kills, ctx.progress.bosses, 1 + this.opts.loadout.meta.lucasMult)) + ctx.progress.lucas,
+        food: ctx.stats.food,
       },
       ctx.build,
       this.mode === 'playing' ? this.input.stickNative(this.viewW, this.viewH) : null,

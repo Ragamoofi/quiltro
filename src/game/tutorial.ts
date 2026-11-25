@@ -3,9 +3,10 @@ import { anim, frameAt, type Anim } from '../art/assets.ts';
 import { t } from '../i18n/index.ts';
 import { PixelText } from '../ui/text.ts';
 import { C } from '../ui/widgets.ts';
+import { FOOD } from '../data/balance.ts';
 import type { RunContext } from './context.ts';
 
-type TipId = 'mover' | 'volantines' | 'comida' | 'cartas' | 'guau';
+type TipId = 'mover' | 'volantines' | 'comida' | 'cartas' | 'guau' | 'lucas' | 'objetos';
 
 export interface TutorialHooks {
   /** Tips already seen (each one appears only once, ever). */
@@ -20,7 +21,8 @@ export interface TutorialHooks {
  * First-trip tutorial without text screens (GDD "Tutorial"):
  * 0 s a hand over the keys / joystick — "Muévete" (gone after moving 1 s);
  * 5 s six slow mosquitoes — "Tus volantines atacan solos";
- * first food — "Junta comida para subir de nivel";
+ * first food — what sopaipillas, completos and chorrillanas are and how much XP each gives;
+ * 40 s — what the lucas counter is; 1:30 — mote, cajas and the neighbour's whistle;
  * first level up — a glow on the first card;
  * minute 1 — a big harmless group closes in — "Mantén para dar hilo, suelta
  * para ¡GUAU!" with the button animated, until the dog barks once.
@@ -74,7 +76,7 @@ export class Tutorial {
     this.current = id;
     this.left = seconds;
     this.text?.destroy();
-    const msg = { mover: 'tutorial.muevete', volantines: 'tutorial.volantines', comida: 'tutorial.comida', cartas: '', guau: 'tutorial.guau' }[id];
+    const msg = { mover: 'tutorial.muevete', volantines: 'tutorial.volantines', comida: 'tutorial.comida', cartas: '', guau: 'tutorial.guau', lucas: 'tutorial.lucas', objetos: 'tutorial.objetos' }[id];
     this.text = new PixelText(t(msg), { color: 'w', outline: 'k', maxWidth: Math.floor((this.w - 20) / 2), align: 'center' }, 2);
     this.root.addChild(this.text);
     this.buildKeys(id);
@@ -95,6 +97,7 @@ export class Tutorial {
   /** Keyboard keys or the touch zones to illustrate the tip. */
   private buildKeys(id: TipId): void {
     this.keys.removeChildren().forEach((c) => c.destroy());
+    this.buildIcons(id);
     if (this.hooks.touch) return;
     const key = (label: string, x: number, y: number, wide = 1): void => {
       const k = new Sprite(anim('tecla', 'arriba').textures[0]);
@@ -114,6 +117,33 @@ export class Tutorial {
     }
   }
 
+  /** Little pictures that go with a tip: the three foods and what each is worth, or the coin. */
+  private buildIcons(id: TipId): void {
+    const row = (items: { sprite: string; anim: string; label: string }[]): void => {
+      items.forEach((it, i) => {
+        const sp = new Sprite(anim(it.sprite, it.anim).textures[0]);
+        sp.anchor.set(0, 0.5);
+        sp.position.set(i * 62, 5);
+        const l = new PixelText(it.label, { color: 'a', outline: 'k' });
+        l.position.set(i * 62 + 11, 2);
+        this.keys.addChild(sp, l);
+      });
+    };
+    if (id === 'comida') {
+      row([
+        { sprite: 'sopaipilla', anim: 'brillo', label: t('tutorial.xp', { n: FOOD.sopaipilla.xp }) },
+        { sprite: 'completo', anim: 'brillo', label: t('tutorial.xp', { n: FOOD.completo.xp }) },
+        { sprite: 'chorrillana', anim: 'brillo', label: t('tutorial.xp', { n: FOOD.chorrillana.xp }) },
+      ]);
+    } else if (id === 'objetos') {
+      row([
+        { sprite: 'mote', anim: 'brillo', label: t('tutorial.vida') },
+        { sprite: 'caja', anim: 'normal', label: t('tutorial.cajaCorto') },
+        { sprite: 'silbido', anim: 'brillo', label: t('tutorial.imanCorto') },
+      ]);
+    }
+  }
+
   update(dt: number, ctx: RunContext): void {
     this.time += dt;
     const p = ctx.player;
@@ -121,7 +151,9 @@ export class Tutorial {
     if (this.current === null) {
       if (this.wants('mover') && ctx.time < 20) this.show('mover', 999);
       else if (this.wants('volantines') && ctx.time > 5 && ctx.time < 30) this.show('volantines', 3.5);
-      else if (this.wants('comida') && ctx.stats.food > 0) this.show('comida', 3.5);
+      else if (this.wants('comida') && ctx.stats.food > 0) this.show('comida', 7);
+      else if (this.wants('lucas') && !this.wants('comida') && ctx.time > 40) this.show('lucas', 7);
+      else if (this.wants('objetos') && !this.wants('lucas') && ctx.time > 90) this.show('objetos', 7);
       else if (this.wants('guau') && ctx.time > 60) {
         this.show('guau', 999);
         this.guauLesson = true;

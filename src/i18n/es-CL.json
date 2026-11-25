@@ -132,7 +132,13 @@
   "tutorial": {
     "muevete": "Muévete",
     "volantines": "Tus volantines atacan solos",
-    "comida": "Junta comida para subir de nivel",
+    "comida": "¡Sopaipillas! Júntalas para subir de nivel. Más rica la comida, más experiencia",
+    "xp": "+{n} exp",
+    "lucas": "Las lucas (la moneda de arriba) suben con km, enemigos y jefes. Se gastan en La Cucha",
+    "objetos": "Mote cura, caja da mejoras, silbido atrae toda la comida",
+    "vida": "Cura",
+    "cajaCorto": "Mejora",
+    "imanCorto": "Imán",
     "guau": "Mantén para dar hilo, suelta para ¡GUAU!"
   },
   "zonas": {

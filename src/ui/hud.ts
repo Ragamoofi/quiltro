@@ -16,6 +16,10 @@ export interface HudState {
   city: string;
   seconds: number;
   kills: number;
+  /** Lucas the trip is worth so far (estimate: km, kills, bosses and cards). */
+  lucas: number;
+  /** Food picked up this trip. */
+  food: number;
 }
 
 /**
@@ -34,6 +38,9 @@ export class Hud {
   private readonly timeText = new PixelText('0:00', { color: 'w', outline: 'k' });
   private readonly killText = new PixelText('0', { color: 'w', outline: 'k' });
   private readonly killIcon = new Sprite();
+  private readonly lucasText = new PixelText('0', { color: 'a', outline: 'k' });
+  private readonly foodText = new PixelText('0', { color: 'w', outline: 'k' });
+  private readonly foodIcon = new Sprite();
   private readonly icons = new Container();
   private readonly iconDots = new Graphics();
   private readonly pause: Button;
@@ -50,6 +57,8 @@ export class Hud {
     if (boneTex) this.bone.texture = boneTex;
     const killTex = anim('zancudo', 'volar').textures[0];
     if (killTex) this.killIcon.texture = killTex;
+    const foodTex = anim('sopaipilla', 'brillo').textures[0];
+    if (foodTex) this.foodIcon.texture = foodTex;
     this.pause = new Button('II', 14, 12, onPause, 'K', 'w');
     this.root.addChild(
       this.map,
@@ -61,6 +70,9 @@ export class Hud {
       this.timeText,
       this.killText,
       this.killIcon,
+      this.lucasText,
+      this.foodText,
+      this.foodIcon,
       this.icons,
       this.iconDots,
       this.pause,
@@ -167,6 +179,16 @@ export class Hud {
     this.killText.text = formatNumber(s.kills);
     this.killText.position.set(w - 20 - this.killText.width, 19);
     this.killIcon.position.set(w - 34 - this.killText.width, 16);
+    // Lucas of the trip: a gold coin with a dark stripe and the running total.
+    this.lucasText.text = formatNumber(s.lucas);
+    this.lucasText.position.set(w - 20 - this.lucasText.width, 29);
+    const cx = w - 26 - this.lucasText.width;
+    g.circle(cx, 32, 4).fill(C('a')).stroke({ width: 1, color: C('k') });
+    g.rect(cx - 2, 30, 1, 3).fill(C('y'));
+    // Food picked up this trip, under the health bar.
+    this.foodText.text = formatNumber(s.food);
+    this.foodText.position.set(15, 27);
+    this.foodIcon.position.set(3, 25);
 
     this.renderBuild(build);
 
