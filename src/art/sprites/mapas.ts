@@ -1,6 +1,7 @@
 import { Pix } from '../draw.ts';
 import { outlined, type Frame, type SpriteDef } from '../types.ts';
 import { DECO_SUR } from './mapas2.ts';
+import { DECO_EXTREMO } from './mapas3.ts';
 
 /*
  * Fase 11.1b — mapas vivos. Decorado propio del Norte (desierto) y de Valparaíso / Viña, el
@@ -398,6 +399,7 @@ export interface DecoAmbiente {
 
 export const DECO_AMBIENTE: Readonly<Record<string, DecoAmbiente>> = {
   ...DECO_SUR,
+  ...DECO_EXTREMO,
   desierto: {
     big: ['salitrera', 'torre_mina', 'geoglifo'],
     medium: ['cactus', 'rocas', 'animita', 'esqueleto', 'cactus'],

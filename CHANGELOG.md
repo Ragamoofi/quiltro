@@ -12,6 +12,14 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Mapas vivos, tercera tanda: Patagonia y La Antártica (Fase 11.1b)
+
+#### Añadido
+- **Patagonia:** estepa con lengas de otoño, calafate, rocas de granito, estancias de techo rojo, molinos de viento, lagunas glaciares y los cercos de siempre; por el camino cruzan guanacos y ñandúes, y a veces la sombra de un cóndor.
+- **La Antártica:** icebergs, colonias de pingüinos, focas, grietas y un campamento; pingüinos caminando entre el hielo. Antes solo tenía bloques de hielo y grietas.
+- Arreglo: al entrar a La Antártica el decorado de Patagonia no se limpiaba (se veían molinos y estancias sobre el hielo). Ahora cada zona elige su propio decorado.
+- Neutral para el equilibrio: el bot da exactamente lo mismo (10 %, 6,37 min). Contraste 59/59.
+
 ### Mapas vivos, segunda tanda: el Sur (Fase 11.1b)
 
 #### Añadido

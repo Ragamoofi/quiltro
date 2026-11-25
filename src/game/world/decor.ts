@@ -42,6 +42,8 @@ export class Decor {
   setZone(zone: string): void {
     if (zone === this.zone) return;
     this.zone = zone;
+    // The environment is chosen again on the next step (La Antártica has none).
+    this.env = '';
     this.clearChunks();
     this.overhead.clear();
   }
@@ -126,7 +128,7 @@ export class Decor {
 
     if (nearOrigin) return chunk;
     // The environment's own props if it has them (desert, Valparaíso), else the zone's three.
-    const own = DECO_AMBIENTE[this.env];
+    const own = DECO_AMBIENTE[this.env] ?? DECO_AMBIENTE[this.zone];
     const [zb, zm, zs] = DECO_ZONA[this.zone] ?? [];
     const pickFrom = (pool: readonly string[] | undefined, fallback: string | undefined, salt: number): string | undefined =>
       pool && pool.length > 0 ? pool[Math.floor(hash2(cx, cy, this.seed + salt) * pool.length)] : fallback;

@@ -542,7 +542,7 @@ export class RunScene implements Scene {
       this.decor.setEnv(this.envId);
     }
     const view = this.camera.viewOrigin(1, this.viewW, this.viewH);
-    this.ambient.update(dt, this.envId, view.x, view.y, this.viewW, this.viewH);
+    this.ambient.update(dt, this.envId || this.journey.zone.id, view.x, view.y, this.viewW, this.viewH);
     this.horizon.setLandmark(city?.scene.landmark ?? null, city?.progress ?? 0);
     this.decor.setCityProp(city?.scene.prop ?? null);
     this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive, this.journey.km(ctx.time));

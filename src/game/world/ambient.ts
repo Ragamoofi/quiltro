@@ -3,7 +3,7 @@ import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
 import { deriveSeed, Rng } from '../../core/rng.ts';
 
-type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa' | 'llama' | 'oveja';
+type Kind = 'moto' | 'auto' | 'peaton' | 'gaviota' | 'condor' | 'mariposa' | 'llama' | 'oveja' | 'guanaco' | 'nandu' | 'pinguino';
 
 interface Rule {
   kind: Kind;
@@ -32,6 +32,12 @@ const RULES: Readonly<Record<string, readonly Rule[]>> = {
     { kind: 'peaton', rate: 0.14, max: 3 },
   ],
   araucania: [{ kind: 'mariposa', rate: 0.4, max: 4 }],
+  patagonia: [
+    { kind: 'guanaco', rate: 0.07, max: 3 },
+    { kind: 'nandu', rate: 0.05, max: 2 },
+    { kind: 'condor', rate: 0.03, max: 1 },
+  ],
+  antartica: [{ kind: 'pinguino', rate: 0.12, max: 4 }],
   lagos: [
     { kind: 'mariposa', rate: 0.3, max: 3 },
     { kind: 'oveja', rate: 0.07, max: 3 },
@@ -162,6 +168,20 @@ export class AmbientLife {
         m.vy = r.range(-4, 4);
         m.anim = anim('gaviota', 'volar');
         m.y = oy + r.range(50, vh * 0.7);
+        break;
+      case 'guanaco':
+        m.vx = dir * r.range(10, 15);
+        m.anim = anim('guanacoPaz', 'caminar');
+        m.life = 70;
+        break;
+      case 'nandu':
+        m.vx = dir * r.range(48, 66);
+        m.anim = anim('nandu', 'caminar');
+        break;
+      case 'pinguino':
+        m.vx = dir * r.range(9, 14);
+        m.anim = anim('pinguinoAmb', 'caminar');
+        m.life = 70;
         break;
       case 'oveja':
         m.vx = dir * r.range(7, 11);
