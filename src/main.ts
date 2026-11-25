@@ -13,6 +13,12 @@ import { t } from './i18n/index.ts';
 import { affordable, applyRun, buy as buyUpgrade, checkUnlocks, metaBonus, type RunResult, type RunRewards } from './meta/progress.ts';
 import { exportCode, importCode, load, save, wipe } from './meta/save.ts';
 import { CuchaScene } from './ui/cuchaScene.ts';
+import { ComicScene } from './ui/scenes/comicScene.ts';
+import { LoadingScene } from './ui/scenes/loadingScene.ts';
+import { MapScene } from './ui/scenes/mapScene.ts';
+import { MenuScene } from './ui/scenes/menuScene.ts';
+import { OptionsScene } from './ui/scenes/optionsScene.ts';
+import { SelectScene } from './ui/scenes/selectScene.ts';
 import { ARMAS } from './data/armas.ts';
 import { spawnPerSecond, TUNING, xpToNext } from './data/balance.ts';
 import { EVOLUCIONES } from './data/evoluciones.ts';
@@ -56,7 +62,11 @@ async function boot(): Promise<void> {
   const input = new Input(app.canvas);
   const scenes = new SceneManager(app.stage);
   const loop = new GameLoop({
-    update: (dt) => scenes.update(dt),
+    update: (dt) => {
+      // Gamepad buttons are read here so menus can use them too.
+      input.poll();
+      scenes.update(dt);
+    },
     render: (alpha) => {
       scenes.render(alpha);
       app.renderer.render(app.stage);
@@ -91,7 +101,33 @@ async function boot(): Promise<void> {
     meta: metaBonus(data),
     bandana: data.bandana,
     known: [...data.achievements],
+    settings: data.settings,
+    tipsShown: [...data.tipsShown],
   });
+  /** Applies the saved options to everything outside a run (volume, controls). */
+  const applySettings = (): void => {
+    sfx.setVolume(data.settings.sfx);
+    input.holdMode = data.settings.holdMode;
+    input.joystickMode = data.settings.joystick;
+  };
+  applySettings();
+  const optionHooks = {
+    changed: () => {
+      applySettings();
+      persist();
+    },
+    exportCode: () => exportCode(data),
+    importCode: (code: string) => {
+      const loaded = importCode(code);
+      if (!loaded) return false;
+      Object.assign(data, loaded);
+      persist();
+      applySettings();
+      return true;
+    },
+    wipe: () => wipeAll(),
+    replayIntro: () => goIntro(() => goMenu()),
+  };
   const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
     const rewards = applyRun(data, result);
     data.lastSeen = Date.now();
@@ -123,18 +159,61 @@ async function boot(): Promise<void> {
       onRestart: () => restart(),
       onFinish,
       onCucha: () => goCucha(),
+      onMenu: () => goMenu(),
+      onTip: (id) => {
+        if (!data.tipsShown.includes(id)) data.tipsShown.push(id);
+        persist();
+      },
+      options: optionHooks,
     });
   let run: RunScene;
+  /** Straight into a trip (also "¡Otra, al tiro!": one touch from death to the next run). */
   const restart = (): void => {
     switchTo(() => (run = makeRun()));
   };
   const goCucha = (): void => {
-    switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => restart() }));
+    switchTo(() => new CuchaScene(input, sfx, data, { save: persist, travel: () => goSelect() }));
   };
-  // First time: straight into the trip (under 5 seconds and one touch). Afterwards: La Cucha.
+  const goMenu = (): void => {
+    switchTo(
+      () =>
+        new MenuScene(input, sfx, data, {
+          travel: () => goSelect(),
+          cucha: () => goCucha(),
+          options: () => goOptions(),
+        }),
+    );
+  };
+  const goOptions = (): void => {
+    switchTo(() => new OptionsScene(input, data.settings, { ...optionHooks, close: () => goMenu() }));
+  };
+  const goSelect = (): void => {
+    switchTo(() => new SelectScene(input, sfx, data, { go: () => goMap(), back: () => goMenu(), save: persist }));
+  };
+  const goMap = (): void => {
+    switchTo(() => new MapScene(input, data, () => restart()));
+  };
+  const goIntro = (then: () => void): void => {
+    switchTo(
+      () =>
+        new ComicScene(input, sfx, 'intro', () => {
+          data.introSeen = true;
+          persist();
+          then();
+        }),
+    );
+  };
+  // Loading (< 2 s) → first time: the intro (one tap skips it) and straight into the trip;
+  // afterwards: the main menu.
   run = makeRun();
-  if (data.totals.runs > 0) goCucha();
-  else restart();
+  switchTo(
+    () =>
+      new LoadingScene(() => {
+        if (!data.introSeen) goIntro(() => restart());
+        else if (data.totals.runs === 0) restart();
+        else goMenu();
+      }, Math.floor(Math.random() * 7)),
+  );
   window.addEventListener('beforeunload', () => {
     data.lastSeen = Date.now();
     persist();
@@ -152,6 +231,7 @@ async function boot(): Promise<void> {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       pausedByVisibility = true;
+      if (scenes.active === run) run.pauseIfPlaying();
       loop.stop();
       sfx.suspend();
       events.emit('pause', { paused: true });

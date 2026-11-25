@@ -4,6 +4,23 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 5 — Interfaz y onboarding
+
+#### Agregado
+- Carga (1,2 s): logo QUILTRO en letra pixel con sombra, el quiltro moviendo la cola, la barra de carga como un volantín que sube por el hilo y un dato de Chile al azar.
+- Intro en 3 viñetas tipo cómic (Arica, el viento se lleva el volantín azul de la Martina, "Yo lo traigo"), 2 s cada una; un toque avanza, "Saltar" la salta. Se ve solo la primera vez (y desde Opciones).
+- Final en 4 viñetas al vencer al Gran Temblor, antes de la pantalla de victoria.
+- Menú principal: la calle del barrio con el quiltro durmiendo frente a su Cucha (al tocarlo despierta y se estira), palomas caminando y un volantín enredado en los cables. Botones sticker: ¡Viajar!, Ruta del día (Pronto), La Cucha, Logros, Opciones; lucas y récord arriba.
+- Elegir personaje: carrusel con el personaje grande trotando, barras de vida, velocidad, crítico y área, y arma inicial; los bloqueados en silueta con su condición.
+- Mapa de inicio (1,5 s, se salta con un toque): Chile vertical con las ciudades, la línea punteada saliendo de Arica y "Tu récord: …".
+- Tutorial del primer viaje sin pantallas de texto: mano sobre WASD (o el joystick en celular) con "Muévete" hasta que te mueves 1 s; "Tus volantines atacan solos" con los 6 zancudos lentos del segundo 5; "Junta comida para subir de nivel" con la primera comida; brillo en la primera carta; y al minuto 1 un anillo de enemigos inofensivo hasta el primer ¡GUAU!, con "Mantén para dar hilo, suelta para ¡GUAU!" y la tecla. Cada consejo una vez; se apagan en Opciones.
+- Opciones completas: volumen de música y efectos, sacudida 0–100 %, números de daño, reducir destellos, modo daltonismo (X en las zonas de peligro y + en las seguras), mantener o alternar para dar hilo, joystick flotante o fijo, calidad (auto/alta/baja), idioma, consejos, copiar/pegar progreso, borrar progreso con doble confirmación y volver a ver la intro. Se guardan (guardado v2 con migración).
+- Pausa completa: build con niveles (evoluciones con marco dorado), tiempo, km, enemigos, nivel y vida, y los botones Seguir, Opciones y Pa' la casa. Se abre sola al cambiar de pestaña.
+- HUD final: minimapa de Chile en el borde derecho con el puntito del quiltro bajando, y el botón grande de "dar hilo" dibujado en pantallas táctiles.
+- Mando: stick izquierdo para moverse, A o RT para dar hilo, Start para pausa, Y para otra partida, cruceta + A para menús y cartas. Teclado: flechas + Enter en menús y cartas (además de 1-2-3).
+- Fin del viaje con botón Menú.
+- Arte nuevo: los 6 personajes durmiendo y estirándose, la Martina (3 poses), el volantín azul, la mano y la tecla del tutorial.
+
 ### Fase 4 — Meta incremental
 
 #### Agregado
