@@ -3,7 +3,7 @@ import { anim } from '../art/assets.ts';
 import { formatNumber, t } from '../i18n/index.ts';
 import type { RunRewards } from '../meta/progress.ts';
 import { PixelText } from './text.ts';
-import { Button, C, ditherOverlay, panel } from './widgets.ts';
+import { Button, C, ditherOverlay, FocusList, panel } from './widgets.ts';
 
 export interface RunSummary {
   victory: boolean;
@@ -35,6 +35,8 @@ export class EndScreen {
   private onCoin: () => void = () => {};
   private content = new Container();
   private glow: Button | null = null;
+  readonly focus = new FocusList();
+  private glowFocused = false;
 
   show(
     s: RunSummary,
@@ -44,6 +46,7 @@ export class EndScreen {
     onCoin: () => void,
     onContinue?: () => void,
     onCucha?: () => void,
+    onMenu?: () => void,
   ): void {
     this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.root.visible = true;
@@ -133,6 +136,8 @@ export class EndScreen {
       if (rw?.affordable) this.glow = c;
     }
     if (onContinue) buttons.push(new Button(t('zonasExtra.seguirAntartica'), 0, 22, onContinue, 'b', 'w'));
+    if (onMenu) buttons.push(new Button(t('ui.menu'), 0, 22, onMenu, 'K', 'w'));
+    this.focus.set(buttons);
     const gap = 6;
     const bw = Math.floor((pw - 24 - gap * (buttons.length - 1)) / buttons.length);
     buttons.forEach((b, i) => {
@@ -169,7 +174,7 @@ export class EndScreen {
       this.lucasText.text = `${t('ui.lucasGanadas')}: ${formatNumber(this.shown)}`;
       this.onCoin();
     }
-    // The Cucha button pulses when the lucas buy something.
-    if (this.glow) this.glow.highlight = Math.floor(this.age * 3) % 2 === 0;
+    // The Cucha button pulses when the lucas buy something (unless it has the keyboard focus).
+    if (this.glow && !this.glowFocused) this.glow.highlight = Math.floor(this.age * 3) % 2 === 0;
   }
 }

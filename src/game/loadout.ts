@@ -1,5 +1,6 @@
 import { PERSONAJES, PLAYER_BASE, type CharacterDef } from '../data/personajes.ts';
 import type { MetaBonus } from '../meta/progress.ts';
+import { defaultSettings, type Settings } from '../meta/save.ts';
 import type { BaseMods } from './build.ts';
 
 /** What a run starts with: the chosen character, La Cucha's upgrades and the bandana. */
@@ -9,6 +10,9 @@ export interface Loadout {
   bandana: string;
   /** Achievements already earned (so they are not announced again). */
   known: readonly string[];
+  settings: Settings;
+  /** Tutorial tips already shown. */
+  tipsShown: readonly string[];
 }
 
 export const NO_META: MetaBonus = {
@@ -27,7 +31,7 @@ export const NO_META: MetaBonus = {
 };
 
 export function defaultLoadout(): Loadout {
-  return { character: PERSONAJES[0] as CharacterDef, meta: NO_META, bandana: 'b', known: [] };
+  return { character: PERSONAJES[0] as CharacterDef, meta: NO_META, bandana: 'b', known: [], settings: defaultSettings(), tipsShown: [] };
 }
 
 /** Character traits + permanent upgrades as the build's starting bonuses. */

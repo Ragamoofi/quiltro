@@ -55,6 +55,12 @@ export class Button extends Container {
   private w: number;
   private h: number;
   private glow = false;
+  private readonly onPress: () => void;
+
+  /** Keyboard / gamepad activation (same as a tap). */
+  activate(): void {
+    if (this.enabled) this.onPress();
+  }
   private readonly fill: string;
   private pressed = false;
   private hover = false;
@@ -65,6 +71,7 @@ export class Button extends Container {
     this.w = w;
     this.h = h;
     this.fill = fill;
+    this.onPress = onPress;
     this.caption = new PixelText(text, { color: textColor, outline: 'k' });
     this.addChild(this.bg, this.caption);
     this.eventMode = 'static';
@@ -134,6 +141,40 @@ export class Button extends Container {
       Math.floor((this.w - this.caption.width) / 2),
       Math.floor((this.h - this.caption.height) / 2) + down,
     );
+  }
+}
+
+/**
+ * Keyboard / gamepad navigation over a list of buttons: arrows move a gold
+ * focus border, Enter / A presses. Touch and mouse keep working as usual.
+ */
+export class FocusList {
+  private items: Button[] = [];
+  private index = 0;
+
+  set(items: Button[], keepIndex = false): void {
+    this.items.forEach((b) => (b.highlight = false));
+    this.items = items;
+    if (!keepIndex) this.index = Math.max(0, items.findIndex((b) => b.enabled));
+    this.index = Math.min(this.index, items.length - 1);
+    this.show();
+  }
+
+  move(dir: number): void {
+    if (this.items.length === 0) return;
+    for (let i = 0; i < this.items.length; i++) {
+      this.index = (this.index + dir + this.items.length) % this.items.length;
+      if (this.items[this.index]?.enabled) break;
+    }
+    this.show();
+  }
+
+  press(): void {
+    this.items[this.index]?.activate();
+  }
+
+  private show(): void {
+    this.items.forEach((b, i) => (b.highlight = i === this.index));
   }
 }
 

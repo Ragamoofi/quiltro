@@ -20,6 +20,9 @@ import { LOGROS } from '../data/logros.ts';
 import type { RunResult, RunRewards } from '../meta/progress.ts';
 import { Build, type Offer } from './build.ts';
 import { baseMods, type Loadout } from './loadout.ts';
+import { Tutorial } from './tutorial.ts';
+import { OptionsView, type OptionsHooks } from '../ui/optionsView.ts';
+import { ComicScene } from '../ui/scenes/comicScene.ts';
 import type { RunContext } from './context.ts';
 import { Enemies } from './entities/enemies.ts';
 import { Food } from './entities/food.ts';
@@ -65,7 +68,7 @@ class AnimatedMoai {
 /** Seconds of the death animation before the end screen. */
 const DEATH_DELAY = 1.6;
 
-type Mode = 'playing' | 'slowmo' | 'cards' | 'caja' | 'paused' | 'end';
+type Mode = 'playing' | 'slowmo' | 'cards' | 'caja' | 'paused' | 'end' | 'comic';
 
 export interface RunOptions {
   seed: number;
@@ -77,6 +80,12 @@ export interface RunOptions {
   onFinish: (result: RunResult) => RunRewards;
   /** Go to La Cucha (null hides the button). */
   onCucha: (() => void) | null;
+  /** Back to the main menu. */
+  onMenu: () => void;
+  /** A tutorial tip was shown (persist it). */
+  onTip: (id: string) => void;
+  /** Options screen hooks (shared with the menu). */
+  options: Omit<OptionsHooks, 'close'>;
 }
 
 /**
@@ -127,6 +136,9 @@ export class RunScene implements Scene {
   /** Achievements earned this run. */
   private readonly earned = new Set<string>();
   private readonly moais: AnimatedMoai[] = [];
+  private readonly tutorial: Tutorial;
+  private readonly options: OptionsView;
+  private comic: ComicScene | null = null;
 
   constructor(input: Input, sfx: Sfx, opts: RunOptions) {
     this.input = input;
@@ -198,6 +210,22 @@ export class RunScene implements Scene {
     ctx.refreshMods();
     this.spawner.cap = opts.mobile ? ENEMY_CAP.mobile : ENEMY_CAP.desktop;
 
+    this.tutorial = new Tutorial({
+      seen: lo.tipsShown,
+      enabled: lo.settings.tips,
+      touch: opts.mobile,
+      markSeen: (id) => opts.onTip(id),
+      spawnRing: () => this.spawner.ring(ctx, 28, this.journey.zone.id, true),
+    });
+    this.options = new OptionsView(lo.settings, {
+      ...opts.options,
+      changed: () => {
+        opts.options.changed();
+        this.applySettings();
+      },
+      close: () => this.closeOptions(),
+    });
+
     this.levelUp = new LevelUpView({
       pick: (i) => this.pick(i),
       reroll: () => this.reroll(),
@@ -254,23 +282,64 @@ export class RunScene implements Scene {
       screen.screen,
       this.hud.root,
       this.banner.root,
+      this.tutorial.root,
       this.levelUp.root,
       this.caja.root,
       this.pause.root,
+      this.options.root,
       this.end.root,
     );
     screen.setInvertTarget(this.shaken);
+    this.applySettings();
 
-    input.onPress('Escape', () => this.togglePause());
+    input.onPress('Escape', () => {
+      if (this.mode === 'comic') this.comic?.finish();
+      else if (this.options.open) this.closeOptions();
+      else this.togglePause();
+    });
     input.onPress('KeyP', () => this.togglePause());
     input.onPress('KeyR', () => {
       if (this.mode === 'end') this.opts.onRestart();
     });
     ['Digit1', 'Digit2', 'Digit3', 'Digit4'].forEach((code, i) => input.onPress(code, () => this.levelUp.pressNumber(i)));
-    input.onPress('Enter', () => {
-      if (this.mode === 'caja') this.caja.tap();
-      if (this.mode === 'end') this.opts.onRestart();
-    });
+    input.onPress('ArrowLeft', () => this.navigate(-1));
+    input.onPress('ArrowRight', () => this.navigate(1));
+    input.onPress('ArrowUp', () => this.navigate(-1));
+    input.onPress('ArrowDown', () => this.navigate(1));
+    const confirm = (): void => {
+      if (this.mode === 'comic') this.comic?.next();
+      else if (this.mode === 'cards') this.levelUp.confirm();
+      else if (this.mode === 'caja') this.caja.tap();
+      else if (this.mode === 'paused') this.pause.focus.press();
+      else if (this.mode === 'end') this.end.focus.press();
+    };
+    input.onPress('Enter', confirm);
+    input.onPress('GamepadA', confirm);
+  }
+
+  /** Arrow keys / d-pad in the menus of the run. */
+  private navigate(dir: number): void {
+    if (this.mode === 'cards') this.levelUp.move(dir);
+    else if (this.mode === 'paused' && !this.options.open) this.pause.focus.move(dir);
+    else if (this.mode === 'end') this.end.focus.move(dir);
+  }
+
+  /** Applies the player's options to this run. */
+  applySettings(): void {
+    const s = this.opts.loadout.settings;
+    const ctx = this.ctx;
+    ctx.shake.amount = s.shake;
+    ctx.numbers.enabled = s.damageNumbers;
+    ctx.screen.reduceFlashes = s.reduceFlashes;
+    ctx.telegraphs.colorblind = s.colorblind;
+    const low = s.quality === 'baja' || (s.quality === 'auto' && this.opts.mobile);
+    ctx.particles.scale = low ? 0.5 : 1;
+    this.weather.root.visible = s.quality !== 'baja';
+  }
+
+  /** The tab was hidden: show the pause menu (GDD "Celular"). */
+  pauseIfPlaying(): void {
+    if (this.mode === 'playing') this.openPause();
   }
 
   enter(): void {
@@ -296,6 +365,8 @@ export class RunScene implements Scene {
     this.hud.resize(width, height);
     this.banner.resize(width, height);
     this.hazards.resize(width, height);
+    this.tutorial.resize(width, height);
+    if (this.options.open) this.options.show(width, height);
     this.horizon.setZone(this.journey.zone.id, width);
     this.weather.setZone(this.journey.zone.id, width, height, this.ctx.rng);
     if (this.mode === 'cards') this.showCards(false);
@@ -316,6 +387,10 @@ export class RunScene implements Scene {
     this.levelUp.update(real);
     this.caja.update(real);
     this.end.update(real);
+    if (this.comic) {
+      this.comic.update(real);
+      this.comic.render();
+    }
 
     if (this.mode === 'caja' && this.caja.done) this.resume();
     if (this.mode !== 'playing' && this.mode !== 'slowmo') return;
@@ -387,6 +462,7 @@ export class RunScene implements Scene {
     ctx.shots.update(dt, ctx);
     ctx.telegraphs.update(dt);
     ctx.clouds.update(dt, ctx);
+    this.tutorial.update(dt, ctx);
     this.hazards.update(dt, ctx);
     this.weather.update(dt, ctx.wind.x, ctx.rng);
     this.journey.update(dt, real, ctx);
@@ -434,7 +510,9 @@ export class RunScene implements Scene {
       this.viewH,
       fresh,
       this.offers.map((o) => this.ctx.build.completesEvolution(o)),
+      this.tutorial.glowFirstCard,
     );
+    this.tutorial.cardsShown();
   }
 
   private pick(i: number): void {
@@ -544,10 +622,30 @@ export class RunScene implements Scene {
     this.mode = 'paused';
     this.input.clear();
     this.ctx.sfx.setBuzz(0);
-    this.pause.show(this.ctx.build, this.viewW, this.viewH, () => this.resume(), () => {
-      this.pause.hide();
-      this.finish(false);
-    });
+    const ctx = this.ctx;
+    this.pause.show(
+      ctx.build,
+      this.viewW,
+      this.viewH,
+      () => this.resume(),
+      () => {
+        this.pause.hide();
+        this.finish(false);
+      },
+      () => this.options.show(this.viewW, this.viewH),
+      {
+        seconds: ctx.time,
+        km: this.journey.km(ctx.time),
+        kills: ctx.stats.kills,
+        level: ctx.progress.level,
+        hp: Math.ceil(ctx.player.hp),
+        maxHp: ctx.player.maxHp,
+      },
+    );
+  }
+
+  private closeOptions(): void {
+    this.options.hide();
   }
 
   private resume(): void {
@@ -557,6 +655,27 @@ export class RunScene implements Scene {
   }
 
   private finish(victory: boolean): void {
+    // Beating El Gran Temblor first plays the ending in comic panels.
+    if (victory && !this.comic && !this.journey.antartica) {
+      this.mode = 'comic';
+      this.setTimeScale(1);
+      this.ctx.sfx.setBuzz(0);
+      this.input.clear();
+      this.comic = new ComicScene(null, this.ctx.sfx, 'final', () => {
+        if (!this.comic) return;
+        this.root.removeChild(this.comic.root);
+        this.comic.root.destroy({ children: true });
+        this.comic = null;
+        this.finishNow(true);
+      });
+      this.comic.resize(this.viewW, this.viewH);
+      this.root.addChild(this.comic.root);
+      return;
+    }
+    this.finishNow(victory);
+  }
+
+  private finishNow(victory: boolean): void {
     const ctx = this.ctx;
     if (victory) this.achieve('deAricaAPuntaArenas');
     this.victory = victory;
@@ -608,6 +727,7 @@ export class RunScene implements Scene {
       () => ctx.sfx.play('comida', { pitch: 1.5 + ctx.rng.range(0, 0.3) }),
       victory && !this.journey.antartica ? () => this.continueToAntarctica() : undefined,
       this.opts.onCucha ?? undefined,
+      () => this.opts.onMenu(),
     );
   }
 
@@ -657,6 +777,7 @@ export class RunScene implements Scene {
     const py = Math.round(p.prevY + (p.y - p.prevY) * a);
     this.horizon.update(origin.x, this.worldTime);
     for (const m of this.moais) m.update(1 / 60);
+    this.tutorial.render();
     this.weather.render();
     this.hazards.render(px - origin.x + ctx.shake.x, py - 8 - origin.y + ctx.shake.y);
     ctx.screen.render({
@@ -687,6 +808,12 @@ export class RunScene implements Scene {
       this.mode === 'playing' ? this.input.stickNative(this.viewW, this.viewH) : null,
       this.journey.bar(),
       this.pointerTo(origin.x, origin.y),
+      {
+        km,
+        antartica: this.journey.antartica,
+        touch: this.opts.mobile && this.mode === 'playing',
+        holding: this.input.touchHolding || (this.opts.loadout.settings.holdMode === 'alternar' && p.holding),
+      },
     );
   }
 

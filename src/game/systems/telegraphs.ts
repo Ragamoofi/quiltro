@@ -37,6 +37,8 @@ export class Telegraphs {
   private readonly g = new Graphics();
   private list: Warning[] = [];
   private time = 0;
+  /** Colour-blind mode: danger zones get an X, safe zones a +, not only red/green. */
+  colorblind = false;
 
   constructor() {
     this.root.addChild(this.g);
@@ -80,6 +82,14 @@ export class Telegraphs {
         g.circle(x, y, Math.round(w.r)).stroke({ width: 1, color: edge });
         if (k > 0.05) g.circle(x, y, Math.max(1, Math.round(w.r * k))).stroke({ width: 1, color: C(w.color === 'r' ? 'p' : w.color) });
         if (w.t >= w.delay) g.circle(x, y, Math.round(w.r)).fill(C('W'));
+        if (this.colorblind && w.r >= 8) {
+          const s = Math.round(w.r * 0.5);
+          if (w.color === 'v') {
+            g.rect(x - s, y, s * 2 + 1, 1).fill(C('W')).rect(x, y - s, 1, s * 2 + 1).fill(C('W'));
+          } else if (w.color === 'r') {
+            g.moveTo(x - s + 0.5, y - s + 0.5).lineTo(x + s + 0.5, y + s + 0.5).moveTo(x + s + 0.5, y - s + 0.5).lineTo(x - s + 0.5, y + s + 0.5).stroke({ width: 1, color: C('W') });
+          }
+        }
       } else {
         const dx = w.x1 - w.x0;
         const dy = w.y1 - w.y0;

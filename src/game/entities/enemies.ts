@@ -98,6 +98,8 @@ export interface Enemy {
   ty: number;
   /** XP the gaviota has eaten. */
   stolen: number;
+  /** Tutorial ring: does no damage until the first ¡GUAU!. */
+  harmless: boolean;
   boss: BossTarget | null;
   sprite: Sprite;
   shadow: Sprite;
@@ -170,6 +172,7 @@ export class Enemies {
         tx: 0,
         ty: 0,
         stolen: 0,
+        harmless: false,
         boss: null,
         sprite,
         shadow,
@@ -210,6 +213,7 @@ export class Enemies {
     e.state = '';
     e.timer = ctx.rng.range(1, 3);
     e.stolen = 0;
+    e.harmless = false;
     e.boss = null;
     const suffix = elite ? '_elite' : '';
     e.anim = anim(look.sprite, `${look.anim}${suffix}`);
@@ -296,7 +300,7 @@ export class Enemies {
       if (!isPart) this.separate(e, ctx);
       // Micros and camahuetos charging run over the small fry.
       if (e.state === 'carga' && e.def.id === 'micro') this.runOver(e, ctx);
-      if (!p.dead && e.stun <= 0 && e.damage > 0) {
+      if (!p.dead && e.stun <= 0 && e.damage > 0 && !e.harmless) {
         const dx = p.x - e.x;
         const dy = p.y - 8 - e.y;
         const rr = p.radius + e.radius;
@@ -667,6 +671,8 @@ export class Enemies {
 
   /** ¡GUAU!: damage and strong push to everything in the radius. */
   shockwave(x: number, y: number, radius: number, damage: number, ctx: RunContext): void {
+    // The tutorial's harmless ring becomes normal after the first bark.
+    for (const e of this.list) e.harmless = false;
     ctx.grid.query(x, y, radius, this.near);
     for (const id of [...this.near]) {
       const e = this.list[id];

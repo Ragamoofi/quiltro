@@ -3,6 +3,7 @@ import { anim } from '../art/assets.ts';
 import type { Build } from '../game/build.ts';
 import { formatNumber, t } from '../i18n/index.ts';
 import { PixelText } from './text.ts';
+import { drawChile } from './chileMap.ts';
 import { Button, C } from './widgets.ts';
 
 export interface HudState {
@@ -37,6 +38,9 @@ export class Hud {
   private readonly iconDots = new Graphics();
   private readonly pause: Button;
   private readonly bossName = new PixelText(' ', { color: 'w', outline: 'k' });
+  private readonly map = new Graphics();
+  private kmToY: (km: number) => number = () => 0;
+  private mapBottom = 0;
   private width = 480;
   private height = 270;
   private buildKey = '';
@@ -48,6 +52,7 @@ export class Hud {
     if (killTex) this.killIcon.texture = killTex;
     this.pause = new Button('II', 14, 12, onPause, 'K', 'w');
     this.root.addChild(
+      this.map,
       this.g,
       this.bone,
       this.levelText,
@@ -67,6 +72,11 @@ export class Hud {
     this.width = w;
     this.height = h;
     this.buildKey = '';
+    this.map.clear();
+    const top = 34;
+    const height = Math.max(60, Math.min(150, h - 90));
+    this.kmToY = drawChile(this.map, w - 11, top, height, 3);
+    this.mapBottom = top + height;
   }
 
   render(
@@ -75,10 +85,25 @@ export class Hud {
     stick: { ox: number; oy: number; x: number; y: number } | null,
     boss: { name: string; ratio: number; intro: number } | null = null,
     pointer: { x: number; y: number; angle: number } | null = null,
+    extra: { km: number; antartica: boolean; touch: boolean; holding: boolean } | null = null,
   ): void {
     const g = this.g;
     g.clear();
     const w = this.width;
+    if (extra) {
+      // Mini map of Chile on the right edge with the dog's dot travelling south.
+      const y = extra.antartica ? this.mapBottom + 4 : this.kmToY(extra.km);
+      const x = w - 10;
+      g.rect(x - 2, y - 1, 4, 3).fill(C('k'));
+      g.rect(x - 1, y, 2, 1).fill(C(Math.floor(s.seconds * 3) % 2 === 0 ? 'W' : 'c'));
+      // Touch: the big "dar hilo" button on the right half.
+      if (extra.touch) {
+        const bx = w - 46;
+        const by = this.height - 44;
+        g.circle(bx, by, 18).fill(C(extra.holding ? 'b' : 'K')).stroke({ width: 2, color: C('k') });
+        g.circle(bx, by, 18).stroke({ width: 1, color: C(extra.holding ? 's' : 'g') });
+      }
+    }
     if (pointer) {
       // Small gold arrow at the screen edge.
       const { x, y, angle } = pointer;

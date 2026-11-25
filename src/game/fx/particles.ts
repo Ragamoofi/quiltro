@@ -21,6 +21,8 @@ export class Particles {
   readonly root = new Container();
   private readonly pool: Particle[] = [];
   private next = 0;
+  /** Graphics quality: 0.5 on "baja". */
+  scale = 1;
 
   constructor(size = 600) {
     for (let i = 0; i < size; i++) {
@@ -43,7 +45,8 @@ export class Particles {
     speed = 60,
     life = 0.4,
   ): void {
-    for (let i = 0; i < count; i++) {
+    const n = Math.max(1, Math.round(count * this.scale));
+    for (let i = 0; i < n; i++) {
       const p = this.pool[this.next];
       this.next = (this.next + 1) % this.pool.length;
       if (!p) continue;

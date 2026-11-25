@@ -37,6 +37,9 @@ export class LevelUpView {
   private viewW = 480;
   private viewH = 270;
   private hint: PixelText | null = null;
+  private selected = -1;
+  private glowFirst = false;
+  private readonly glow = new Graphics();
 
   constructor(handlers: LevelUpHandlers) {
     this.handlers = handlers;
@@ -59,10 +62,13 @@ export class LevelUpView {
     viewH: number,
     fresh = true,
     stamps: readonly boolean[] = [],
+    glowFirst = false,
   ): void {
     this.viewW = viewW;
     this.viewH = viewH;
-    this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.glowFirst = glowFirst;
+    if (fresh) this.selected = -1;
+    this.root.removeChildren().forEach((c) => c !== this.glow && c.destroy({ children: true }));
     this.root.visible = true;
     if (fresh) this.age = 0;
     this.banishMode = false;
@@ -116,8 +122,20 @@ export class LevelUpView {
 
   hide(): void {
     this.root.visible = false;
-    this.root.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.root.removeChildren().forEach((c) => c !== this.glow && c.destroy({ children: true }));
     this.cards = [];
+  }
+
+  /** Arrow keys / d-pad: move the selection between cards. */
+  move(dir: number): void {
+    if (!this.open || this.cards.length === 0) return;
+    this.selected = this.selected < 0 ? 0 : (this.selected + dir + this.cards.length) % this.cards.length;
+  }
+
+  /** Enter / A: take the selected card (the first one if none is selected). */
+  confirm(): void {
+    if (!this.open) return;
+    this.pressNumber(Math.max(0, this.selected));
   }
 
   /** Keyboard 1..4. */
@@ -210,11 +228,23 @@ export class LevelUpView {
       // Ease-out-back: overshoots a little, then settles (the "rebote").
       const s = 1.6;
       const e = 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2;
-      const lift = c.hover && this.canPick ? -3 : 0;
+      const lift = (c.hover || i === this.selected) && this.canPick ? -3 : 0;
       c.root.y = Math.round(c.baseY + (1 - e) * this.viewH + lift);
-      // First card glows once (tutorial hint).
-      c.root.visible = true;
     });
     if (this.hint) this.hint.visible = Math.floor(this.age * 4) % 2 === 0;
+
+    // Gold frame around the selected card; the first card glows on the very first level-up.
+    const g = this.glow;
+    g.clear();
+    if (!g.parent) this.root.addChild(g);
+    const target = this.selected >= 0 ? this.selected : this.glowFirst ? 0 : -1;
+    const card = this.cards[target];
+    if (card && this.age > 0.3) {
+      const b = card.root.getLocalBounds();
+      const on = this.selected >= 0 || Math.floor(this.age * 3) % 2 === 0;
+      if (on) {
+        g.rect(card.root.x + b.x - 3, card.root.y + b.y - 3, b.width + 6, b.height + 6).stroke({ width: 2, color: C('a') });
+      }
+    }
   }
 }

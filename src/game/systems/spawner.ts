@@ -40,8 +40,8 @@ export class Spawner {
     const minutes = ctx.time / 60;
     const edge = Math.hypot(viewW, viewH) / 2 + 12;
 
-    // Tutorial-ish start: 6 slow zancudos close by at second 3.
-    if (!this.introDone && ctx.time > 3) {
+    // Tutorial start (GDD): 6 slow zancudos close by at second 5.
+    if (!this.introDone && ctx.time > 5) {
       this.introDone = true;
       for (let i = 0; i < 6; i++) {
         const a = (i / 6) * Math.PI * 2;
@@ -99,15 +99,16 @@ export class Spawner {
     ctx.enemies.spawnFlock(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, size, ctx.time / 60, ctx);
   }
 
-  /** A full circle of the zone's smallest enemy closing in. */
-  ring(ctx: RunContext, count: number, zoneId = 'norte'): void {
+  /** A full circle of the zone's smallest enemy closing in (harmless for the tutorial lesson). */
+  ring(ctx: RunContext, count: number, zoneId = 'norte', harmless = false): void {
     const p = ctx.player;
     const minutes = ctx.time / 60;
     const pool = this.pool(zoneId);
     const kind = [...pool].sort((a, b) => this.weight(b) - this.weight(a))[0] ?? 'zancudo';
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
-      ctx.enemies.spawn(kind, p.x + Math.cos(a) * 140, p.y - 8 + Math.sin(a) * 105, minutes, ctx);
+      const e = ctx.enemies.spawn(kind, p.x + Math.cos(a) * 140, p.y - 8 + Math.sin(a) * 105, minutes, ctx);
+      if (e) e.harmless = harmless;
     }
   }
 }
