@@ -66,7 +66,7 @@ Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos 
 - Tres pasajes con enemigos más duros y premios mayores: Pasaje normal, "Hora punta", "Último bus". Se desbloquean al ganar el anterior. La Antártica sigue como modo infinito.
 - **Listo cuando:** el bot experto gana el pasaje 1 en ~50–70 % de las partidas, y el 3 en menos del 15 %.
 
-### 11.7 — Volantín, claridad y estadísticas (1–2 jornadas) — PARCIAL (2026-11-25: volantín con picada y peso al corte; faltan tope de enemigos visibles, contorno de proyectiles y pantalla de estadísticas)
+### 11.7 — Volantín, claridad y estadísticas (1–2 jornadas) — HECHO salvo el tope de enemigos visibles (2026-11-25: volantín con picada y peso al corte, halo en proyectiles enemigos y pestaña Marcas; el tope no se tocó para no mover el equilibrio sin tus partidas)
 - Volantín: aplicar la idea 3 "picada" + la 1 "más peso al corte" (lo decides tú); probar con una partida tuya.
 - Legibilidad: tope de enemigos visibles y contorno de proyectiles enemigos, medido con el banco de rendimiento.
 - Pantalla de estadísticas (mejores marcas, personaje más usado, causa de muerte más común).
