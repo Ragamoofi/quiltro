@@ -12,6 +12,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Fase 10.5 — Tonos, suelos y paisaje por ambiente
+
+#### Agregado
+- **Un suelo propio por lugar** (`suelo_santiago`, `suelo_costa`, `suelo_lagos`), todos medidos con `npm run contraste` (59 de 59 combinaciones pasan):
+  - **Santiago:** pastelón de ciudad con calle: paso de cebra, línea amarilla discontinua y alcantarilla.
+  - **Costa de Valparaíso:** piedras mojadas de puerto, grises, con matas de pasto y conchitas.
+  - **Lagos y Chiloé:** pasto húmedo con matas claras, charcos, piedras y florcitas.
+- **Horizonte por ambiente:** Santiago, con cordillera nevada y una **bruma de smog** beige; la costa, con mar azul y cerros verdes; los lagos, con cielo cubierto y un volcán nevado azulado.
+- **Clima por ambiente:** ya no hay gaviotas en el cielo de Santiago (sí en la costa); lluvia fina en los lagos.
+- Cada ambiente aplica su suelo, horizonte y clima al entrar a su tramo de kilómetros (`AMBIENTES` ahora lleva `floor`, `look` y `weather`). Pruebas en `tests/ambientes.test.ts`.
+
 ### Fase 10.4 — Enemigos por ambiente, y arreglo de la neblina
 
 #### Agregado

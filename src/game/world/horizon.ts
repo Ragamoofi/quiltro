@@ -14,6 +14,8 @@ interface Look {
   /** Shape of the near range: soft hills, sharp cones (volcanoes) or towers. */
   shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo';
   aurora?: readonly string[];
+  /** A band of dithered haze over the lower part of the far layer (smog). */
+  haze?: string;
 }
 
 const LOOKS: Record<string, Look> = {
@@ -22,6 +24,10 @@ const LOOKS: Record<string, Look> = {
   sur: { sky: 'G', far: 'g', near: 'F', cap: 'w', shape: 'volcanes' },
   patagonia: { sky: 's', far: 'i', near: 'K', cap: 'W', shape: 'torres' },
   antartica: { sky: 'k', stars: ['w', 'i'], far: 'I', near: 'i', shape: 'hielo', aurora: ['t', 'v', 'V'] },
+  // Fase 10.5: one look per environment.
+  santiago: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera', haze: 'n' },
+  costa: { sky: 's', far: 'b', near: 'v', shape: 'cerros' },
+  lagos: { sky: 'G', far: 'I', near: 'f', cap: 'w', shape: 'volcanes' },
 };
 
 /**
@@ -118,6 +124,21 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
     for (let x = 0; x < W; x++) {
       const h = 14 + Math.round(wave(x, [4, 9, 15], [4, 2, 1]));
       for (let y = HORIZON_H - h; y < HORIZON_H; y++) put(look.far, x, y);
+    }
+    if (look.haze) {
+      // Smog: a beige haze that thickens toward the ground, in a clean 2×2 dither.
+      const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+      for (let y = HORIZON_H - 18; y < HORIZON_H; y += 2) {
+        const density = ((y - (HORIZON_H - 18)) / 18) * 0.55;
+        for (let x = 0; x < W; x += 2) {
+          if (density > ((bayer[((y >> 1) % 4) * 4 + ((x >> 1) % 4)] ?? 0) + 0.5) / 16) {
+            put(look.haze, x, y);
+            put(look.haze, x + 1, y);
+            put(look.haze, x, y + 1);
+            put(look.haze, x + 1, y + 1);
+          }
+        }
+      }
     }
     return finish(canvas);
   }

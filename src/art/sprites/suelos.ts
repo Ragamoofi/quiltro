@@ -175,7 +175,46 @@ export const sueloAntartica = zoneFloor('suelo_antartica', [
   toFrame(stamp(speckled('i', ['s'], 0.05, 16), 4, 4, ['.ss.', 'siis', 'siis', '.ss.'])),
 ]);
 
+/**
+ * Fase 10.5: un suelo para cada lugar.
+ *  - Santiago: el pastelón de la ciudad con calle: paso de cebra, línea amarilla, alcantarilla.
+ *  - Costa de Valparaíso: piedras mojadas con espuma, conchitas, algas, pasto de borde y guijarros.
+ *  - Lagos y Chiloé: pasto húmedo con matas claras, charcos, piedras y florcitas.
+ */
+const ciudadBase = (rows: readonly string[]): string[][] => rows.map((r) => [...r]);
+const PASO_DE_CEBRA = ciudadBase(LISO);
+for (const y of [2, 3, 6, 7, 10, 11]) for (let x = 0; x < 15; x++) PASO_DE_CEBRA[y]![x] = 'w';
+const LINEA_AMARILLA = ciudadBase(LISO);
+for (const y of [7, 8]) for (let x = 0; x < 15; x++) if (x % 8 < 4) LINEA_AMARILLA[y]![x] = 'y';
+const ALCANTARILLA = stamp(ciudadBase(LISO), 5, 5, ['.MMMM.', 'MKKKKM', 'MKMMKM', 'MKMMKM', 'MKKKKM', '.MMMM.']);
+
+export const sueloSantiago = zoneFloor('suelo_santiago', [
+  LISO,
+  toFrame(PASO_DE_CEBRA),
+  toFrame(LINEA_AMARILLA),
+  toFrame(ALCANTARILLA),
+  ADOQUIN,
+  TRIZADO,
+]);
+
+export const sueloCosta = zoneFloor('suelo_costa', [
+  toFrame(speckled('g', ['G', 'K'], 0.07, 21)),
+  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 22), 5, 6, ['.p.', 'pWp'])),
+  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 23), 4, 5, ['v.v', 'vVv', '.v.'])),
+  toFrame(stamp(speckled('g', ['G', 'K'], 0.05, 24), 3, 6, ['gG.', 'Ggg'])),
+]);
+
+export const sueloLagos = zoneFloor('suelo_lagos', [
+  toFrame(speckled('v', ['V', 'V', 'f'], 0.14, 31)),
+  toFrame(stamp(speckled('v', ['V'], 0.1, 32), 3, 6, ['.ss.', 'sbbs', '.ss.'])),
+  toFrame(stamp(speckled('v', ['V', 'f'], 0.1, 33), 5, 5, ['g.', 'Gg'])),
+  toFrame(stamp(speckled('v', ['V'], 0.1, 34), 6, 5, ['.p.', 'pyp', '.v.'])),
+]);
+
 export const SUELO_PESOS: Readonly<Record<string, readonly number[]>> = {
+  santiago: [22, 0.6, 0.9, 0.5, 2, 1],
+  costa: [16, 3, 3, 2],
+  lagos: [16, 3, 3, 2],
   norte: [16, 3, 3, 2],
   centro: SUELO_CENTRO_PESOS,
   sur: [16, 3, 4, 2],

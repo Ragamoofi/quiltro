@@ -1,6 +1,7 @@
 import { Container, Sprite } from 'pixi.js';
 import { anim, frameAt } from '../art/assets.ts';
 import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
+import { ambienteAt } from '../data/zonas.ts';
 import type { Sfx } from '../audio/sfx.ts';
 import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
@@ -139,6 +140,8 @@ export class RunScene implements Scene {
   readonly journey: Journey;
   private readonly horizon = new Horizon();
   private readonly cities = new Cities();
+  /** The environment (Santiago, the coast…) whose floor, horizon and weather are on screen. */
+  private envId = '';
   private readonly passives = new Passives();
   private readonly weather = new Weather();
   private readonly hazards = new Hazards();
@@ -279,6 +282,8 @@ export class RunScene implements Scene {
         this.decor.setZone(z.id);
         this.horizon.setZone(z.id, this.viewW);
         this.weather.setZone(z.id, this.viewW, this.viewH, ctx.rng);
+        // The environment of the new zone is applied on the next step.
+        this.envId = '';
         this.hazards.setZone(z.hazard, ctx);
         // Each zone has its own music (2 s crossfade) and a short jingle when you arrive.
         this.music.setScene(setForZone(z.id));
@@ -420,8 +425,8 @@ export class RunScene implements Scene {
     this.hazards.resize(width, height);
     this.tutorial.resize(width, height);
     if (this.options.open) this.options.show(width, height);
-    this.horizon.setZone(this.journey.zone.id, width);
-    this.weather.setZone(this.journey.zone.id, width, height, this.ctx.rng);
+    this.horizon.setZone(this.currentEnv()?.look ?? this.journey.zone.id, width);
+    this.weather.setZone(this.currentEnv()?.weather ?? this.journey.zone.id, width, height, this.ctx.rng);
     if (this.mode === 'cards') this.showCards(false);
   }
 
@@ -509,6 +514,11 @@ export class RunScene implements Scene {
     this.ctx.sfx.play('campana', { pitch: 1.3 });
   }
 
+  /** The environment at this kilometre (none in La Antártica). */
+  private currentEnv(km = this.journey.km(this.ctx.time)): ReturnType<typeof ambienteAt> {
+    return this.journey.antartica ? undefined : ambienteAt(this.journey.zone.id, km);
+  }
+
   private simulate(dt: number, real: number): void {
     const ctx = this.ctx;
     ctx.time += dt;
@@ -531,6 +541,16 @@ export class RunScene implements Scene {
     const km = this.journey.km(ctx.time);
     this.cities.update(dt, ctx, km, this.journey.bossActive);
     const city = this.journey.antartica ? null : this.cities.view(km);
+    // Environment: floor, horizon colours and weather follow the place (Santiago ≠ the coast).
+    const env = this.currentEnv(km);
+    if ((env?.id ?? '') !== this.envId) {
+      this.envId = env?.id ?? '';
+      if (env) {
+        this.floor.setFloor(`suelo_${env.floor}`, SUELO_PESOS[env.floor] ?? SUELO_CENTRO_PESOS);
+        this.horizon.setZone(env.look, this.viewW);
+        this.weather.setZone(env.weather, this.viewW, this.viewH, ctx.rng);
+      }
+    }
     this.horizon.setLandmark(city?.scene.landmark ?? null, city?.progress ?? 0);
     this.decor.setCityProp(city?.scene.prop ?? null);
     this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive, this.journey.km(ctx.time));

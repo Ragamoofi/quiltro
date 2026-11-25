@@ -10,8 +10,8 @@
 import { colorOf, hexToRgb } from '../src/art/palette.ts';
 import { SUELO_PESOS } from '../src/art/sprites/suelos.ts';
 import { SPRITES } from '../src/art/sprites/index.ts';
-import { ENEMIGOS, ENEMIGOS_ESPECIALES } from '../src/data/enemigos.ts';
-import { ZONAS } from '../src/data/zonas.ts';
+import { ENEMIGOS_ESPECIALES } from '../src/data/enemigos.ts';
+import { AMBIENTES, ZONAS } from '../src/data/zonas.ts';
 
 const OUTLINE_MIN = 3;
 const BODY_RATIO = 1.35;
@@ -92,13 +92,20 @@ function measure(zone: string, sprite: string): Row | null {
 }
 
 const ALWAYS = ['quiltro', 'sopaipilla', 'completo', 'chorrillana', 'proyectil'];
+// Each environment against its own floor, plus La Antártica (Patagonia's enemies on ice).
+const places: { id: string; floor: string; enemies: string[] }[] = AMBIENTES.map((a) => ({ id: a.id, floor: a.floor, enemies: [...a.enemies] }));
+const patagonia = ZONAS.find((z) => z.id === 'patagonia');
+places.push({
+  id: 'antartica',
+  floor: 'antartica',
+  enemies: [...(patagonia?.enemies ?? []), ...ENEMIGOS_ESPECIALES.filter((e) => e.zone === 'patagonia').map((e) => e.id)],
+});
 const rows: Row[] = [];
-for (const z of ZONAS) {
-  // La Antártica reuses Patagonia's enemies.
-  const enemies = z.id === 'antartica' ? [...ENEMIGOS.filter((e) => e.zone === 'patagonia'), ...ENEMIGOS_ESPECIALES.filter((e) => e.zone === 'patagonia')].map((e) => e.id) : [...z.enemies, ...ENEMIGOS_ESPECIALES.filter((e) => e.zone === z.id).map((e) => e.id)];
+for (const place of places) {
+  const enemies = place.id === 'patagonia' ? [...place.enemies, ...ENEMIGOS_ESPECIALES.filter((e) => e.zone === 'patagonia').map((e) => e.id)] : place.enemies;
   for (const s of [...ALWAYS, ...enemies]) {
-    const r = measure(z.id, s);
-    if (r) rows.push(r);
+    const r = measure(place.floor, s);
+    if (r) rows.push({ ...r, zone: place.id });
   }
 }
 

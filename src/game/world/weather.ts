@@ -32,7 +32,7 @@ export class Weather {
     this.w = w;
     this.h = h;
     // The southern rain is lighter than before (80 → 45 drops) so it does not pile noise on the mist.
-    const count = { norte: 26, centro: 0, sur: 45, patagonia: 70, antartica: 50 }[zone] ?? 0;
+    const count = { norte: 26, centro: 0, ciudad: 0, costa: 0, sur: 45, lagos: 30, patagonia: 70, antartica: 50 }[zone] ?? 0;
     this.drops = Array.from({ length: count }, () => ({ x: rng.range(0, w), y: rng.range(0, h), s: rng.range(0.6, 1.4) }));
   }
 
@@ -50,6 +50,7 @@ export class Weather {
           d.y += Math.sin(d.x * 0.05) * 6 * dt;
           break;
         case 'sur':
+        case 'lagos':
           d.x -= 50 * d.s * dt;
           d.y += 190 * d.s * dt;
           break;
@@ -59,7 +60,8 @@ export class Weather {
       }
       wrap(d);
     }
-    if (this.zone === 'centro') {
+    // Gulls cross the sky over the coast and the lakes (and the old Centro look), never over Santiago.
+    if (this.zone === 'centro' || this.zone === 'costa' || this.zone === 'lagos') {
       this.gullX += 30 * dt;
       if (this.gullX > this.w + 60) {
         this.gullX = -60;
@@ -76,13 +78,17 @@ export class Weather {
         for (const d of this.drops) g.rect(Math.round(d.x), Math.round(d.y), 1, 1).fill(C('n'));
         break;
       case 'sur':
+      case 'lagos':
         for (const d of this.drops) {
           const x = Math.round(d.x);
           const y = Math.round(d.y);
           g.rect(x, y, 1, 1).fill(C('s')).rect(x - 1, y + 1, 1, 1).fill(C('s')).rect(x - 2, y + 2, 1, 1).fill(C('G'));
         }
         break;
+      case 'ciudad':
+        break;
       case 'centro':
+      case 'costa':
         // Two gulls gliding far away (pure scenery).
         for (const [ox, oy] of [
           [0, 0],

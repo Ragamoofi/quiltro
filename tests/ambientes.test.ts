@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { SUELO_PESOS } from '../src/art/sprites/suelos.ts';
+import { SPRITES } from '../src/art/sprites/index.ts';
 import { ENEMIGOS } from '../src/data/enemigos.ts';
 import { AMBIENTES, ambienteAt, TOTAL_KM, ZONAS } from '../src/data/zonas.ts';
 import { Spawner } from '../src/game/systems/spawner.ts';
@@ -36,6 +38,17 @@ describe('ambientes por kilómetro (Fase 10.4)', () => {
     expect(costa).toContain('loboMarino');
     expect(ambienteAt('sur', 3000)?.enemies).toContain('loboMarino');
     expect(ambienteAt('sur', 2300)?.enemies).not.toContain('loboMarino');
+  });
+
+  it('every environment has its own floor, with one weight per variant', () => {
+    for (const a of AMBIENTES) {
+      const sprite = SPRITES.find((s) => s.name === `suelo_${a.floor}`);
+      expect(sprite, a.id).toBeDefined();
+      const variants = sprite?.animations.variantes?.frames.length ?? 0;
+      expect((SUELO_PESOS[a.floor] ?? []).length, a.id).toBe(variants);
+    }
+    // Santiago, the coast and the lakes no longer share a floor.
+    expect(new Set(['santiago', 'costa', 'lagos'].map((id) => AMBIENTES.find((a) => a.id === id)?.floor)).size).toBe(3);
   });
 
   it('the spawner draws from the environment at that kilometre (never the flock-only pigeon)', () => {

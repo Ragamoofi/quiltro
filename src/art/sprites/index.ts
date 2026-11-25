@@ -8,7 +8,7 @@ import { jefesSprites } from './jefes.ts';
 import { cuchaDef, moaiDef, objetosCucha, vecinosDef } from './cucha.ts';
 import { personajesSprites } from './personajes.ts';
 import { manoDef, martinaDef, teclaDef, volantinAzul } from './historia.ts';
-import { sueloAntartica, sueloNorte, sueloPatagonia, sueloSur } from './suelos.ts';
+import { sueloAntartica, sueloCosta, sueloLagos, sueloNorte, sueloPatagonia, sueloSantiago, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
 import { carro, grifo, poste, quiosco } from './decoracion.ts';
 import { digitos, globoGuau, hueso, sombras, sopaipilla } from './efectos.ts';
@@ -50,6 +50,9 @@ export const SPRITES: readonly SpriteDef[] = [
   sueloSur,
   sueloPatagonia,
   sueloAntartica,
+  sueloSantiago,
+  sueloCosta,
+  sueloLagos,
   ...decoNorte,
   ...decoSur,
   ...decoPatagonia,

@@ -44,15 +44,19 @@ export interface AmbienteDef {
   readonly desdeKm: number;
   readonly hastaKm: number;
   readonly enemies: readonly string[];
+  /** Floor (`suelo_<floor>`), horizon look and weather of the place. */
+  readonly floor: string;
+  readonly look: string;
+  readonly weather: string;
 }
 
 export const AMBIENTES: readonly AmbienteDef[] = [
-  { id: 'desierto', zone: 'norte', desdeKm: 0, hastaKm: 1075, enemies: ['zancudo', 'jote', 'guanaco'] },
-  { id: 'santiago', zone: 'centro', desdeKm: 1075, hastaKm: 1600, enemies: ['paloma', 'micro', 'colectivo', 'rata'] },
-  { id: 'costa', zone: 'centro', desdeKm: 1600, hastaKm: 2150, enemies: ['paloma', 'gaviota', 'loboMarino'] },
-  { id: 'araucania', zone: 'sur', desdeKm: 2150, hastaKm: 2700, enemies: ['chonchon', 'camahueto', 'basilisco'] },
-  { id: 'lagos', zone: 'sur', desdeKm: 2700, hastaKm: 3225, enemies: ['chonchon', 'camahueto', 'loboMarino'] },
-  { id: 'patagonia', zone: 'patagonia', desdeKm: 3225, hastaKm: 4300, enemies: ['tempano', 'chingue'] },
+  { id: 'desierto', zone: 'norte', desdeKm: 0, hastaKm: 1075, enemies: ['zancudo', 'jote', 'guanaco'], floor: 'norte', look: 'norte', weather: 'norte' },
+  { id: 'santiago', zone: 'centro', desdeKm: 1075, hastaKm: 1600, enemies: ['paloma', 'micro', 'colectivo', 'rata'], floor: 'santiago', look: 'santiago', weather: 'ciudad' },
+  { id: 'costa', zone: 'centro', desdeKm: 1600, hastaKm: 2150, enemies: ['paloma', 'gaviota', 'loboMarino'], floor: 'costa', look: 'costa', weather: 'costa' },
+  { id: 'araucania', zone: 'sur', desdeKm: 2150, hastaKm: 2700, enemies: ['chonchon', 'camahueto', 'basilisco'], floor: 'sur', look: 'sur', weather: 'sur' },
+  { id: 'lagos', zone: 'sur', desdeKm: 2700, hastaKm: 3225, enemies: ['chonchon', 'camahueto', 'loboMarino'], floor: 'lagos', look: 'lagos', weather: 'lagos' },
+  { id: 'patagonia', zone: 'patagonia', desdeKm: 3225, hastaKm: 4300, enemies: ['tempano', 'chingue'], floor: 'patagonia', look: 'patagonia', weather: 'patagonia' },
 ];
 
 /** The environment of a zone at this kilometre (the last one of the zone if past its end). */
