@@ -12,7 +12,7 @@ interface Look {
   near: string;
   cap?: string;
   /** Shape of the near range: soft hills, sharp cones (volcanoes) or towers. */
-  shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo' | 'valpo';
+  shape: 'cerros' | 'cordillera' | 'volcanes' | 'torres' | 'hielo' | 'valpo' | 'ciudad';
   /** A hot sun hanging in the sky with a dithered halo (the desert). */
   sun?: boolean;
   /** The far layer is the sea (a band of waves) instead of distant hills. */
@@ -23,6 +23,8 @@ interface Look {
   smoke?: boolean;
   /** A fringe of dark conifers along the foot of the hills (the rainforest). */
   forest?: boolean;
+  /** Snow on the tallest peaks of the far range. */
+  snow?: boolean;
   aurora?: readonly string[];
   /** A band of dithered haze over the lower part of the far layer (smog). */
   haze?: string;
@@ -35,7 +37,7 @@ const LOOKS: Record<string, Look> = {
   patagonia: { sky: 's', far: 'i', near: 'K', cap: 'W', shape: 'torres' },
   antartica: { sky: 'k', stars: ['w', 'i'], far: 'I', near: 'i', shape: 'hielo', aurora: ['t', 'v', 'V'] },
   // Fase 10.5: one look per environment.
-  santiago: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'cordillera', haze: 'n' },
+  santiago: { sky: 's', far: 'g', near: 'K', cap: 'w', shape: 'ciudad', haze: 'n', snow: true },
   costa: { sky: 's', sea: true, far: 'b', near: 'v', shape: 'valpo' },
   lagos: { sky: 'G', sea: true, lake: true, far: 'I', near: 'f', cap: 'w', shape: 'volcanes' },
 };
@@ -168,6 +170,10 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
     for (let x = 0; x < W; x++) {
       const h = 14 + Math.round(wave(x, [4, 9, 15], [4, 2, 1]));
       for (let y = HORIZON_H - h; y < HORIZON_H; y++) put(look.far, x, y);
+      if (look.snow && h > 15) {
+        put('w', x, HORIZON_H - h);
+        put('w', x, HORIZON_H - h + 1);
+      }
     }
     if (look.haze) {
       // Smog: a beige haze that thickens toward the ground, in a clean 2×2 dither.
@@ -215,6 +221,14 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
       case 'hielo':
         h = 8 + Math.round(wave(x, [5, 11], [2, 1])) + ((x % 40) < 18 ? 4 : 0);
         break;
+      case 'ciudad': {
+        // Santiago: a skyline of towers of different heights with the green hill of San Cristóbal and its white statue.
+        const b = Math.floor(x / 7);
+        const tower = 7 + ((b * 37) % 13) + (b % 9 === 4 ? 11 : 0);
+        const hill = x >= 56 && x < 136 ? 6 + 16 * Math.sin(((x - 56) / 80) * Math.PI) : 0;
+        h = Math.max(tower, Math.round(hill)) + (x >= 94 && x <= 96 ? 5 : 0);
+        break;
+      }
       case 'valpo':
         // The hills of Valparaíso: tall, steep, and covered in houses.
         h = 17 + Math.round(wave(x, [5, 11, 19], [4, 2.5, 1]));
@@ -225,7 +239,19 @@ function layer(look: Look, which: 'far' | 'near'): Texture {
     const top = HORIZON_H - h;
     for (let y = top; y < HORIZON_H; y++) {
       let ch = look.cap && y < top + 2 && h > 15 ? look.cap : look.near;
-      if (look.shape === 'valpo') {
+      if (look.shape === 'ciudad') {
+        const b = Math.floor(x / 7);
+        const tower = 7 + ((b * 37) % 13) + (b % 9 === 4 ? 11 : 0);
+        const hill = x >= 56 && x < 136 ? 6 + 16 * Math.sin(((x - 56) / 80) * Math.PI) : 0;
+        if (Math.round(hill) > tower) {
+          // The hill, with the statue (a pale figure on a plinth) at its top.
+          ch = y - top < 2 ? 'V' : 'v';
+          if (x >= 94 && x <= 96 && y - top < 5) ch = 'w';
+        } else {
+          ch = y - top < 1 ? 'G' : (['g', 'G', 'K', 'g'][b % 4] ?? 'g');
+          if (x % 3 === 1 && (y - top) % 3 === 1 && y - top > 1 && (x * 7 + y * 3 + b) % 5 < 3) ch = 'y';
+        }
+      } else if (look.shape === 'valpo') {
         // Façades in the colours of the city, each house 5 px wide and 4 tall, with a dark window and a tin roof on top.
         const palette = ['y', 'p', 't', 'b', 'r', 'w', 'a', 'T'] as const;
         const bx = Math.floor(x / 5);

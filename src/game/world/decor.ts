@@ -118,6 +118,14 @@ export class Decor {
         else if (h < 0.31) add('quiosco', ox, oy);
         else if (h < 0.35) add('carro_sopaipillas', ox, oy);
         else if (h < 0.4) add('grifo', ox, oy);
+        // The rest of the city: towers, shops, plaza trees, bus shelters, traffic lights, the metro stairs, a fountain and benches.
+        else if (h < 0.5) add(['torre1', 'torre2', 'torre3', 'edificio_bajo', 'edificio_bajo'][Math.floor(hash2(cx, cy, this.seed + 31) * 5)] ?? 'torre1', ox, oy);
+        else if (h < 0.57) add('arbol_plaza', ox, oy);
+        else if (h < 0.6) add('parada', ox, oy);
+        else if (h < 0.64) add('semaforo', ox, oy);
+        else if (h < 0.67) add('metro', ox, oy);
+        else if (h < 0.69) add('fuente', ox, oy);
+        else if (h < 0.72) add('banca', ox, oy);
         return chunk;
       }
       if (h < 0.07) add('quiosco', ox, oy);

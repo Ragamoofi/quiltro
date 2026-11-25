@@ -12,6 +12,13 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Mapas vivos, cuarta tanda: Santiago (Fase 11.1b)
+
+#### Añadido
+- **Horizonte de Santiago:** una cordillera con las cumbres nevadas, el cerro verde de San Cristóbal con su estatua blanca y una ciudad de torres con ventanas encendidas.
+- **Calles de Santiago:** torres de oficinas (3 colores), edificios bajos con toldo, árboles de plaza, paraderos de micro, semáforos, escaleras del metro (con un letrero redondo, sin logos), fuentes y bancas, sumados a los puestos y carros que ya había.
+- Neutral para el equilibrio: el bot da exactamente lo mismo (10 %, 6,37 min). Contraste 59/59. Con esto los mapas de la 11.1b quedan completos.
+
 ### Mapas vivos, tercera tanda: Patagonia y La Antártica (Fase 11.1b)
 
 #### Añadido
