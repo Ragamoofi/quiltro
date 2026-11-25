@@ -4,6 +4,10 @@ dist/
 public/assets/sprites.png
 public/assets/sprites.json
 public/assets/icon.png
+public/assets/icon-192.png
+public/assets/icon-512.png
+public/assets/apple-touch-icon.png
+dev-dist/
 *.log
 .DS_Store
 .claude/settings.local.json

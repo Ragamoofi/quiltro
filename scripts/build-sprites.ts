@@ -38,6 +38,34 @@ if (icon) {
     }
   }
   writeFileSync(join(outDir, 'icon.png'), encodePng(size, size, rgba));
+
+  // App icons (PWA): the quiltro on the ink colour, at the largest whole scale that stays inside
+  // the "maskable" safe zone (the middle 60 %), so any round or squircle mask keeps the dog whole.
+  const INK = [0x2a, 0x22, 0x33, 255] as const;
+  const SKY = [0x2f, 0x7d, 0xe1, 255] as const;
+  const dog = rasterize({ ...layout, frames: [{ ...icon, x: 0, y: 0 }], width: icon.w, height: icon.h });
+  const appIcon = (px: number): Uint8Array => {
+    const scale = Math.max(1, Math.floor((px * 0.6) / icon.w));
+    const out = new Uint8Array(px * px * 4);
+    for (let i = 0; i < px * px; i++) out.set(INK, i * 4);
+    // A band of sky-blue "pañoleta" colour at the bottom, like the street the dog stands on.
+    for (let y = Math.round(px * 0.74); y < px; y++) for (let x = 0; x < px; x++) out.set(SKY, (y * px + x) * 4);
+    const w = icon.w * scale;
+    const h = icon.h * scale;
+    const left = Math.floor((px - w) / 2);
+    // Feet on the band's top edge.
+    const top = Math.round(px * 0.74) - Math.round(h * (22 / 24));
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const so = (Math.floor(y / scale) * icon.w + Math.floor(x / scale)) * 4;
+        if ((dog[so + 3] ?? 0) === 0) continue;
+        out.set(dog.subarray(so, so + 4), ((top + y) * px + (left + x)) * 4);
+      }
+    }
+    return out;
+  };
+  for (const px of [192, 512]) writeFileSync(join(outDir, `icon-${px}.png`), encodePng(px, px, appIcon(px)));
+  writeFileSync(join(outDir, 'apple-touch-icon.png'), encodePng(180, 180, appIcon(180)));
 }
 
 console.warn(

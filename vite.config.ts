@@ -2,6 +2,7 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { VitePWA } from 'vite-plugin-pwa';
 
 /**
  * Rebuilds the sprite sheet (public/assets/sprites.png + .json) from the pixel
@@ -35,7 +36,37 @@ function spriteSheet(): Plugin {
 export default defineConfig({
   // Relative base so the same build works on GitHub Pages (/<repo>/) and locally.
   base: './',
-  plugins: [spriteSheet()],
+  plugins: [
+    spriteSheet(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      includeAssets: ['assets/icon.png', 'assets/apple-touch-icon.png'],
+      manifest: {
+        name: 'QUILTRO',
+        short_name: 'QUILTRO',
+        description: 'Un quiltro, un viaje de Arica a Punta Arenas y un montón de bichos.',
+        lang: 'es-CL',
+        start_url: './',
+        scope: './',
+        display: 'standalone',
+        orientation: 'any',
+        theme_color: '#2A2233',
+        background_color: '#2A2233',
+        icons: [
+          { src: 'assets/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'assets/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'assets/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,json,webmanifest}'],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/sprites\.html$/],
+      },
+    }),
+  ],
   build: {
     target: 'es2022',
     assetsInlineLimit: 0,
