@@ -12,8 +12,19 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
-#### Pendiente de la 10.2
-- Zorro, Chingue, Cóndor y Guanaco usan **sprites prestados** (de la Quiltra, el Gato, la Paloma y el Pudú) hasta que se dibujen los propios en la 10.2.
+### Fase 10.2 — Sprites de los personajes
+
+#### Cambiado
+- **Rediseño de los 5 personajes que se dibujaban con plantilla:**
+  - Quiltra: cuerpo propio crema, oreja caída y chaleco tejido con botón.
+  - Gato: cascabel dorado, hocico y calcetines blancos, rayas en la cola y una oreja rota.
+  - Pudú: orejas grandes con interior rosado, cuernos con horquilla y un copihue.
+  - Pingüino: bufanda a rayas.
+  - Paloma rebelde: pañuelo rojo y lentes oscuros.
+
+#### Agregado
+- **Cuatro personajes nuevos dibujados** (con todas sus animaciones: quieto, parpadeo, trote, carga, ladrido, daño, muerte, dormir, estirar, silueta y destello): **Zorro culpeo** (cola tupida con punta negra y calcetines oscuros), **Chingue** (franja blanca y cola enorme alzada), **Cóndor** (collar blanco, cabeza rosada con cresta, alas con manchas) y **Guanaco** (cuello largo, lana clara y cara oscura). Ya no hay sprites prestados.
+- Los sprites del Chingue y el Guanaco jugables se llaman `chinguePj` y `guanacoPj`, porque `chingue` y `guanaco` ya eran enemigos.
 
 ### Fase 9.5 — Armas y pasivas nuevas
 

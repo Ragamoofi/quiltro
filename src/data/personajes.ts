@@ -111,8 +111,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'zorro',
     nameKey: 'personajes.zorro',
-    // Temporary: it borrows the Quiltra's sprite until its own is drawn (10.2).
-    sprite: 'quiltra',
+    sprite: 'zorro',
     unlock: { kind: 'llegarA', ciudad: 'temuco' },
     startingWeapon: 'emboque',
     mods: { speedMult: 1.05, maxHp: 85, cooldownMult: -0.12, dodgeChance: 0.1 },
@@ -136,7 +135,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'chingue',
     nameKey: 'personajes.chingue',
-    sprite: 'gato',
+    sprite: 'chinguePj',
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
     startingWeapon: 'elastico',
     mods: { speedMult: 0.95, maxHp: 90, aura: { dps: 6, radius: 30 } },
@@ -144,7 +143,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'condor',
     nameKey: 'personajes.condor',
-    sprite: 'palomaRebelde',
+    sprite: 'condor',
     unlock: { kind: 'vencer', jefe: 'taco' },
     startingWeapon: 'trompo',
     mods: { speedMult: 0.9, maxHp: 75, damageMult: 0.2, pickupMult: 0.6 },
@@ -152,7 +151,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
   {
     id: 'guanaco',
     nameKey: 'personajes.guanaco',
-    sprite: 'pudu',
+    sprite: 'guanacoPj',
     unlock: { kind: 'llegarA', ciudad: 'puntaArenas' },
     startingWeapon: 'bolitas',
     mods: { speedMult: 0.88, maxHp: 140, armor: 1, shieldEvery: 30 },
