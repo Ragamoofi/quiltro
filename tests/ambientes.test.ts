@@ -51,6 +51,17 @@ describe('ambientes por kilómetro (Fase 10.4)', () => {
     expect(new Set(['santiago', 'costa', 'lagos'].map((id) => AMBIENTES.find((a) => a.id === id)?.floor)).size).toBe(3);
   });
 
+  it('the sprites of the street life and the market stalls exist', () => {
+    const names = ['puesto_toldo', 'puesto_comida', 'cajones', 'moto', 'peaton1', 'peaton2', 'peaton3', 'peaton4', 'mariposa', 'sombra', 'gaviota', 'auto', 'hito_santiago'];
+    for (const n of names) expect(SPRITES.some((s) => s.name === n), n).toBe(true);
+    const auto = SPRITES.find((s) => s.name === 'auto');
+    for (const colour of ['rojo', 'azul', 'turquesa', 'rosado']) expect(auto?.animations[colour], colour).toBeDefined();
+    // The walkers and the bike have the animation the ambient system asks for.
+    expect(SPRITES.find((s) => s.name === 'moto')?.animations.correr).toBeDefined();
+    expect(SPRITES.find((s) => s.name === 'peaton1')?.animations.caminar).toBeDefined();
+    expect(SPRITES.find((s) => s.name === 'mariposa')?.animations.aletear).toBeDefined();
+  });
+
   it('the spawner draws from the environment at that kilometre (never the flock-only pigeon)', () => {
     const s = new Spawner();
     const santiago = s.pool('centro', 1200);

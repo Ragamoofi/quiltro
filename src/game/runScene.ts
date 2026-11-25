@@ -48,6 +48,7 @@ import { Decor } from './world/decor.ts';
 import { FloorLayer } from './world/floor.ts';
 import { Hazards } from './world/hazards.ts';
 import { Passives } from './systems/passives.ts';
+import { AmbientLife } from './world/ambient.ts';
 import { Cities } from './world/cities.ts';
 import { Horizon } from './world/horizon.ts';
 import { Weather } from './world/weather.ts';
@@ -143,6 +144,7 @@ export class RunScene implements Scene {
   /** The environment (Santiago, the coast…) whose floor, horizon and weather are on screen. */
   private envId = '';
   private readonly passives = new Passives();
+  private readonly ambient: AmbientLife;
   private readonly weather = new Weather();
   private readonly hazards = new Hazards();
   private timeScale = 1;
@@ -193,6 +195,9 @@ export class RunScene implements Scene {
     this.cards = LEVEL_UP.cards + lo.meta.cards;
     this.revives = lo.meta.revives + (lo.character.mods.extraRevives ?? 0);
     player.addTo(this.shadows, this.sorted);
+    this.ambient = new AmbientLife(opts.seed);
+    this.shadows.addChild(this.ambient.shadows);
+    this.sorted.addChild(this.ambient.root);
     this.shadows.addChild(this.passives.ground);
     this.sorted.addChild(this.passives.pets);
 
@@ -550,7 +555,10 @@ export class RunScene implements Scene {
         this.horizon.setZone(env.look, this.viewW);
         this.weather.setZone(env.weather, this.viewW, this.viewH, ctx.rng);
       }
+      this.decor.setEnv(this.envId);
     }
+    const view = this.camera.viewOrigin(1, this.viewW, this.viewH);
+    this.ambient.update(dt, this.envId, view.x, view.y, this.viewW, this.viewH);
     this.horizon.setLandmark(city?.scene.landmark ?? null, city?.progress ?? 0);
     this.decor.setCityProp(city?.scene.prop ?? null);
     this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive, this.journey.km(ctx.time));
@@ -936,6 +944,7 @@ export class RunScene implements Scene {
     ctx.food.render(a);
     this.weapons.render(a, ctx);
     this.passives.render(a, ctx);
+    this.ambient.render();
     ctx.shots.render(a);
     ctx.telegraphs.render();
     ctx.clouds.render(this.worldTime);

@@ -29,6 +29,8 @@ export class Decor {
   private readonly seed: number;
   private zone = 'centro';
   private cityProp: string | null = null;
+  /** The environment (Santiago has its own market stalls). */
+  private env = '';
   private time = 0;
 
   constructor(world: Container, seed = 7) {
@@ -41,6 +43,14 @@ export class Decor {
     this.zone = zone;
     this.clearChunks();
     this.overhead.clear();
+  }
+
+  /** Fase 10.6: Santiago is a busy market street, the rest of the Centro keeps the old props. */
+  setEnv(id: string): void {
+    if (id === this.env) return;
+    const was = this.env === 'santiago';
+    this.env = id;
+    if (was || id === 'santiago') this.clearChunks();
   }
 
   /** The ground prop of the city that is near (null: none); redraws the props around the view. */
@@ -93,6 +103,16 @@ export class Decor {
         return chunk;
       }
       if (nearOrigin) return chunk;
+      if (this.env === 'santiago') {
+        // The market street: stalls under blue awnings, food carts, crates, kiosks.
+        if (h < 0.14) add('puesto_toldo', ox, oy);
+        else if (h < 0.21) add('puesto_comida', ox, oy);
+        else if (h < 0.28) add('cajones', ox, oy);
+        else if (h < 0.31) add('quiosco', ox, oy);
+        else if (h < 0.35) add('carro_sopaipillas', ox, oy);
+        else if (h < 0.4) add('grifo', ox, oy);
+        return chunk;
+      }
       if (h < 0.07) add('quiosco', ox, oy);
       else if (h < 0.13) add('carro_sopaipillas', ox, oy);
       else if (h < 0.24) add('grifo', ox, oy);

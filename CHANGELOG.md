@@ -12,6 +12,23 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Fase 10.6 — Vida ambiente y Santiago como la Estación Central
+
+#### Agregado
+- **Santiago con aire de Estación Central:**
+  - Hito del horizonte nuevo: una gran estación de fierro y vidrio con torre de reloj y dos trenes bajo el techo, con la cordillera atrás.
+  - Decorado de barrio de comercio: **puestos ambulantes con toldo azul y blanco** (con un vendedor genérico tras el mostrador), carros de comida con sombrilla azul y vapor, cajones de fruta, quioscos y carros de sopaipillas.
+  - Cartel: "Puestos con toldo azul, micros y gente apurada."
+- **Vida ambiente** (`src/game/world/ambient.ts`): cosas que se mueven solas, no dañan ni bloquean, con su propia semilla (no tocan los dados de la partida). Hasta 14 a la vez:
+  - **Santiago:** motos de reparto (casco blanco, caja térmica turquesa, sin marca), autos y gente de ropa distinta caminando apurada.
+  - **Costa:** gaviotas cruzando el cielo con sombra.
+  - **Desierto:** la sombra de un cóndor planeando.
+  - **Araucanía y lagos:** mariposas.
+- Sprites nuevos en `src/art/sprites/vida.ts`.
+
+#### Lo que no se hizo, a propósito
+- No se pusieron personajes marcados por nacionalidad ni escenas de delincuencia, y la moto de reparto no lleva el nombre ni los colores de ninguna marca real. El GDD pide no usar marcas ni estereotipos de grupos.
+
 ### Fase 10.5 — Tonos, suelos y paisaje por ambiente
 
 #### Agregado

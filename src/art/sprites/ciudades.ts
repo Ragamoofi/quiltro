@@ -59,28 +59,37 @@ const antofagasta = (): Frame => {
   return outlined(p.frame());
 };
 
-// ---- Santiago: cordillera nevada y edificios genéricos ----
+// ---- Santiago (la Estación Central): una gran estación de fierro y vidrio, con trenes y la cordillera atrás ----
 const santiago = (): Frame => {
   const p = new Pix(128, H);
+  // The Andes far behind, softened.
   profile(
     p,
     0,
     128,
-    (x) => 14 + 12 * Math.sin((x / 128) * Math.PI * 4 + 1) * 0.5 + 8 * Math.sin((x / 128) * Math.PI * 9),
-    (_x, d) => (d > 0.8 ? 'w' : d > 0.45 ? 'g' : 'K'),
+    (x) => 12 + 8 * Math.sin((x / 128) * Math.PI * 4 + 1) * 0.5 + 6 * Math.sin((x / 128) * Math.PI * 9),
+    (_x, d) => (d > 0.78 ? 'w' : 'g'),
   );
-  // Towers of different heights (plain blocks with lit windows).
-  let x = 6;
-  let i = 0;
-  while (x < 120) {
-    const w = 6 + ((i * 5) % 4);
-    const h = 8 + ((i * 7) % 5) * 3;
-    const col = i % 3 === 0 ? 'G' : i % 3 === 1 ? 'g' : 'K';
-    p.rect(x, H - h, w, h, col).rect(x, H - h, w, 1, 'w');
-    for (let wy = H - h + 3; wy < H - 2; wy += 3) for (let wx = x + 1; wx < x + w - 1; wx += 2) p.set(wx, wy, (wx + wy + i) % 3 === 0 ? 'y' : 'k');
-    x += w + 2;
-    i++;
+  // The two side wings with rows of windows.
+  for (const x0 of [4, 102]) {
+    p.rect(x0, 14, 22, 18, 'n').rect(x0, 14, 22, 2, 'o');
+    for (let wy = 18; wy < 28; wy += 4) for (let wx = x0 + 2; wx < x0 + 20; wx += 4) p.rect(wx, wy, 2, 2, 'K');
   }
+  // The barrel-vaulted hall: an iron frame with glass between the ribs.
+  for (let x = 24; x < 104; x++) {
+    const top = 6 + Math.round((((x - 64) / 40) ** 2) * 9);
+    p.rect(x, top, 1, H - top, 's');
+    if ((x - 24) % 8 === 0) p.rect(x, top, 1, H - top, 'K');
+    p.set(x, top, 'k');
+  }
+  p.rect(24, 24, 80, 1, 'K').rect(24, 30, 80, 2, 'K');
+  // The clock tower over the hall.
+  p.rect(60, 0, 8, 7, 'n').rect(59, 0, 10, 1, 'o').disc(64, 3.5, 2.4, 'W').set(64, 2, 'k').set(65, 3, 'k');
+  // Two trains waiting under the roof: one red, one blue, with their windows.
+  p.rect(28, 25, 34, 5, 'r').rect(28, 25, 34, 1, 'R');
+  p.rect(66, 25, 34, 5, 'b').rect(66, 25, 34, 1, 'B');
+  for (let wx = 30; wx < 60; wx += 5) p.rect(wx, 26, 3, 2, 'W');
+  for (let wx = 68; wx < 98; wx += 5) p.rect(wx, 26, 3, 2, 'W');
   return outlined(p.frame());
 };
 
