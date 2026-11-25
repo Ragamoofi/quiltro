@@ -1,5 +1,5 @@
 import { FIRST_ZONE_BONUS_LUCAS, lucasForRun, upgradeCost } from '../data/balance.ts';
-import { IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
+import { CUCHA_PILARES, CUCHA_PILAR_NIVELES, IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
 import { LOGROS } from '../data/logros.ts';
 import { PERSONAJES } from '../data/personajes.ts';
 import { CIUDADES } from '../data/zonas.ts';
@@ -25,6 +25,9 @@ export interface MetaBonus {
   cards: number;
   revives: number;
   lucasMult: number;
+  /** From the pillar perks. */
+  critChance: number;
+  xpMult: number;
 }
 
 export function level(save: SaveData, id: string): number {
@@ -81,13 +84,35 @@ export function metaBonus(save: SaveData): MetaBonus {
     cards: 0,
     revives: 0,
     lucasMult: 0,
+    critChance: 0,
+    xpMult: 0,
   };
   for (const def of MEJORAS) {
     const l = level(save, def.id);
     if (l === 0) continue;
     for (const [k, v] of Object.entries(def.perLevel) as [keyof MetaBonus, number][]) b[k] += v * l;
   }
+  for (const pillar of CUCHA_PILARES) {
+    const tier = pillarTier(save, pillar.id);
+    const perk = tier > 0 ? pillar.tiers[tier - 1] : undefined;
+    if (!perk) continue;
+    b.critChance += perk.critChance ?? 0;
+    b.maxHp += perk.maxHp ?? 0;
+    b.xpMult += perk.xpMult ?? 0;
+    b.lucasMult += perk.lucasMult ?? 0;
+  }
   return b;
+}
+
+/** Levels bought across a pillar's upgrades. */
+export function pillarLevels(save: SaveData, pillarId: string): number {
+  return MEJORAS.filter((m) => m.pillar === pillarId).reduce((a, m) => a + level(save, m.id), 0);
+}
+
+/** Perk tiers a pillar has reached (0, 1 or 2). */
+export function pillarTier(save: SaveData, pillarId: string): number {
+  const n = pillarLevels(save, pillarId);
+  return CUCHA_PILAR_NIVELES.filter((t) => n >= t).length;
 }
 
 // ---------------------------------------------------------------- run results

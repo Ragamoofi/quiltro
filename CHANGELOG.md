@@ -4,6 +4,18 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.3 — La Cucha rehecha
+
+#### Cambiado
+- **Escena nueva** (`src/ui/cuchaScene.ts`): patio de pasto con la casa grande (×3 en horizontal, ×2 en vertical), la vereda con los vecinos de pie y a color con su producción o su precio debajo, y un panel que reemplaza el rectángulo oscuro. Funciona en horizontal y vertical.
+- **Objetos en su lugar:** los 12 objetos de mejora quedan puestos en la casa y el patio, apagados (gris lavanda) hasta comprarlos. Tocar uno abre su pilar y resalta su fila.
+- **Mejoras por pilares:** pestañas Garra, Aguante, Olfato y Barrio con 3 mejoras cada una, compra directa en la fila con puntos de nivel y costo. Tocar un vecino lo hace amigo si alcanzan las lucas, o avisa cuántas faltan.
+- **Barra de abajo arreglada:** Pañoleta, Logros y ¡Viajar! ya no se pisan. El selector de personaje pasó a un cartel junto al panel.
+
+#### Agregado
+- **Bonos permanentes por pilar** (`CUCHA_PILARES`): los niveles comprados en un pilar se suman y a los 4 y a los 8 se abre un bono (el mayor reemplaza al menor): Garra +3 % / +6 % crítico, Aguante +15 / +30 vida, Olfato +5 % / +10 % experiencia, Barrio +5 % / +10 % lucas. Son pequeños; no se midieron con el bot porque el bot juega sin mejoras de La Cucha.
+- Pruebas de pilares de La Cucha.
+
 ### Fase 9.2c — Muro del Centro
 
 #### Cambiado

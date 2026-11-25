@@ -326,6 +326,17 @@
     "caja": "Caja del Almacén"
   },
   "cucha": {
+    "pilares": {
+      "garra": { "nombre": "Garra", "bono1": "+3% crítico", "bono2": "+6% crítico" },
+      "aguante": { "nombre": "Aguante", "bono1": "+15 vida máxima", "bono2": "+30 vida máxima" },
+      "olfato": { "nombre": "Olfato", "bono1": "+5% experiencia", "bono2": "+10% experiencia" },
+      "barrio": { "nombre": "Barrio", "bono1": "+5% lucas", "bono2": "+10% lucas" }
+    },
+    "bonoActivo": "Bono {n}/{max}: {bono}",
+    "bonoSiguiente": "A los {n} niveles: {bono}",
+    "bonoCompleto": "¡Bono al máximo! {bono}",
+    "personajeCartel": "Personaje",
+    "sinLucasCorto": "{n}",
     "platoLleno": "Plato lleno",
     "frazada": "Frazada",
     "pelota": "Pelota",

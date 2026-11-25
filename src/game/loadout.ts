@@ -28,6 +28,8 @@ export const NO_META: MetaBonus = {
   cards: 0,
   revives: 0,
   lucasMult: 0,
+  critChance: 0,
+  xpMult: 0,
 };
 
 export function defaultLoadout(): Loadout {
@@ -45,7 +47,8 @@ export function baseMods(l: Loadout): BaseMods {
     damageMult: l.meta.damageMult,
     cooldownMult: l.meta.cooldownMult,
     pickupMult: l.meta.pickupMult,
-    critChance: c.critBonus ?? 0,
+    critChance: (c.critBonus ?? 0) + l.meta.critChance,
     startingKites: l.meta.startingKites,
+    xpMult: l.meta.xpMult,
   };
 }

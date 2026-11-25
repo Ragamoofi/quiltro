@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { applyRun, befriend, buy, canBuy, checkUnlocks, collectIdle, idleEarnings, metaBonus, nextCost, type RunResult } from '../src/meta/progress.ts';
+import {
+  applyRun,
+  befriend,
+  buy,
+  canBuy,
+  checkUnlocks,
+  collectIdle,
+  idleEarnings,
+  metaBonus,
+  nextCost,
+  pillarLevels,
+  pillarTier,
+  type RunResult,
+} from '../src/meta/progress.ts';
 import { defaultSave, exportCode, importCode, load, migrate, save, type Store } from '../src/meta/save.ts';
-import { MEJORAS } from '../src/data/cucha.ts';
+import { CUCHA_PILARES, MEJORAS } from '../src/data/cucha.ts';
 
 class MemoryStore implements Store {
   readonly map = new Map<string, string>();
@@ -90,6 +103,35 @@ describe('La Cucha', () => {
     expect(nextCost(s, plato)).toBeNull();
   });
 
+  it('each upgrade belongs to a pillar, three per pillar', () => {
+    for (const p of CUCHA_PILARES) expect(MEJORAS.filter((m) => m.pillar === p.id), p.id).toHaveLength(3);
+    expect(MEJORAS.every((m) => CUCHA_PILARES.some((p) => p.id === m.pillar))).toBe(true);
+  });
+
+  it('pillar perks wake up at 4 and 8 levels and only the highest tier counts', () => {
+    const s = defaultSave();
+    s.lucas = 100_000;
+    // Aguante: Plato lleno ×3 (+30 HP) is 3 levels, nothing yet beyond the upgrade itself.
+    for (let i = 0; i < 3; i++) buy(s, 'platoLleno');
+    expect(pillarLevels(s, 'aguante')).toBe(3);
+    expect(metaBonus(s).maxHp).toBe(30);
+    buy(s, 'platoLleno'); // 4 levels: +15 perk
+    expect(pillarTier(s, 'aguante')).toBe(1);
+    expect(metaBonus(s).maxHp).toBe(40 + 15);
+    for (let i = 0; i < 4; i++) buy(s, i < 1 ? 'platoLleno' : 'frazada'); // plato 5, frazada 3 → 8 levels
+    expect(pillarLevels(s, 'aguante')).toBe(8);
+    expect(pillarTier(s, 'aguante')).toBe(2);
+    // The tier-2 perk replaces tier 1 (+30, not +45): 5 plates = 50 HP.
+    expect(metaBonus(s).maxHp).toBe(50 + 30);
+    // Barrio feeds lucas, Garra the crit, Olfato the experience.
+    for (let i = 0; i < 4; i++) buy(s, 'cuentaRut');
+    expect(metaBonus(s).lucasMult).toBeCloseTo(0.4 + 0.05);
+    for (let i = 0; i < 4; i++) buy(s, 'huesoDeCaracu');
+    expect(metaBonus(s).critChance).toBeCloseTo(0.03);
+    for (let i = 0; i < 4; i++) buy(s, 'buenaOnda');
+    expect(metaBonus(s).xpMult).toBeCloseTo(0.05);
+  });
+
   it('a run pays lucas, first-time zones, achievements and Cuenta RUT', () => {
     const s = defaultSave();
     const r = applyRun(s, run({ achievements: ['laMicroSiParo'] }));
@@ -102,7 +144,8 @@ describe('La Cucha', () => {
     expect(again.zoneBonus).toBe(0);
     expect(again.achievementLucas).toBe(0);
     s.upgrades.cuentaRut = 5;
-    expect(applyRun(s, run()).runLucas).toBe(Math.floor(130 * 1.5 * 2) + 10);
+    // Cuenta RUT ×5 = +50 %, plus the Barrio pillar perk (+5 % from 4 levels).
+    expect(applyRun(s, run()).runLucas).toBe(Math.floor(130 * 1.55 * 2) + 10);
   });
 
   it('unlocks characters by the GDD conditions', () => {

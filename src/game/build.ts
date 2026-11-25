@@ -43,6 +43,8 @@ export interface BaseMods {
   critChance: number;
   /** Extra kites from "Volantín extra". */
   startingKites: number;
+  /** Extra experience from food (Olfato pillar of La Cucha). */
+  xpMult: number;
 }
 
 export const NO_BASE_MODS: BaseMods = {
@@ -55,6 +57,7 @@ export const NO_BASE_MODS: BaseMods = {
   pickupMult: 0,
   critChance: 0,
   startingKites: 0,
+  xpMult: 0,
 };
 
 /** A weapon's numbers after its levels and the dog's passives. */
@@ -168,7 +171,7 @@ export class Build {
       pickupMult: 1 + b.pickupMult,
       projectiles: 0,
       critChance: PLAYER_BASE.critChance + b.critChance,
-      xpMult: 1,
+      xpMult: 1 + b.xpMult,
       shieldEvery: 0,
     };
     for (const t of this.traits) {
