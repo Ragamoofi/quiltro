@@ -75,57 +75,61 @@ describe('fixed-step loop', () => {
   });
 });
 
-describe('integer pixel scaling', () => {
-  it('fits 480×270 landscape at the largest whole scale', () => {
+describe('integer pixel scaling that fills the window', () => {
+  it('a 16:9 window gets exactly the native size at the largest whole scale', () => {
     const f = fitDisplay(1920, 1080, 1);
     expect(f).toMatchObject({ width: 480, height: 270, scale: 4, portrait: false });
     expect(f.cssWidth).toBe(1920);
+    expect(f.cssHeight).toBe(1080);
   });
 
-  it('never stretches to the whole window: leftover space becomes border', () => {
-    // 1366×768 would fit ×2,84: a whole ×2 fills only 70 %, so it steps up to ×2,5 (never to ×3, which would not fit).
-    const f = fitDisplay(1366, 768, 1);
-    expect(f.scale).toBe(2.5);
-    expect(f.cssWidth).toBe(1200);
-    expect(f.cssHeight).toBe(675);
+  it('a browser window that is not 16:9 grows the game area instead of leaving bands', () => {
+    // 1919×920 (a 1080p screen with the browser toolbar): ×3, and the surface covers the whole window.
+    const f = fitDisplay(1919, 920, 1);
+    expect(f.scale).toBe(3);
+    expect(f.width).toBe(639);
+    expect(f.height).toBe(306);
+    expect(1919 - f.cssWidth).toBeLessThan(f.scale);
+    expect(920 - f.cssHeight).toBeLessThan(f.scale);
   });
 
-  it('a 1080p screen with a browser window about 955 px tall uses ×3,5 instead of leaving a quarter of the screen empty', () => {
-    const f = fitDisplay(1920, 955, 1);
-    expect(f.scale).toBe(3.5);
-    expect(f.cssWidth).toBe(1680);
-    expect(f.cssHeight).toBe(945);
-    // It always fits.
-    expect(f.cssHeight).toBeLessThanOrEqual(955);
+  it('the game area never grows past half more than native (nobody sees much more world)', () => {
+    const f = fitDisplay(3440, 1440, 1);
+    expect(f.width).toBe(688);
+    expect(f.height).toBe(288);
+    expect(fitDisplay(2560, 1440, 1).width).toBeLessThanOrEqual(720);
   });
 
-  it('keeps a whole scale when it already fills the screen well', () => {
-    expect(fitDisplay(1920, 1080, 1).scale).toBe(4);
-    expect(fitDisplay(1440, 810, 1).scale).toBe(3);
-    // Windows at 125 %: 1536×864 css = 1920×1080 device pixels, exactly ×4.
-    expect(fitDisplay(1536, 864, 1.25).scale).toBe(4);
+  it('keeps whole scales at 125 % Windows scaling', () => {
+    // 1536×864 css = 1920×1080 device pixels, exactly ×4.
+    expect(fitDisplay(1536, 864, 1.25)).toMatchObject({ scale: 4, width: 480, height: 270 });
   });
 
-  it('the canvas never exceeds the window, at any size', () => {
+  it('the canvas never exceeds the window and the surface never goes below native', () => {
     for (const [w, h, dpr] of [
       [1280, 720, 1],
       [1366, 768, 1],
       [1600, 900, 1],
       [1920, 937, 1],
+      [1919, 920, 1],
       [2560, 1300, 1],
       [1536, 730, 1.25],
       [800, 600, 1],
       [390, 844, 3],
+      [3440, 1440, 1],
     ] as const) {
       const f = fitDisplay(w, h, dpr);
       expect(f.cssWidth, `${w}×${h}`).toBeLessThanOrEqual(w + 0.001);
       expect(f.cssHeight, `${w}×${h}`).toBeLessThanOrEqual(h + 0.001);
+      expect(f.width, `${w}×${h}`).toBeGreaterThanOrEqual(f.portrait ? 270 : 480);
+      expect(f.height, `${w}×${h}`).toBeGreaterThanOrEqual(f.portrait ? 480 : 270);
     }
   });
 
-  it('switches to 270×480 in portrait and scales in device pixels', () => {
+  it('switches to the portrait size on a phone and scales in device pixels', () => {
     const f = fitDisplay(390, 844, 3);
-    expect(f).toMatchObject({ width: 270, height: 480, portrait: true, scale: 4 });
-    expect(f.cssWidth * 3).toBe(270 * 4);
+    expect(f).toMatchObject({ portrait: true, scale: 4 });
+    expect(f.width).toBeGreaterThanOrEqual(270);
+    expect(f.cssWidth * 3).toBe(f.width * 4);
   });
 });

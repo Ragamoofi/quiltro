@@ -12,6 +12,14 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Pantalla sin franjas y La Cucha (Fase 11.1a)
+
+#### Cambiado
+- **El juego llena toda la ventana.** Antes se dibujaba a 480×270 y se mostraba a una escala entera, y lo que sobraba eran franjas oscuras (en una ventana de 1919×920 el juego salía de 1440×810). Ahora la escala sigue siendo entera (píxeles nítidos) y la superficie de dibujo crece hasta cubrir la ventana, hasta 1,5 veces el tamaño base (en un celular vertical, la altura hasta 1,8). En 1919×920 queda en 639×306 a ×3, sin franjas; en 1920×1080 sigue siendo 480×270 a ×4. Se ve un poco más de mundo a los lados o arriba, y el HUD, los menús y la Cucha se anclan a los bordes. Se quitó la lógica de medios pasos (×3,5).
+- **La Cucha:** el chanchito de la Cuenta RUT ya no cae encima del personaje (queda arriba a la derecha, en vertical también). En un celular alto el espacio sobrante se reparte en vez de dejar un hueco.
+- El botón de salir de la pausa pide confirmación con "¿Segurito?" (el texto anterior no cabía en el botón).
+- Pruebas de pantalla reescritas (`tests/core.test.ts`).
+
 ### Arreglo de rendimiento: el lag del final de la partida
 
 #### Corregido

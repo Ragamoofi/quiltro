@@ -30,7 +30,8 @@ const SPOTS_WIDE: Readonly<Record<string, { x: number; y: number }>> = {
   narizHumeda: { x: -52, y: -62 },
   segundaVida: { x: 52, y: -62 },
   collarNuevo: { x: -52, y: -20 },
-  cuentaRut: { x: 52, y: -20 },
+  // Up and to the right of the character (who stands at +44, +6 and is about 44 px tall), never on top of it.
+  cuentaRut: { x: 82, y: -50 },
   platoLleno: { x: 0, y: 14 },
   frazada: { x: -108, y: 6 },
   huesoDeCaracu: { x: -84, y: 18 },
@@ -44,7 +45,7 @@ const SPOTS_TALL: Readonly<Record<string, { x: number; y: number }>> = {
   narizHumeda: { x: -34, y: -40 },
   segundaVida: { x: 34, y: -40 },
   collarNuevo: { x: -34, y: -12 },
-  cuentaRut: { x: 34, y: -12 },
+  cuentaRut: { x: 66, y: -34 },
   platoLleno: { x: 0, y: 14 },
   frazada: { x: -78, y: 10 },
   huesoDeCaracu: { x: -58, y: 26 },
@@ -151,8 +152,10 @@ export class CuchaScene implements Scene {
     const panelX = portrait ? 6 : w - panelW - 6;
     const houseScale = portrait ? 2 : 3;
     const cx = portrait ? Math.round(w / 2) : Math.round((panelX - 6) / 2);
-    const cy = portrait ? 150 : 186;
-    const streetTop = portrait ? 192 : 208;
+    // A tall phone has room to spare: spread it above and below the yard instead of leaving a hole.
+    const spare = portrait ? Math.max(0, Math.round((h - 480) / 2)) : 0;
+    const cy = (portrait ? 150 : 186) + spare;
+    const streetTop = (portrait ? 192 : 208) + spare;
     const streetH = portrait ? 34 : 38;
     const panelY = portrait ? streetTop + streetH + 6 : HORIZON_H + 4;
 
