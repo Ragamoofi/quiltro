@@ -7,6 +7,7 @@ import { enemigosFase3, nubeToxica, proyectiles, remolinoDef, roca } from './ene
 import { jefesSprites } from './jefes.ts';
 import { cuchaDef, moaiDef, objetosCucha, vecinosDef } from './cucha.ts';
 import { personajesSprites } from './personajes.ts';
+import { manoDef, martinaDef, teclaDef, volantinAzul } from './historia.ts';
 import { sueloAntartica, sueloNorte, sueloPatagonia, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
 import { carro, grifo, poste, quiosco } from './decoracion.ts';
@@ -61,4 +62,8 @@ export const SPRITES: readonly SpriteDef[] = [
   cuchaDef,
   vecinosDef,
   moaiDef,
+  martinaDef,
+  volantinAzul,
+  manoDef,
+  teclaDef,
 ];

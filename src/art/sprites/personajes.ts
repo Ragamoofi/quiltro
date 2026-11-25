@@ -34,6 +34,8 @@ const POSES: Record<keyof typeof QUILTRO_FRAMES, Pose> = {
   hurt: { legs: 'stand', eye: 'hurt', mouth: false, dy: 0, wiggle: 0 },
   deadA: { legs: 'lie', eye: 'hurt', mouth: false, dy: 3, wiggle: 0 },
   deadB: { legs: 'lie', eye: 'hurt', mouth: false, dy: 4, wiggle: 1 },
+  sleepA: { legs: 'lie', eye: 'closed', mouth: false, dy: 3, wiggle: 0 },
+  sleepB: { legs: 'lie', eye: 'closed', mouth: false, dy: 4, wiggle: 1 },
 };
 
 function character(name: string, draw: Draw): SpriteDef {

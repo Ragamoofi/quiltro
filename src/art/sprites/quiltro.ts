@@ -112,6 +112,9 @@ const RAW = {
       13: '..kkccccccccbbbbck......',
     }),
   ),
+  /** Asleep in front of La Cucha: lying, eyes shut, ears down when breathing out. */
+  sleepA: lying(withRows(STAND_RAW, { 8: '.kck.......kcccccccccckk' })),
+  sleepB: lying(withRows(STAND_RAW, { ...EARS_BACK, 8: '.kck.......kcccccccccckk' })),
 };
 
 export const QUILTRO_FRAMES = Object.fromEntries(
@@ -134,6 +137,9 @@ export function characterAnims(f: Record<keyof typeof RAW, Frame>): Anims {
     muerte: { fps: 6, frames: [f.hurt, f.crouchA, f.deadA, f.deadB], loop: false },
     /** Dark silhouette howling at the moon (Aullido de las 12). */
     silueta: { fps: 1, frames: [silhouette(f.barkA, 'K')] },
+    /** Main menu: asleep, then wakes up and stretches when touched. */
+    dormir: { fps: 1.5, frames: [f.sleepA, f.sleepB] },
+    estirar: { fps: 6, frames: [f.crouchA, f.crouchB, f.crouchA, f.barkA, f.barkA, f.stand], loop: false },
   };
 }
 
