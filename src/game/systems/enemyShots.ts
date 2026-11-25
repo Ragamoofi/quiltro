@@ -71,7 +71,7 @@ export class EnemyShots {
       s.y += s.vy * dt;
       s.life -= dt;
       const hit = !p.dead && (s.x - p.x) ** 2 + (s.y - (p.y - 8)) ** 2 < (p.radius + 3) ** 2;
-      if (hit) p.takeDamage(s.damage, s.x, s.y, ctx);
+      if (hit) p.takeDamage(s.damage, s.x, s.y, ctx, 'proyectil');
       if (hit || s.life <= 0) {
         s.active = false;
         s.sprite.visible = false;

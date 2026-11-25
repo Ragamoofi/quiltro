@@ -85,6 +85,14 @@ Lista inicial (ajustable): **Arica** (el Morro), **Antofagasta** (arco de piedra
 - Un mini-evento corto por ciudad (p. ej. Valparaíso: "perros de los cerros" te ayudan 15 s). Neutral o con premio chico, medido con el bot para que no rompa el balance.
 - **Sale cuando:** cada ciudad se reconoce en una captura, no hay caída de rendimiento con 300 enemigos y los eventos no mueven las metas de supervivencia más de 5 puntos.
 
+### 9.4b — Jefe final nuevo (reemplaza al Gran Temblor)
+Pedido de la persona que diseña el juego: el Gran Temblor se ve mal y se quiere un jefe final con un personaje viral chileno.
+- **Límite del GDD ("Líneas que no cruzamos"):** no se usan personas reales ni su nombre o imagen. Por eso el jefe no puede ser una persona real conocida, aunque sea un personaje de internet. En su lugar: **un personaje original** que juegue con el arquetipo del "loco del barrio" viral (el que grita con el megáfono, el vecino que se hizo meme), con otro nombre, un diseño propio y chilenismos. El nombre exacto se acuerda antes de dibujar.
+- **Qué incluye:** sprite grande en dos fases (más animaciones que el actual), 2 ataques nuevos con aviso rojo legible, música propia y frases en las ventanas de diálogo, el comic del final adaptado, el logro de "vencer al jefe final" y la tarjeta de compartir con el nombre nuevo.
+- **Qué se conserva:** el evento "Temblor" que cae como objeto raro no se toca, porque es otra cosa. Se retira solo al jefe y su código (`bosses/granTemblor.ts`).
+- **Decisión pendiente:** si el jefe de Santiago (El Taco) también se cambia o solo se mejora. Se mide con el bot: hoy el Taco dura 34 a 53 s y no es el problema de balance.
+- **Sale cuando:** el jefe se ve bien en captura, dura entre 45 y 90 s con un build medio, el comic y los textos están actualizados y las pruebas de datos siguen verdes (siguen siendo 4 jefes).
+
 ### 9.5 — Contenido nuevo, en tandas con balance
 Cada tanda se mide con el bot antes de la siguiente.
 - **Tanda A (armas):** 4 armas de juegos de barrio chilenos: **Bolitas** (canicas que rebotan en abanico), **Emboque** (bola con cuerda que va y vuelve y atraviesa enemigos), **Elástico** (banda que barre una línea), **Ronda** (compañeros que giran y pegan). Cada una con 5 niveles, evolución, sprite y sonido propios.

@@ -165,7 +165,7 @@ export class Hazards {
       b.y += b.dy * busSpeed * dt;
       if (!b.hitDog && !p.hazardProof && (p.x - b.x) ** 2 + (p.y - 8 - b.y) ** 2 < 16 ** 2) {
         b.hitDog = true;
-        p.takeDamage(MICRO?.damage ?? 18, b.x, b.y, ctx);
+        p.takeDamage(MICRO?.damage ?? 18, b.x, b.y, ctx, 'microQueNoPara');
       }
       for (const e of ctx.enemies.list) {
         if (!e.active || e.boss || e.elite) continue;

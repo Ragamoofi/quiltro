@@ -51,6 +51,10 @@ export interface RunContext {
     damageTaken: number;
     /** Damage dealt per weapon id (end screen bars). */
     damageBy: Record<string, number>;
+    /** Damage the dog took per source (enemy id, boss id or hazard); used by the balance bot. */
+    damageFrom: Record<string, number>;
+    /** What dealt the last hit (the cause of death when the dog dies). */
+    lastHit: string;
     killsBy: Record<string, number>;
     bossesBeaten: string[];
     /** The dog did not move during the Temblor event ("Ni se inmutó"). */

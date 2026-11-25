@@ -101,7 +101,7 @@ export class Taco extends Boss {
       const ey = hy + Math.sin(this.heading) * 80;
       ctx.sfx.play('bocina', { pitch: 1.2 });
       ctx.telegraphs.line(hx, hy, ex, ey, 40, 0.6, () => {
-        if (inSegment(p.x, p.y - 8, hx, hy, ex, ey, 22)) p.takeDamage(14 * this.dmg, hx, hy, ctx);
+        if (inSegment(p.x, p.y - 8, hx, hy, ex, ey, 22)) p.takeDamage(14 * this.dmg, hx, hy, ctx, 'taco');
         ctx.shake.add(0.15);
       });
     }

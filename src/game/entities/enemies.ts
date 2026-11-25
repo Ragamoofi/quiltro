@@ -304,7 +304,7 @@ export class Enemies {
         const dx = p.x - e.x;
         const dy = p.y - 8 - e.y;
         const rr = p.radius + e.radius;
-        if (dx * dx + dy * dy < rr * rr) p.takeDamage(e.damage, e.x, e.y, ctx);
+        if (dx * dx + dy * dy < rr * rr) p.takeDamage(e.damage, e.x, e.y, ctx, e.boss ? 'jefe' : e.def.id);
       }
     }
   }
@@ -579,7 +579,7 @@ export class Enemies {
     const p = ctx.player;
     ctx.shake.add(0.25);
     ctx.particles.burst(ctx.rng, x, y + 8, 10, ['n', 'm', 'W'], r * 2, 0.3);
-    if ((p.x - x) ** 2 + (p.y - 8 - y) ** 2 < (r + p.radius) ** 2) p.takeDamage(damage, x, y, ctx);
+    if ((p.x - x) ** 2 + (p.y - 8 - y) ** 2 < (r + p.radius) ** 2) p.takeDamage(damage, x, y, ctx, 'loboMarino');
   }
 
   /** A weapon hit: rolls the critical, then applies damage. */

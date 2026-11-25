@@ -206,7 +206,7 @@ export class RunScene implements Scene {
         this.weapons.sync(ctx);
       },
       time: 0,
-      stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, killsBy: {}, bossesBeaten: [], temblorQuieto: false },
+      stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, damageFrom: {}, lastHit: '', killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
       onKill: (e, source) => {
         // Cielo del Dieciocho: every enemy cut by a kite heals 1.

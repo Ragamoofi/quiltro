@@ -235,7 +235,7 @@ export class Player {
   }
 
   /** Called by enemies on contact. */
-  takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext): void {
+  takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext, source = 'otro'): void {
     if (this.dead || this.invulnerable > 0 || ctx.debug.invincible) return;
     if (this.shield) {
       // Carnaval shield eats the hit.
@@ -249,6 +249,8 @@ export class Player {
     this.hp -= dmg;
     this.sinceHurt = 0;
     ctx.stats.damageTaken += dmg;
+    ctx.stats.damageFrom[source] = (ctx.stats.damageFrom[source] ?? 0) + dmg;
+    ctx.stats.lastHit = source;
     this.invulnerable = PLAYER_BASE.invulnerability;
     this.hurtTime = HURT_ANIM;
     const d = Math.hypot(this.x - fromX, this.y - fromY) || 1;

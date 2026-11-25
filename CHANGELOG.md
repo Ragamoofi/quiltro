@@ -4,6 +4,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.0 — Herramientas de balance
+
+#### Agregado
+- Bot de balance (`src/debug/bot.ts`, solo con `?debug`): juega viajes completos con el código real del juego, sin dibujar, en tres niveles de habilidad, y entrega un resumen con alcance, causa de muerte, duración de jefes, daño por arma y cartas.
+- Telemetría: el daño recibido se registra por fuente (`damageFrom`) y la última fuente queda como causa de muerte.
+- Un viaje del bot no toca el guardado. `Input.override` deja que el bot reemplace los controles.
+- Pruebas de datos (`tests/data.test.ts`): evoluciones, textos, rarezas y zonas.
+- Línea base de balance en `docs/BALANCE.md`.
+
 ### Fase 8 — Pulido y lanzamiento (en curso)
 
 #### Agregado

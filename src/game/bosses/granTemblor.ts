@@ -94,7 +94,7 @@ export class GranTemblor extends Boss {
       const x1 = x0 + Math.cos(a) * 240;
       const y1 = y0 + Math.sin(a) * 240;
       ctx.telegraphs.line(x0, y0, x1, y1, 14, 0.8, () => {
-        if (inSegment(p.x, p.y, x0, y0, x1, y1, 9)) p.takeDamage(20 * this.dmg, x0, y0, ctx);
+        if (inSegment(p.x, p.y, x0, y0, x1, y1, 9)) p.takeDamage(20 * this.dmg, x0, y0, ctx, 'granTemblor');
         ctx.particles.burst(ctx.rng, (x0 + x1) / 2, (y0 + y1) / 2, 14, ['m', 'M', 'a'], 120, 0.4);
       });
     }
@@ -125,7 +125,7 @@ export class GranTemblor extends Boss {
       ctx.shake.add(1);
       ctx.sfx.play('retumbo');
       const safe = safes.some((s) => (p.x - s.x) ** 2 + (p.y - s.y) ** 2 < 22 * 22);
-      if (!safe) p.takeDamage(25 * this.dmg, p.x, p.y + 20, ctx);
+      if (!safe) p.takeDamage(25 * this.dmg, p.x, p.y + 20, ctx, 'granTemblor');
       // Cross-shaped cracks through where the dog was.
       for (const [ax, ay] of [
         [1, 0],
@@ -134,7 +134,7 @@ export class GranTemblor extends Boss {
         const x0 = p.x - ax * 160;
         const y0 = p.y - ay * 120;
         ctx.telegraphs.line(x0, y0, p.x + ax * 160, p.y + ay * 120, 12, 0.6, () => {
-          if (inSegment(p.x, p.y, x0, y0, x0 + ax * 320, y0 + ay * 240, 8)) p.takeDamage(12 * this.dmg, x0, y0, ctx);
+          if (inSegment(p.x, p.y, x0, y0, x0 + ax * 320, y0 + ay * 240, 8)) p.takeDamage(12 * this.dmg, x0, y0, ctx, 'granTemblor');
         });
       }
     }, 'K');

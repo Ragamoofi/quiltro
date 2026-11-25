@@ -119,8 +119,15 @@ export class Input {
     return mag > 0.2 ? { x: ax, y: ay, hold } : { x: 0, y: 0, hold };
   }
 
+  /** Balance bot: when set, replaces what the devices say (never set in normal play). */
+  override: InputState | null = null;
+
   /** Recomputes `state` from raw devices. Call once per fixed update. */
   poll(): void {
+    if (this.override) {
+      Object.assign(this.state, this.override);
+      return;
+    }
     let x = 0;
     let y = 0;
     if (KEYS_LEFT.some((k) => this.down.has(k))) x -= 1;

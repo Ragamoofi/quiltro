@@ -34,7 +34,7 @@ export class Clouds {
       c.tick -= dt;
       if (c.tick <= 0 && (p.x - c.x) ** 2 + (p.y - c.y) ** 2 < RADIUS ** 2) {
         c.tick = TICK;
-        p.takeDamage(DAMAGE, c.x, c.y, ctx);
+        p.takeDamage(DAMAGE, c.x, c.y, ctx, 'chingue');
       }
     }
     for (const c of this.list.filter((it) => it.life <= 0)) c.sprite.destroy();

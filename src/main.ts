@@ -194,16 +194,23 @@ async function boot(): Promise<void> {
     wipe: () => wipeAll(),
     replayIntro: () => goIntro(() => goMenu()),
   };
-  const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
-    const rewards = applyRun(data, result);
-    data.lastSeen = Date.now();
-    persist();
-    const cheap = affordable(data);
+  const onFinishOn = (
+    save: typeof data,
+    result: RunResult,
+  ): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
+    const rewards = applyRun(save, result);
+    const cheap = affordable(save);
     return {
       ...rewards,
       affordable: cheap ? t(cheap.nameKey) : null,
       newCharacterNames: rewards.newCharacters.map((id) => t(PERSONAJES.find((p) => p.id === id)?.nameKey ?? id)),
     };
+  };
+  const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
+    const rewards = onFinishOn(data, result);
+    data.lastSeen = Date.now();
+    persist();
+    return rewards;
   };
 
   /** Scene-local key handlers are dropped on every scene change; F1 stays. */
@@ -214,17 +221,20 @@ async function boot(): Promise<void> {
     scenes.change(scene, fit.width, fit.height);
   };
 
-  const makeRun = (daily: DailyRun | null = null): RunScene =>
+  /** `botSeed`: a balance-bot trip (plain Quiltro, fixed seed, nothing is saved). */
+  const makeRun = (daily: DailyRun | null = null, botSeed?: number): RunScene =>
     new RunScene(input, sfx, music, {
-      seed: daily ? daily.seed : Date.now() >>> 0,
+      seed: daily ? daily.seed : (botSeed ?? Date.now() >>> 0),
       mobile: isMobile(),
-      loadout: loadout(daily !== null),
+      loadout: loadout(daily !== null || botSeed !== undefined),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
       // "¡Otra, al tiro!" repeats the route on a daily (without counting again).
       onRestart: () => (daily ? goDaily() : restart()),
       onFinish: (result) => {
+        // A bot trip must not touch the real save: compute the rewards on a copy.
+        if (botSeed !== undefined) return onFinishOn(structuredClone(data), result);
         if (daily) {
           finishDaily(data, daily, result.bestKm ?? result.km);
           persist();
@@ -478,6 +488,42 @@ async function boot(): Promise<void> {
 
   // Test hook (only with ?debug): advance the simulation without waiting for frames.
   if (new URLSearchParams(location.search).has('debug')) {
+    const { playRun, summarize } = await import('./debug/bot.ts');
+    /** Balance bot: `__quiltroBot.start('medio', 20)` runs in the background; read `.status()`. */
+    const botState = { running: false, done: 0, total: 0, reports: [] as unknown[], error: '' };
+    const botHooks = {
+      start(seed: number): RunScene {
+        switchTo(() => (run = makeRun(null, seed)));
+        loop.timeScale = 0;
+        return run;
+      },
+      tick(frames: number): void {
+        for (let i = 0; i < frames; i++) scenes.update(1 / 60);
+      },
+    };
+    Object.assign(window, {
+      __quiltroBot: {
+        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16): void {
+          if (botState.running) return;
+          Object.assign(botState, { running: true, done: 0, total: runs, reports: [], error: '' });
+          void (async () => {
+            try {
+              for (let i = 0; i < runs; i++) {
+                botState.reports.push(await playRun(botHooks, seed0 + i, skill, maxMinutes));
+                botState.done = i + 1;
+              }
+            } catch (err) {
+              botState.error = String(err);
+            }
+            botState.running = false;
+            loop.timeScale = 1;
+          })();
+        },
+        status: () => ({ running: botState.running, done: botState.done, total: botState.total, error: botState.error }),
+        reports: () => botState.reports,
+        summary: () => summarize(botState.reports as Parameters<typeof summarize>[0]),
+      },
+    });
     Object.assign(window, {
       __quiltroAudio: { engine, music, sfx },
       __quiltroShare: { renderCard, goDaily },
