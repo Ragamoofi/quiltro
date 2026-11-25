@@ -118,6 +118,8 @@ export function legs(p: Pix, pose: Pose, xs: readonly number[], top: number, col
 const quiltra: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
+  const L = quad(15, 8, 17, 'w', 'G', 'G', 1);
+  stepLegs(p, pose, L.far);
   const lie = pose.legs === 'lie';
   const tw = pose.wiggle ? 1 : 0;
   // Short upright tail, white with a tan tip.
@@ -141,7 +143,7 @@ const quiltra: Draw = (pose) => {
   if (pose.mouth) p.rect(19, 10 + y, 3, 1, 'R').set(21, 10 + y, 'k');
   // Pink collar with a bow.
   p.rect(13, 11 + y, 3, 1, 'p').set(12, 11 + y, 'r').set(12, 12 + y, 'r');
-  legs(p, pose, [5, 8, 12, 15], 17 + y, 'w', 'G', true);
+  stepLegs(p, pose, L.near);
   return p;
 };
 
@@ -149,6 +151,8 @@ const quiltra: Draw = (pose) => {
 const gato: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
+  const L = quad(16, 8, 18, 'g', 'K', 'w');
+  stepLegs(p, pose, L.far);
   const lie = pose.legs === 'lie';
   p.ellipse(10, 15 + y, 7, lie ? 3 : 4, 'g').ellipse(10, 17 + y, 5, 1.5, 'G');
   for (const sx of [6, 9, 12]) p.rect(sx, 12 + y, 1, 3, 'K');
@@ -169,7 +173,7 @@ const gato: Draw = (pose) => {
   p.set(21, 11 + y, 'W').set(20, 12 + y, 'W');
   // Collar with a golden bell.
   p.rect(14, 13 + y, 5, 1, 'r').rect(16, 14 + y, 2, 2, 'a').set(16, 14 + y, 'y');
-  legs(p, pose, [5, 8, 13, 16], 18 + y, 'g', 'w');
+  stepLegs(p, pose, L.near);
   return p;
 };
 
@@ -178,6 +182,8 @@ const gato: Draw = (pose) => {
 const pudu: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
+  const L = quad(13, 5, 15, 'O', 'd', 'k', 1);
+  stepLegs(p, pose, L.far);
   // Drawn by hand: a little hunched deer, rump higher than the shoulders, dark chocolate coat, the
   // head held low with a rusty face, big round ears with pale rims, two short spikes and rusty legs
   // (d chocolate · O rust · o pale rust · C belly · k black).
@@ -203,7 +209,7 @@ const pudu: Draw = (pose) => {
   else if (pose.eye === 'closed') p.rect(16, 8 + y, 2, 1, 'k');
   else p.set(16, 7 + y, 'k').set(17, 8 + y, 'k');
   if (pose.mouth) p.rect(19, 9 + y, 2, 1, 'R');
-  legs(p, pose, [3, 5, 11, 13], 15 + y, 'O', 'k', true);
+  stepLegs(p, pose, L.near);
   return p;
 };
 
@@ -280,7 +286,8 @@ const palomaRebelde: Draw = (pose) => {
 const zorro: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
-  const lie = pose.legs === 'lie';
+  const L = quad(16, 9, 14, 'O', 'd', 'k', 1);
+  stepLegs(p, pose, L.far);
   const tw = pose.wiggle ? 1 : 0;
   // Drawn by hand, pixel by pixel: a long horizontal body, the head held high, and a huge brush of a
   // tail straight out behind, grizzled grey with a black tip (o fire · O rust · m/n grizzled grey ·
@@ -308,14 +315,8 @@ const zorro: Draw = (pose) => {
   else if (pose.eye === 'closed') p.rect(16, 6 + y, 2, 1, 'O');
   else p.set(16, 5 + y, 'k').set(17, 6 + y, 'k');
   if (pose.mouth) p.rect(17, 8 + y, 3, 1, 'R');
-  // Long thin legs, rust on top and black socks.
-  legs(p, pose, [7, 9, 14, 16], 14 + y, 'O', 'k', true);
-  if (!lie && pose.legs !== 'tuck') {
-    [7, 9, 14, 16].forEach((x, i) => {
-      const sw = pose.legs === 'a' ? (i % 2 === 0 ? -1 : 1) : pose.legs === 'b' ? (i % 2 === 0 ? 1 : -1) : 0;
-      p.rect(x + sw, 18 + y, 1, 2, 'K');
-    });
-  }
+  // Long thin legs, rust above and black socks (the paws).
+  stepLegs(p, pose, L.near);
   return p;
 };
 
@@ -325,6 +326,8 @@ const zorro: Draw = (pose) => {
 const chingue: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
+  const L = quad(14, 6, 16, 'K', 'k', 'k');
+  stepLegs(p, pose, L.far);
   const tw = pose.wiggle ? 1 : 0;
   // Drawn by hand: long and low to the ground, one white stripe from the crown along the whole back
   // into the tall S of the tail (white on its front edge), a small head with a long snout and a
@@ -344,7 +347,7 @@ const chingue: Draw = (pose) => {
   else if (pose.eye === 'closed') p.set(18, 12 + y, 'g');
   else p.set(18, 12 + y, 'r');
   if (pose.mouth) p.rect(19, 14 + y, 2, 1, 'R');
-  legs(p, pose, [4, 6, 12, 14], 16 + y, 'K', 'k');
+  stepLegs(p, pose, L.near);
   return p;
 };
 
@@ -379,6 +382,8 @@ const condor: Draw = (pose) => {
 const guanaco: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
+  const L = quad(14, 7, 17, 'n', 'O', 'd', 1);
+  stepLegs(p, pose, L.far);
   const lie = pose.legs === 'lie';
   // Woolly body, pale belly and a little tail.
   p.ellipse(9, 14 + y, 6.5, lie ? 3 : 3.8, 'o').ellipse(10, 16 + y, 5, 1.4, 'n').rect(3, 11 + y + (pose.wiggle ? 1 : 0), 2, 2, 'o');
@@ -391,9 +396,76 @@ const guanaco: Draw = (pose) => {
   else if (pose.eye === 'hurt') p.set(18, 3 + y, 'r');
   else p.rect(18, 3 + y, 2, 1, 'k');
   if (pose.mouth) p.rect(19, 6 + y, 3, 1, 'R').set(20, 5 + y, 'W');
-  legs(p, pose, [4, 7, 11, 14], 17 + y, 'n', 'd', true);
+  stepLegs(p, pose, L.near);
   return p;
 };
+
+// ---------------------------------------------------------------------------------------------
+// Fase 11.15 — legs that walk. The old `legs()` drew straight posts that slid one pixel back and
+// forth; these bend at the knee, the swinging foot lifts off the ground, each leg ends in a paw,
+// and the legs of the far side are drawn behind the body in a darker shade (draw those first).
+
+export interface LegDef {
+  /** Column of the hip (left edge of the leg) and the row where the leg leaves the body. */
+  readonly x: number;
+  readonly top: number;
+  /** Width in px (2 by default). */
+  readonly w?: number;
+  readonly color: string;
+  /** Darker colour for the far legs and the back edge of the near ones. */
+  readonly shade: string;
+  readonly paw: string;
+  /** Legs of the same group move together (near back + far front, near front + far back). */
+  readonly group: 0 | 1;
+  /** A leg of the far side: drawn in the shade colour (draw it before the body). */
+  readonly far?: boolean;
+}
+
+/** Ground row: every foot rests here. */
+const GROUND = 21;
+
+export function stepLegs(p: Pix, pose: Pose, defs: readonly LegDef[], stride = 2): void {
+  if (pose.legs === 'lie') return;
+  const dir = pose.legs === 'a' ? 1 : pose.legs === 'b' ? -1 : 0;
+  for (const d of defs) {
+    const w = d.w ?? 2;
+    const c = d.far ? d.shade : d.color;
+    const top = d.top + pose.dy;
+    if (pose.legs === 'tuck') {
+      // Folded under the body (crouching or in the air during a hop).
+      const len = Math.min(3, Math.max(1, GROUND - top));
+      for (let i = 0; i < len; i++) p.rect(d.x - (i === len - 1 ? 1 : 0), top + i, w, 1, c);
+      p.rect(d.x - 1, top + len - 1, w + 1, 1, d.paw);
+      continue;
+    }
+    const off = dir * (d.group === 0 ? 1 : -1) * stride;
+    // The foot that swings forward is lifted one pixel off the ground.
+    const bottom = GROUND - (off > 0 ? 1 : 0);
+    if (bottom <= top) continue;
+    const knee = top + Math.floor((bottom - top) * 0.45);
+    let xx = d.x;
+    for (let y = top; y <= bottom; y++) {
+      const f = y <= knee ? 0 : (y - knee) / Math.max(1, bottom - knee);
+      xx = d.x + Math.round(off * f);
+      p.rect(xx, y, w, 1, c);
+      if (!d.far && w > 1 && y > knee) p.set(xx, y, d.shade);
+    }
+    // The paw points forward.
+    p.rect(xx, bottom, w + 1, 1, d.paw);
+  }
+}
+
+/** Four legs: far pair first (behind the body), near pair after it. */
+export const quad = (front: number, back: number, top: number, color: string, shade: string, paw: string, w = 2): { far: LegDef[]; near: LegDef[] } => ({
+  far: [
+    { x: front - 1, top, w, color, shade, paw: shade, group: 0, far: true },
+    { x: back - 1, top, w, color, shade, paw: shade, group: 1, far: true },
+  ],
+  near: [
+    { x: front, top, w, color, shade, paw, group: 1 },
+    { x: back, top, w, color, shade, paw, group: 0 },
+  ],
+});
 
 export const personajesSprites: SpriteDef[] = [
   character('quiltra', quiltra),
