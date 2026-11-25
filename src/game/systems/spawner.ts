@@ -1,5 +1,5 @@
 import { RING_WAVES_MIN, spawnPerSecond } from '../../data/balance.ts';
-import { ELITE } from '../../data/enemigos.ts';
+import { ELITE, ENEMIGOS, GUARDIAN } from '../../data/enemigos.ts';
 import { ambienteAt, ZONAS } from '../../data/zonas.ts';
 import { t } from '../../i18n/index.ts';
 import type { RunContext } from '../context.ts';
@@ -17,6 +17,7 @@ export class Spawner {
   private nextElite: number = ELITE.every;
   private readonly ringsDone = new Set<number>();
   private introDone = false;
+  private readonly guardiansDone = new Set<string>();
   /** Max enemies alive (GDD: 300 desktop, 180 mobile). */
   cap = 300;
   enabled = true;
@@ -85,6 +86,13 @@ export class Spawner {
       ctx.sfx.play('elite', { pan: Math.cos(a) });
     }
 
+    // The zone's guardian: the toughest enemy of the place, once per zone, never during a boss.
+    const zone = ZONAS.find((z) => z.id === zoneId);
+    if (zone && zoneId !== 'antartica' && !bossActive && minutes >= zone.startMin + GUARDIAN.atMinutes && !this.guardiansDone.has(zoneId)) {
+      this.guardiansDone.add(zoneId);
+      if (minutes - zone.startMin - GUARDIAN.atMinutes < 0.5) this.guardian(ctx, zoneId, pool, edge);
+    }
+
     for (const m of RING_WAVES_MIN) {
       if (minutes >= m && !this.ringsDone.has(m)) {
         this.ringsDone.add(m);
@@ -94,6 +102,20 @@ export class Spawner {
         ctx.sfx.play('alarma');
       }
     }
+  }
+
+  /** Spawns the guardian: the highest-life enemy of the pool (the puma in Patagonia), as an elite. */
+  private guardian(ctx: RunContext, zoneId: string, pool: string[], edge: number): void {
+    const p = ctx.player;
+    const hp = (id: string): number => ENEMIGOS.find((d) => d.id === id)?.hp ?? 0;
+    const kind = zoneId === 'patagonia' ? ELITE.patagoniaElite : [...pool].sort((a, b) => hp(b) - hp(a))[0] ?? 'zancudo';
+    const a = ctx.rngDirector.range(0, Math.PI * 2);
+    const e = ctx.enemies.spawn(kind, p.x + Math.cos(a) * edge, p.y + Math.sin(a) * edge, ctx.time / 60, ctx, true);
+    if (!e) return;
+    e.guardian = true;
+    e.maxHp = e.hp = e.hp * GUARDIAN.hpMult;
+    ctx.banner(t('ui.guardian', { nombre: t(e.def.nameKey) }), 'r');
+    ctx.sfx.play('elite', { pan: Math.cos(a) });
   }
 
   flock(ctx: RunContext, viewW: number, viewH: number): void {

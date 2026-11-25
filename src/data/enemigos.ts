@@ -73,3 +73,21 @@ export const ELITE = {
   /** Patagonia's elite is a special enemy. */
   patagoniaElite: 'puma',
 } as const;
+
+/**
+ * Fase 11.4 — one guardian per zone, a minute and a half after entering it: the zone's toughest
+ * enemy as an elite, with extra life, a stomp that is announced by a circle, and its own loot.
+ */
+export const GUARDIAN = {
+  /** Minutes after the zone starts. */
+  atMinutes: 1.5,
+  /** Extra life on top of the elite's. */
+  hpMult: 1.6,
+  stompEvery: 5,
+  stompWarning: 1,
+  stompRadius: 46,
+  /** Times the enemy's own damage. */
+  stompDamage: 1.5,
+  foodRain: 60,
+  lucas: 40,
+} as const;

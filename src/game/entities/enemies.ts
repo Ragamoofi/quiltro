@@ -2,7 +2,8 @@ import { Container, Sprite } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import type { Rng } from '../../core/rng.ts';
 import { enemyDamageMult, enemyHpMult, px } from '../../data/balance.ts';
-import { ELITE, ENEMIGOS, ENEMIGOS_ESPECIALES, PARTE_DE_JEFE, type EnemyDef } from '../../data/enemigos.ts';
+import { t } from '../../i18n/index.ts';
+import { ELITE, ENEMIGOS, GUARDIAN, ENEMIGOS_ESPECIALES, PARTE_DE_JEFE, type EnemyDef } from '../../data/enemigos.ts';
 import { PLAYER_BASE } from '../../data/personajes.ts';
 import type { RunContext } from '../context.ts';
 
@@ -69,6 +70,10 @@ export interface Enemy {
   def: EnemyDef;
   look: EnemyLook;
   elite: boolean;
+  /** Fase 11.4: the zone's guardian, an elite that stomps with a warning circle. */
+  guardian: boolean;
+  /** Seconds to the guardian's next stomp. */
+  stompT: number;
   x: number;
   y: number;
   prevX: number;
@@ -145,6 +150,8 @@ export class Enemies {
         def: placeholder,
         look,
         elite: false,
+        guardian: false,
+        stompT: 0,
         x: 0,
         y: 0,
         prevX: 0,
@@ -200,6 +207,8 @@ export class Enemies {
     e.def = def;
     e.look = look;
     e.elite = elite;
+    e.guardian = false;
+    e.stompT = 3;
     e.x = e.prevX = x;
     e.y = e.prevY = y;
     e.vx = e.vy = e.kx = e.ky = 0;
@@ -276,6 +285,7 @@ export class Enemies {
       e.slowTime = Math.max(0, e.slowTime - dt);
       const slow = e.slowTime > 0 ? 1 - e.slow : 1;
 
+      if (e.guardian && e.stun <= 0 && !p.dead) this.guardianStomp(e, dt, ctx);
       let want = { x: 0, y: 0, direct: false };
       if (e.stun <= 0 && !p.dead) want = this.behave(e, dt, ctx);
       if (want.direct) {
@@ -577,6 +587,21 @@ export class Enemies {
   }
 
   /** Area hit on the dog (lobo marino flop, boss slams). */
+  /** The guardian's attack: a wide red circle under the dog that fills up for a second, then a stomp. */
+  private guardianStomp(e: Enemy, dt: number, ctx: RunContext): void {
+    e.stompT -= dt;
+    if (e.stompT > 0) return;
+    e.stompT = GUARDIAN.stompEvery;
+    const p = ctx.player;
+    const sx = p.x;
+    const sy = p.y - 8;
+    const damage = e.damage * GUARDIAN.stompDamage;
+    ctx.telegraphs.circle(sx, sy + 8, GUARDIAN.stompRadius, GUARDIAN.stompWarning, () => {
+      this.slam(sx, sy, GUARDIAN.stompRadius, damage, ctx, e.def.id);
+      ctx.sfx.play('puf', { pitch: 0.3, gain: 1.5 });
+    });
+  }
+
   slam(x: number, y: number, r: number, damage: number, ctx: RunContext, source = 'loboMarino'): void {
     const p = ctx.player;
     ctx.shake.add(0.25);
@@ -642,7 +667,14 @@ export class Enemies {
       }
     }
     if (e.def.behavior === 'zigzag') ctx.clouds.add(e.x, gy, e.def.params?.cloudSeconds ?? 3);
-    if (e.elite) {
+    if (e.guardian) {
+      // The guardian's own loot: a golden box, a rain of food and some lucas.
+      ctx.food.drop('cajaDorada', e.x, gy, ctx);
+      ctx.food.dropValue(GUARDIAN.foodRain + ctx.progress.level * 4, e.x, gy, ctx, 30);
+      ctx.progress.lucas += GUARDIAN.lucas;
+      ctx.shake.add(0.5);
+      ctx.banner(t('ui.guardianVencido'), 'a', t('ui.guardianLucas', { n: GUARDIAN.lucas }));
+    } else if (e.elite) {
       ctx.food.drop('caja', e.x, gy, ctx);
       ctx.shake.add(0.3);
     } else {
