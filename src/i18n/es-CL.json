@@ -111,6 +111,12 @@
     "restRegen": "+{n} vida/s si estás quieto",
     "xpMult": "+{n}% experiencia",
     "bell": "Empuja a los enemigos chicos que se acercan",
+    "foodHeal": "Cura 1 de vida cada {n} comidas",
+    "shotArmor": "-{n}% daño de proyectiles",
+    "critDamage": "+{n}% daño de los críticos",
+    "invulnerability": "+{n} s sin daño tras un golpe",
+    "knockMult": "+{n}% empuje de todos los golpes",
+    "luck": "+{n} de suerte: más cartas raras",
     "petsAhora": "¡Un perrito aliado más!",
     "pets": "Los perritos aliados muerden por ti",
     "rarityBonus": "y +{n}% daño extra",
@@ -130,7 +136,14 @@
     "bolitas": "canica",
     "emboque": "bola",
     "elastico": "banda",
-    "ronda": "anillo"
+    "ronda": "anillo",
+    "choripan": "choripán",
+    "boleadora": "cuerda",
+    "sopaipillaCaliente": "sopaipilla",
+    "pandero": "golpe",
+    "cacerola": "golpe",
+    "cables": "rayo",
+    "chaya": "estela"
   },
   "tutorial": {
     "muevete": "Muévete",

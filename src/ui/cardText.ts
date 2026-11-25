@@ -119,6 +119,12 @@ export function describe(offer: Offer): CardText {
   if (p.restRegen) parts.push(t('efectos.restRegen', { n: fmt(Math.round(p.restRegen * mult * 10) / 10) }));
   if (p.xpMult) parts.push(t('efectos.xpMult', { n: pct(p.xpMult * mult) }));
   if (p.bell) parts.push(t('efectos.bell'));
+  if (p.foodHeal) parts.push(t('efectos.foodHeal', { n: Math.max(1, Math.round(1 / (p.foodHeal * mult))) }));
+  if (p.shotArmor) parts.push(t('efectos.shotArmor', { n: pct(p.shotArmor * mult) }));
+  if (p.critDamage) parts.push(t('efectos.critDamage', { n: pct(p.critDamage * mult) }));
+  if (p.invulnerability) parts.push(t('efectos.invulnerability', { n: fmt(Math.round(p.invulnerability * mult * 10) / 10) }));
+  if (p.knockMult) parts.push(t('efectos.knockMult', { n: pct(p.knockMult * mult) }));
+  if (p.luck) parts.push(t('efectos.luck', { n: fmt(Math.round(p.luck * mult * 10) / 10) }));
   if (p.petsAtLevels) parts.push(p.petsAtLevels.includes(offer.toLevel) ? t('efectos.petsAhora') : t('efectos.pets'));
   if (p.projectilesAtLevels) {
     parts.push(
