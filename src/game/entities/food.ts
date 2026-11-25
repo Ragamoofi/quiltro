@@ -13,6 +13,9 @@ const XP: Partial<Record<PickupKind, number>> = {
   chorrillana: FOOD.chorrillana.xp,
 };
 
+/** World px: further than this from the dog, food on the floor is banked. */
+const FORGET_FOOD = 700;
+
 const LOOK: Record<PickupKind, { sprite: string; anim: string }> = {
   sopaipilla: { sprite: 'sopaipilla', anim: 'brillo' },
   completo: { sprite: 'completo', anim: 'brillo' },
@@ -49,6 +52,8 @@ export class Food {
   private readonly pool: Piece[] = [];
   private readonly anims: Record<PickupKind, Anim>;
   private foodCount = 0;
+  /** Experience of food left far behind (it comes back in the next pieces). */
+  private bank = 0;
   /** Mate: fractions of life earned from food, paid out in whole points. */
   private healDebt = 0;
 
@@ -66,15 +71,33 @@ export class Food {
   }
 
   drop(kind: PickupKind, x: number, y: number, ctx: RunContext): void {
-    const xp = XP[kind] ?? 0;
+    let xp = XP[kind] ?? 0;
+    // Food forgotten far away comes back in the next pieces (never lost).
+    if (xp > 0 && this.bank > 0) {
+      const extra = Math.min(this.bank, 40);
+      this.bank -= extra;
+      xp += extra;
+    }
+    // Too much food on the floor: join the nearest piece close to where this one falls. It used to
+    // join the first piece of the list, which could be a screen away, so the enemies near the dog
+    // seemed to stop dropping anything.
     if (xp > 0 && this.foodCount >= FOOD.mergeAbove) {
-      const target = this.pool.find((p) => p.active && p.xp > 0 && !p.pulled);
+      const target = this.nearestPiece(x, y, 60);
       if (target) {
         target.xp += xp;
         return;
       }
     }
-    const p = this.pool.find((it) => !it.active);
+    let p = this.pool.find((it) => !it.active);
+    if (!p && xp > 0) {
+      // No room left: the piece furthest from the dog makes room and gives its experience to this one.
+      const far = this.farthestPiece(ctx);
+      if (far) {
+        xp += far.xp;
+        this.release(far);
+        p = far;
+      }
+    }
     if (!p) return;
     const a = ctx.rng.range(0, Math.PI * 2);
     const pop = xp > 0 ? 18 : 10;
@@ -104,6 +127,12 @@ export class Food {
       const dx = pl.x - p.x;
       const dy = pl.y - 8 - p.y;
       const d = Math.hypot(dx, dy);
+      // Food left a long way behind is banked (it reappears in the next drops) so it never clogs the floor.
+      if (p.xp > 0 && !p.pulled && d > FORGET_FOOD && p.t > 10) {
+        this.bank += p.xp;
+        this.release(p);
+        continue;
+      }
       if (p.xp > 0 && !pl.dead && (p.pulled || d < radius)) {
         p.pulled = true;
         // Accelerate toward the nose; always faster than the dog.
@@ -136,6 +165,7 @@ export class Food {
   private collect(p: Piece, ctx: RunContext): void {
     this.release(p);
     ctx.stats.food += 1;
+    ctx.progress.wallet += 1;
     if (ctx.mods.foodHeal > 0) {
       this.healDebt += ctx.mods.foodHeal;
       if (this.healDebt >= 1) {
@@ -175,6 +205,34 @@ export class Food {
       default:
         break;
     }
+  }
+
+  private nearestPiece(x: number, y: number, maxDist: number): Piece | undefined {
+    let best: Piece | undefined;
+    let bd = maxDist * maxDist;
+    for (const p of this.pool) {
+      if (!p.active || p.xp === 0 || p.pulled) continue;
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+      if (d < bd) {
+        bd = d;
+        best = p;
+      }
+    }
+    return best;
+  }
+
+  private farthestPiece(ctx: RunContext): Piece | undefined {
+    let best: Piece | undefined;
+    let bd = -1;
+    for (const p of this.pool) {
+      if (!p.active || p.xp === 0 || p.pulled) continue;
+      const d = (p.x - ctx.player.x) ** 2 + (p.y - ctx.player.y) ** 2;
+      if (d > bd) {
+        bd = d;
+        best = p;
+      }
+    }
+    return best;
   }
 
   /** Nearest food piece on the floor (not already flying to the dog), for the gaviota. */

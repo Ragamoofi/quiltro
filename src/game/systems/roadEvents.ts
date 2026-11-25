@@ -1,6 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../../art/assets.ts';
-import { xpToNext } from '../../data/balance.ts';
 import { deriveSeed, Rng } from '../../core/rng.ts';
 import { t } from '../../i18n/index.ts';
 import { PixelText } from '../../ui/text.ts';
@@ -15,13 +14,18 @@ export const EVENT_TIMING = { first: 50, between: [70, 100], stays: 45 } as cons
 const REACH = { cofre: 18, animita: 34, feriante: 22 } as const;
 const PRAYER_SECONDS = 3;
 /** Chest price: this share of the experience the current level asks for, growing with every chest opened. */
-export const CHEST_PRICE = { share: 0.35, perOpened: 0.35 } as const;
+/** Sopaipillas (the counter under the life bar): a base plus some per level, 35 % more per chest opened. */
+export const CHEST_PRICE = { base: 15, perLevel: 4, perOpened: 0.35 } as const;
 const BLESSINGS = ['escudo', 'viento', 'abrigo', 'fervor'] as const;
 export type Blessing = (typeof BLESSINGS)[number];
 
-/** Price in sopaipillas of the next chest at this level (the experience is paid, never debt). */
+/**
+ * Price of the next chest in sopaipillas. It used to be paid with the experience of the current
+ * level while the sign said sopaipillas, so a dog with 1.270 sopaipillas on the counter was told
+ * it was short. Now it is paid from the counter itself.
+ */
 export function chestPrice(level: number, opened: number): number {
-  return Math.max(3, Math.round(xpToNext(level) * CHEST_PRICE.share * (1 + CHEST_PRICE.perOpened * opened)));
+  return Math.round((CHEST_PRICE.base + CHEST_PRICE.perLevel * level) * (1 + CHEST_PRICE.perOpened * opened));
 }
 
 interface Active {
@@ -89,8 +93,8 @@ export class RoadEvents {
         a.sprite.y = Math.round(a.y + Math.sin(a.age * 3) * 1);
         if (dist < REACH.cofre && !p.dead) {
           const price = chestPrice(ctx.progress.level, this.opened);
-          if (ctx.progress.xp >= price) {
-            ctx.progress.xp -= price;
+          if (ctx.progress.wallet >= price) {
+            ctx.progress.wallet -= price;
             this.opened++;
             this.burst(ctx, a, ['a', 'y', 'W']);
             ctx.sfx.play('campana');
@@ -99,7 +103,7 @@ export class RoadEvents {
             ctx.openCaja(false);
           } else if (a.nag <= 0) {
             a.nag = 4;
-            ctx.banner(t('eventos.cofre.faltan', { n: price - Math.floor(ctx.progress.xp) }), 'w', t('eventos.cofre.faltanSub'));
+            ctx.banner(t('eventos.cofre.faltan', { n: price - ctx.progress.wallet }), 'w', t('eventos.cofre.faltanSub'));
           }
         }
         if (this.active === a && a.label) a.label.text = t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) });

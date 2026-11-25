@@ -220,7 +220,7 @@ export class RunScene implements Scene {
       },
       time: 0,
       stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, damageFrom: {}, lastHit: '', killsBy: {}, bossesBeaten: [], temblorQuieto: false },
-      progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
+      progress: { level: 1, xp: 0, lucas: 0, bosses: 0, wallet: 0 },
       onKill: (e, source) => {
         // Quiltra: every so many enemies taken down, a little healing.
         const heal = lo.character.mods.healEvery;
@@ -899,7 +899,7 @@ export class RunScene implements Scene {
         seconds: ctx.time,
         kills: ctx.stats.kills,
         lucas: Math.floor(lucasForRun(km, ctx.stats.kills, ctx.progress.bosses, (1 + this.opts.loadout.meta.lucasMult) * ctx.pasaje.lucas)) + Math.floor(ctx.progress.lucas * ctx.pasaje.lucas),
-        food: ctx.stats.food,
+        food: ctx.progress.wallet,
       },
       ctx.build,
       this.mode === 'playing' ? this.input.stickNative(this.viewW, this.viewH) : null,

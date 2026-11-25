@@ -4,6 +4,12 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Arreglos de comida y cofres
+
+- **La comida dejaba de salir** cuando había mucha en el piso: las piezas nuevas se juntaban con la primera de la lista, que podía estar a una pantalla de distancia. Ahora se juntan con la más cercana a donde cae (o salen como pieza nueva), y la comida que queda muy atrás vuelve en las piezas siguientes en vez de tapar el piso.
+- **El cofre cobraba experiencia del nivel** aunque el cartel decía sopaipillas: con 1.270 sopaipillas en el contador te decía que faltaban. Ahora se paga con el contador de sopaipillas (bajo la vida), que baja al abrirlo. Precio: 15 + 4 por nivel, y 35 % más por cada cofre abierto.
+- **Sprites retocados a mano:** `npm run sprites:exportar` y la carpeta `sprites-retocados/` (ver su LEEME.md).
+
 ### Menú chileno, animitas como altares y volantín rehecho (Fase 11.10)
 
 #### Cambiado

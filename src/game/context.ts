@@ -63,7 +63,8 @@ export interface RunContext {
     /** The dog did not move during the Temblor event ("Ni se inmutó"). */
     temblorQuieto: boolean;
   };
-  readonly progress: { level: number; xp: number; lucas: number; bosses: number };
+  /** `wallet`: sopaipillas you carry (one per piece of food eaten), to pay the chests. */
+  readonly progress: { level: number; xp: number; lucas: number; bosses: number; wallet: number };
   /** Called for every enemy killed, with the weapon that did it. */
   onKill(e: Enemy, source: string): void;
   /** An achievement was earned (announced once). */
