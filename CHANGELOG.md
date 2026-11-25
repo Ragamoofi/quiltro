@@ -4,6 +4,31 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 6 — Sonido
+
+#### Agregado
+- Motor de audio compartido (`src/audio/engine.ts`): un solo contexto para efectos (Web Audio) y música (Tone.js), con compresor en los efectos. Tone.js se descarga en segundo plano (archivo aparte de 79 KB comprimidos) y el contexto recién se crea con el primer toque o tecla, así que no hay avisos del navegador ni se retrasa el primer cuadro.
+- Música compuesta en código con Tone.js, sin archivos: cada zona tiene un bucle de 4 compases en 3 capas (base, ritmo, melodía).
+  - Norte: charango y bombo lentos, quena y viento.
+  - Centro: cumbia con acordeón, güira, caja y bajo, rápida y alegre.
+  - Sur: guitarra arpegiada y lluvia, melancólica.
+  - Patagonia: cuerdas, timbal y viento, épica.
+  - La Antártica: pad y campanitas de cristal.
+  - Menú: guitarra tranquila con el barrio de fondo (perros lejanos, pájaros, una micro).
+- Las capas se suman con la cantidad de enemigos en pantalla: el ritmo desde 8 y la melodía desde 35. Cambio de zona con transición de 2 s.
+- Jefes: la misma música pero con timbales pesados, un bordón grave y el tempo un 12 % más rápido.
+- Cielo del Dieciocho: 20 s de cueca en 6/8 con palmas, guitarra y acordeón; después vuelve la música de la zona.
+- La pausa, las cartas y la Caja ponen la música "detrás de una puerta" (filtro pasa-bajos); al seguir se abre.
+- Efectos nuevos de la tabla del GDD: rasgueo de guitarra al subir de nivel, acordeón y "¡Bacán!" en la carta legendaria, bocina más motor de la micro 0,8 s antes de embestir (paneados hacia donde está), rueda de la Caja con tic de ruleta, monedas al contar las lucas.
+- Señales para jugar sin mirar: gong del élite (con paneo), sirena de "¡Te rodearon!", latido cuando queda menos de 25 % de vida, fanfarria de evolución, jingle de zona nueva, introducción del jefe (metales graves y redoble de timbales), victoria y la derrota con "wah-wah" de cumbia.
+- Mezcla (GDD): máximo 24 voces, los sonidos repetidos dentro de 30 ms se agrupan, jugador y jefe tienen prioridad (nunca se descartan) y, cerca del tope, el fondo cede ante los avisos importantes. Los efectos se agachan 30 % mientras hay un cartel importante o la presentación de un jefe.
+- Panel F1: motor de audio, nivel de salida en vivo, música actual con sus capas, tocar cualquier música o efecto, jefe on/off y cueca de 20 s.
+- Los controles de volumen de música y efectos de Opciones ahora hacen efecto.
+- 14 pruebas nuevas (partituras bien formadas, capas por intensidad, reglas de mezcla, música para cada zona).
+
+#### Pendiente
+- El ladrido real CC0 de la tabla de efectos sigue sintetizado: descargar un archivo necesita tu aprobación (ver docs/PENDIENTES.md).
+
 ### Fase 5 — Interfaz y onboarding
 
 #### Agregado

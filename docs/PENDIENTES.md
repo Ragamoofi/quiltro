@@ -1,5 +1,13 @@
 # Pendientes para revisar
 
+## Ladrido real CC0 (Fase 6)
+
+El GDD pide un ladrido real de dominio público (CC0) para el ¡GUAU!. Hoy es un ladrido sintetizado (dos formantes con eco corto) que funciona y se mide bien, pero no suena a perro de verdad. Para cambiarlo hay que descargar un archivo de una fuente CC0 (Freesound u OpenGameArt, filtrando por CC0), recortarlo y registrarlo en `public/LICENSES.md`. **Necesita tu aprobación**: antes de descargar te diría el nombre del archivo, la fuente y el peso. El resto de la música y los efectos son 100 % sintetizados, sin archivos ni licencias que registrar.
+
+## Mezcla: falta un oído humano (Fase 6 → Fase 8)
+
+Todo el audio se verificó con un analizador de salida (cada efecto y cada zona producen señal; las capas, el jefe, el agachado de 30 % y el filtro de la pausa cambian el nivel como corresponde), pero no puedo escuchar. Hay que jugar con audífonos y ajustar a oído: el balance música contra efectos (`MUSIC_LEVEL` en `src/audio/music.ts`), si los golpes del volantín se pierden con 300 enemigos y si alguna melodía cansa a los 10 minutos.
+
 ## Curva de experiencia (revisada en Fase 3)
 
 Con los enemigos de todas las zonas, un bot que junta comida y elige cartas al azar llega a nivel ~36 al minuto 12 y ~50 al vencer al Gran Temblor. Está cerca de las ~40 subidas del GDD; no se tocó la fórmula.
