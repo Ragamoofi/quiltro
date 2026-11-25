@@ -41,14 +41,16 @@ export function baseMods(l: Loadout): BaseMods {
   const c = l.character.mods;
   return {
     speedMult: l.meta.speedMult + ((c.speedMult ?? 1) - 1),
-    armor: l.meta.armor,
+    armor: l.meta.armor + (c.armor ?? 0),
     maxHp: l.meta.maxHp + ((c.maxHp ?? PLAYER_BASE.maxHp) - PLAYER_BASE.maxHp),
     areaMult: (c.areaMult ?? 1) - 1,
-    damageMult: l.meta.damageMult,
-    cooldownMult: l.meta.cooldownMult,
-    pickupMult: l.meta.pickupMult,
+    damageMult: l.meta.damageMult + (c.damageMult ?? 0),
+    cooldownMult: l.meta.cooldownMult + (c.cooldownMult ?? 0),
+    pickupMult: l.meta.pickupMult + (c.pickupMult ?? 0),
     critChance: (c.critBonus ?? 0) + l.meta.critChance,
     startingKites: l.meta.startingKites,
     xpMult: l.meta.xpMult,
+    guauCooldownMult: c.guauCooldownMult ?? 0,
+    shieldEvery: c.shieldEvery ?? 0,
   };
 }

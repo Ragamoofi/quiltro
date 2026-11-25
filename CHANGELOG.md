@@ -4,6 +4,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 10.1 — Personajes: arma propia, pasiva única y desbloqueo en orden
+
+#### Cambiado
+- **Diez personajes**, cada uno con un arma inicial distinta y una pasiva única (`src/data/personajes.ts`): Quiltro (Volantín, ¡GUAU! 20 % más rápido), Quiltra (Ronda, cura 5 cada 25 enemigos), Gato (Cables, segunda vida gratis), **Zorro** (Emboque, 12 % menos de espera y 10 % de esquivar), Pudú (Rayuela, cuerpo chico y 12 % de esquivar), Pingüino (Chaya, inmune a la ralentización y al viento), **Chingue** (Elástico, aura de daño), **Cóndor** (Trompo, +20 % de daño y recoge desde más lejos), **Guanaco** (Bolitas, un escudo cada 30 s) y Paloma rebelde (Fuegos, ignora los peligros y atraviesa las nubes).
+- **Desbloqueos en orden de dificultad:** Quiltro (inicio), Quiltra (Santiago), Gato (3.000 enemigos), Zorro (Temuco), Pudú (Chiloé), Pingüino (vencer al Caleuche), Chingue (5.000 sopaipillas), Cóndor (vencer al Taco), Guanaco (llegar a Punta Arenas) y Paloma (vencer al Vecino Viral). Los personajes ya desbloqueados se conservan.
+- La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
+- Pruebas de personajes (`tests/personajes.test.ts`).
+
+#### Pendiente de la 10.2
+- Zorro, Chingue, Cóndor y Guanaco usan **sprites prestados** (de la Quiltra, el Gato, la Paloma y el Pudú) hasta que se dibujen los propios en la 10.2.
+
 ### Fase 9.5 — Armas y pasivas nuevas
 
 #### Agregado

@@ -263,6 +263,7 @@
       "llegarA": "Llega a {lugar}",
       "sopaipillas": "Junta {n} sopaipillas",
       "palomas": "Derrota {n} palomas",
+      "kills": "Derrota {n} enemigos en total",
       "vencer": "Vence a {jefe}"
     },
     "efectos": {
@@ -402,7 +403,23 @@
     "gato": "El Gato del Almacén",
     "pudu": "El Pudú",
     "pinguino": "El Pingüino de Humboldt",
+    "zorro": "El Zorro Culpeo",
+    "chingue": "El Chingue",
+    "condor": "El Cóndor",
+    "guanaco": "El Guanaco",
     "paloma": "La Paloma Rebelde"
+  },
+  "personajesPasiva": {
+    "quiltro": "Aullido de barrio: el ¡GUAU! vuelve 20% más rápido",
+    "quiltra": "Cría de la cucha: cada 25 enemigos, te cura 5 de vida",
+    "gato": "Siete vidas: una segunda vida gratis por viaje",
+    "zorro": "Astuto: 12% menos de espera y 10% de esquivar un golpe",
+    "pudu": "Sigiloso: cuerpo chico y 12% de esquivar un golpe",
+    "pinguino": "Aislado: nada lo frena y el viento no lo empuja",
+    "chingue": "Perfume: los enemigos que se acercan reciben daño",
+    "condor": "Ojo de cóndor: junta comida desde más lejos y pega 20% más fuerte",
+    "guanaco": "Lana gruesa: un escudo gratis cada 30 segundos",
+    "paloma": "Vuelo: ignora los peligros del ambiente y atraviesa las nubes"
   },
   "logros": {
     "niSeInmuto": { "nombre": "Ni se inmutó", "desc": "Sobrevivir un Temblor sin moverte" },

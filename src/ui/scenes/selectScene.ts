@@ -145,6 +145,10 @@ export class SelectScene implements Scene {
       wl.position.set(26, y + 4);
       box.addChild(icon, wl);
       y += 20;
+      const passive = new PixelText(t(`personajesPasiva.${c.id}`), { color: 'a', outline: 'k', maxWidth: pw - 12 });
+      passive.position.set(6, y);
+      box.addChild(passive);
+      y += passive.height + 6;
     } else {
       const cond = new PixelText(this.condition(c), { color: 'w', outline: 'k', maxWidth: pw - 12 });
       cond.position.set(6, y);

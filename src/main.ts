@@ -222,11 +222,13 @@ async function boot(): Promise<void> {
   };
 
   /** `botSeed`: a balance-bot trip (plain Quiltro, fixed seed, nothing is saved). */
-  const makeRun = (daily: DailyRun | null = null, botSeed?: number): RunScene =>
+  const makeRun = (daily: DailyRun | null = null, botSeed?: number, botCharacter?: string): RunScene =>
     new RunScene(input, sfx, music, {
       seed: daily ? daily.seed : (botSeed ?? Date.now() >>> 0),
       mobile: isMobile(),
-      loadout: loadout(daily !== null || botSeed !== undefined),
+      loadout: botCharacter
+        ? { ...loadout(true), character: PERSONAJES.find((p) => p.id === botCharacter) ?? defaultLoadout().character }
+        : loadout(daily !== null || botSeed !== undefined),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
@@ -493,8 +495,8 @@ async function boot(): Promise<void> {
     /** Balance bot: `__quiltroBot.start('medio', 20)` runs in the background; read `.status()`. */
     const botState = { running: false, done: 0, total: 0, reports: [] as unknown[], error: '' };
     const botHooks = {
-      start(seed: number): RunScene {
-        switchTo(() => (run = makeRun(null, seed)));
+      start(seed: number, character?: string): RunScene {
+        switchTo(() => (run = makeRun(null, seed, character)));
         loop.timeScale = 0;
         return run;
       },
@@ -504,13 +506,13 @@ async function boot(): Promise<void> {
     };
     Object.assign(window, {
       __quiltroBot: {
-        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16, invincible = false): void {
+        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16, invincible = false, character = 'quiltro'): void {
           if (botState.running) return;
           Object.assign(botState, { running: true, done: 0, total: runs, reports: [], error: '' });
           void (async () => {
             try {
               for (let i = 0; i < runs; i++) {
-                botState.reports.push(await playRun(botHooks, seed0 + i, skill, maxMinutes, invincible));
+                botState.reports.push(await playRun(botHooks, seed0 + i, skill, maxMinutes, invincible, character));
                 botState.done = i + 1;
               }
             } catch (err) {

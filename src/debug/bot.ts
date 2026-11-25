@@ -44,7 +44,7 @@ export const SKILLS: Record<Skill, SkillConfig> = {
 /** What the bot needs from the game, given by main.ts. */
 export interface BotHooks {
   /** Starts a plain-Quiltro trip with this seed (no Cucha upgrades, nothing saved) and returns it. */
-  start(seed: number): RunScene;
+  start(seed: number, character?: string): RunScene;
   /** Advances the simulation by n frames of 1/60 s without drawing. */
   tick(frames: number): void;
 }
@@ -112,6 +112,7 @@ export interface BossFight {
 export interface RunReport {
   seed: number;
   skill: Skill;
+  character: string;
   /** Minutes survived. */
   minutes: number;
   km: number;
@@ -159,10 +160,17 @@ function bump(map: Record<string, number>, key: string, by = 1): void {
 }
 
 /** One trip. */
-export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMinutes = 16, invincible = false): Promise<RunReport> {
+export async function playRun(
+  hooks: BotHooks,
+  seed: number,
+  skill: Skill,
+  maxMinutes = 16,
+  invincible = false,
+  character = 'quiltro',
+): Promise<RunReport> {
   const cfg = SKILLS[skill];
   const rng = new Rng(seed ^ 0xb07b07);
-  const run = hooks.start(seed);
+  const run = hooks.start(seed, character);
   const I = run as unknown as Internals;
   const ctx = run.ctx;
   // Invincible bots measure how long each fight lasts when the dog survives it (time to kill).
@@ -416,6 +424,7 @@ export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMi
   return {
     seed,
     skill,
+    character,
     minutes: Math.round((ctx.time / 60) * 100) / 100,
     km: Math.round(km),
     zone: I.journey.zone.id,

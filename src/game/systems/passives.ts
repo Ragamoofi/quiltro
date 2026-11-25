@@ -37,6 +37,7 @@ export class Passives {
   private readonly near: number[] = [];
   private time = 0;
   private bellRadius = 0;
+  private auraT = 0;
 
   constructor() {
     this.run = anim('quiltra', 'trotar');
@@ -69,6 +70,22 @@ export class Passives {
         if (d > this.bellRadius + e.radius) continue;
         e.kx += (dx / d) * 500 * dt;
         e.ky += (dy / d) * 500 * dt;
+      }
+    }
+
+    // Chingue's perfume: whatever comes close takes damage twice a second.
+    if (p.auraDps > 0 && !p.dead) {
+      this.auraT -= dt;
+      if (this.auraT <= 0) {
+        this.auraT = 0.5;
+        const r = px(p.auraRadius);
+        ctx.grid.query(cx, cy, r + 16, this.near);
+        for (const id of this.near) {
+          const e = ctx.enemies.get(id);
+          if (!e?.active) continue;
+          if ((e.x - cx) ** 2 + (e.y - cy) ** 2 > (r + e.radius) ** 2) continue;
+          ctx.enemies.hit(e, p.auraDps * 0.5 * ctx.mods.damageMult, cx, cy, 0, ctx, 'perfume');
+        }
       }
     }
 
@@ -131,6 +148,18 @@ export class Passives {
         if ((i + Math.floor(this.time * 5)) % 2 === 0) continue;
         const a = (i / dots) * Math.PI * 2;
         g.rect(Math.round(cx + Math.cos(a) * this.bellRadius), Math.round(cy + Math.sin(a) * this.bellRadius), 1, 1).fill(C('a'));
+      }
+    }
+    // Chingue's perfume: a faint green ring so you can see how far it reaches.
+    if (p.auraDps > 0 && !p.dead) {
+      const cx = Math.round(p.prevX + (p.x - p.prevX) * alpha);
+      const cy = Math.round(p.prevY + (p.y - p.prevY) * alpha) - 8;
+      const r = px(p.auraRadius);
+      const dots = Math.max(10, Math.round(r * 0.6));
+      for (let i = 0; i < dots; i++) {
+        if ((i + Math.floor(this.time * 3)) % 3 !== 0) continue;
+        const a = (i / dots) * Math.PI * 2;
+        g.rect(Math.round(cx + Math.cos(a) * r), Math.round(cy + Math.sin(a) * r), 1, 1).fill(C('V'));
       }
     }
     for (const pet of this.list) {

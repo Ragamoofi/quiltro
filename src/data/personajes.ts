@@ -1,4 +1,4 @@
-/** Player stats and playable characters (GDD "Estadísticas del Quiltro" y "Personajes"). */
+/** Player stats and playable characters (GDD "Estadísticas del Quiltro" y "Personajes"; Fase 10 amplía y reordena). */
 
 export interface PlayerStats {
   readonly maxHp: number;
@@ -30,12 +30,12 @@ export const PLAYER_BASE: PlayerStats = {
 export type UnlockCondition =
   | { readonly kind: 'inicio' }
   | { readonly kind: 'llegarA'; readonly ciudad: string }
-  | { readonly kind: 'total'; readonly stat: 'sopaipillas' | 'palomas'; readonly cantidad: number }
+  | { readonly kind: 'total'; readonly stat: 'sopaipillas' | 'palomas' | 'kills'; readonly cantidad: number }
   | { readonly kind: 'vencer'; readonly jefe: string };
 
 export interface CharacterDef {
   readonly id: string;
-  /** i18n key under `personajes.` */
+  /** i18n key under `personajes.` (the name); the passive's text is `personajesPasiva.<id>`. */
   readonly nameKey: string;
   /** Sprite sheet name. */
   readonly sprite: string;
@@ -44,34 +44,78 @@ export interface CharacterDef {
   /** Changes relative to PLAYER_BASE (multipliers unless stated). */
   readonly mods: {
     readonly speedMult?: number;
+    /** Absolute max HP (default 100). */
     readonly maxHp?: number;
     readonly critBonus?: number;
     readonly areaMult?: number;
+    /** Added to the damage multiplier (0.2 = +20 %). */
+    readonly damageMult?: number;
+    /** Added to the cooldown multiplier (−0.12 = 12 % faster). */
+    readonly cooldownMult?: number;
+    readonly armor?: number;
+    /** Added to the pickup radius multiplier (0.6 = ×1.6). */
+    readonly pickupMult?: number;
     /** Smaller hitbox (Pudú). */
     readonly hitboxMult?: number;
     readonly startingTraits?: readonly { readonly id: string; readonly level: number }[];
     readonly slides?: boolean;
     readonly ignoresHazards?: boolean;
+    // ---- Unique passives (Fase 10.1) ----
+    /** Quiltro: the ¡GUAU! comes back this much faster (−0.2 = 20 % less cooldown). */
+    readonly guauCooldownMult?: number;
+    /** Quiltra: heals `amount` HP every `kills` enemies taken down. */
+    readonly healEvery?: { readonly kills: number; readonly amount: number };
+    /** Gato: extra second lives per trip. */
+    readonly extraRevives?: number;
+    /** Zorro and Pudú: chance (0..1) of dodging a hit altogether. */
+    readonly dodgeChance?: number;
+    /** Pingüino: not slowed by anything and not pushed by the wind. */
+    readonly immuneSlow?: boolean;
+    readonly immuneWind?: boolean;
+    /** Chingue: enemies close to the dog take this much damage per second. */
+    readonly aura?: { readonly dps: number; readonly radius: number };
+    /** Guanaco: a free shield every this many seconds. */
+    readonly shieldEvery?: number;
   };
 }
 
+/**
+ * Ten characters, ordered from the easiest unlock to the hardest. Every one starts with a
+ * different weapon and has a passive of its own; the costs (less HP, slower…) keep them even.
+ */
 export const PERSONAJES: readonly CharacterDef[] = [
-  { id: 'quiltro', nameKey: 'personajes.quiltro', sprite: 'quiltro', unlock: { kind: 'inicio' }, startingWeapon: 'volantin', mods: {} },
+  {
+    id: 'quiltro',
+    nameKey: 'personajes.quiltro',
+    sprite: 'quiltro',
+    unlock: { kind: 'inicio' },
+    startingWeapon: 'volantin',
+    mods: { guauCooldownMult: -0.2 },
+  },
   {
     id: 'quiltra',
     nameKey: 'personajes.quiltra',
     sprite: 'quiltra',
     unlock: { kind: 'llegarA', ciudad: 'santiago' },
-    startingWeapon: 'volantin',
-    mods: { speedMult: 0.9, startingTraits: [{ id: 'chalequito', level: 2 }] },
+    startingWeapon: 'ronda',
+    mods: { speedMult: 0.92, maxHp: 125, startingTraits: [{ id: 'chalequito', level: 1 }], healEvery: { kills: 25, amount: 5 } },
   },
   {
     id: 'gato',
     nameKey: 'personajes.gato',
     sprite: 'gato',
-    unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
+    unlock: { kind: 'total', stat: 'kills', cantidad: 3000 },
     startingWeapon: 'cables',
-    mods: { critBonus: 0.15, maxHp: 70 },
+    mods: { critBonus: 0.15, maxHp: 70, extraRevives: 1 },
+  },
+  {
+    id: 'zorro',
+    nameKey: 'personajes.zorro',
+    // Temporary: it borrows the Quiltra's sprite until its own is drawn (10.2).
+    sprite: 'quiltra',
+    unlock: { kind: 'llegarA', ciudad: 'temuco' },
+    startingWeapon: 'emboque',
+    mods: { speedMult: 1.05, maxHp: 85, cooldownMult: -0.12, dodgeChance: 0.1 },
   },
   {
     id: 'pudu',
@@ -79,7 +123,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'pudu',
     unlock: { kind: 'llegarA', ciudad: 'chiloe' },
     startingWeapon: 'rayuela',
-    mods: { speedMult: 1.25, hitboxMult: 0.75 },
+    mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 65, dodgeChance: 0.12 },
   },
   {
     id: 'pinguino',
@@ -87,14 +131,38 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'pinguino',
     unlock: { kind: 'vencer', jefe: 'caleuche' },
     startingWeapon: 'chaya',
-    mods: { areaMult: 1.3, slides: true },
+    mods: { areaMult: 1.25, slides: true, immuneSlow: true, immuneWind: true },
+  },
+  {
+    id: 'chingue',
+    nameKey: 'personajes.chingue',
+    sprite: 'gato',
+    unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
+    startingWeapon: 'elastico',
+    mods: { speedMult: 0.95, maxHp: 90, aura: { dps: 6, radius: 30 } },
+  },
+  {
+    id: 'condor',
+    nameKey: 'personajes.condor',
+    sprite: 'palomaRebelde',
+    unlock: { kind: 'vencer', jefe: 'taco' },
+    startingWeapon: 'trompo',
+    mods: { speedMult: 0.9, maxHp: 75, damageMult: 0.2, pickupMult: 0.6 },
+  },
+  {
+    id: 'guanaco',
+    nameKey: 'personajes.guanaco',
+    sprite: 'pudu',
+    unlock: { kind: 'llegarA', ciudad: 'puntaArenas' },
+    startingWeapon: 'bolitas',
+    mods: { speedMult: 0.88, maxHp: 140, armor: 1, shieldEvery: 30 },
   },
   {
     id: 'paloma',
     nameKey: 'personajes.paloma',
     sprite: 'palomaRebelde',
-    unlock: { kind: 'total', stat: 'palomas', cantidad: 10000 },
+    unlock: { kind: 'vencer', jefe: 'vecinoViral' },
     startingWeapon: 'fuegos',
-    mods: { ignoresHazards: true },
+    mods: { ignoresHazards: true, damageMult: -0.2 },
   },
 ];

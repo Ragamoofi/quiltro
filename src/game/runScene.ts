@@ -171,6 +171,11 @@ export class RunScene implements Scene {
     player.radius *= lo.character.mods.hitboxMult ?? 1;
     player.slides = lo.character.mods.slides ?? false;
     player.hazardProof = lo.character.mods.ignoresHazards ?? false;
+    player.dodgeChance = lo.character.mods.dodgeChance ?? 0;
+    player.immuneSlow = lo.character.mods.immuneSlow ?? false;
+    player.immuneWind = lo.character.mods.immuneWind ?? false;
+    player.auraDps = lo.character.mods.aura?.dps ?? 0;
+    player.auraRadius = lo.character.mods.aura?.radius ?? 0;
     const enemies = new Enemies(ENEMY_POOL, this.shadows, this.sorted);
     const food = new Food();
     const particles = new Particles();
@@ -183,7 +188,7 @@ export class RunScene implements Scene {
     }
     this.rerolls = LEVEL_UP.startingRerolls + lo.meta.rerolls;
     this.cards = LEVEL_UP.cards + lo.meta.cards;
-    this.revives = lo.meta.revives;
+    this.revives = lo.meta.revives + (lo.character.mods.extraRevives ?? 0);
     player.addTo(this.shadows, this.sorted);
     this.shadows.addChild(this.passives.ground);
     this.sorted.addChild(this.passives.pets);
@@ -216,6 +221,9 @@ export class RunScene implements Scene {
       stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, damageFrom: {}, lastHit: '', killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0 },
       onKill: (e, source) => {
+        // Quiltra: every so many enemies taken down, a little healing.
+        const heal = lo.character.mods.healEvery;
+        if (heal && ctx.stats.kills > 0 && ctx.stats.kills % heal.kills === 0) player.heal(heal.amount, ctx);
         // Cola alegre: every enemy taken down gives a short burst of speed.
         if (ctx.mods.killHaste > 0) {
           player.hasteT = 2;

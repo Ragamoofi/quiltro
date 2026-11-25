@@ -33,6 +33,14 @@ export class Player {
   slides = false;
   /** Paloma Rebelde: flies over the environmental hazards. */
   hazardProof = false;
+  /** Zorro and Pudú: chance of dodging a hit. */
+  dodgeChance = 0;
+  /** Pingüino: nothing slows it and the wind does not push it. */
+  immuneSlow = false;
+  immuneWind = false;
+  /** Chingue: damage per second to enemies within `auraRadius` px (0 = none). */
+  auraDps = 0;
+  auraRadius = 0;
 
   x = 0;
   y = 0;
@@ -120,6 +128,7 @@ export class Player {
   }
 
   slowFor(seconds: number, amount: number, ctx: RunContext): void {
+    if (this.immuneSlow) return;
     if (this.slowTime <= 0) ctx.particles.burst(ctx.rng, this.x, this.y - 10, 6, ['f', 'v', 'y'], 30, 0.4);
     this.slowTime = seconds;
     this.slowAmount = amount;
@@ -210,7 +219,7 @@ export class Player {
     const pd = Math.exp(-dt / 0.25);
     this.pushX *= pd;
     this.pushY *= pd;
-    const windK = this.hazardProof ? 0 : 1;
+    const windK = this.hazardProof || this.immuneWind ? 0 : 1;
     let mx = this.vx + (this.pushX + ctx.wind.x) * windK;
     let my = this.vy + (this.pushY + ctx.wind.y) * windK;
     if (this.dashTime > 0) {
@@ -258,6 +267,12 @@ export class Player {
   /** Called by enemies on contact. */
   takeDamage(amount: number, fromX: number, fromY: number, ctx: RunContext, source = 'otro'): void {
     if (this.dead || this.invulnerable > 0 || ctx.debug.invincible) return;
+    if (this.dodgeChance > 0 && ctx.rng.chance(this.dodgeChance)) {
+      // A dodge: a puff and a short grace period, no damage.
+      this.invulnerable = 0.25;
+      ctx.particles.burst(ctx.rng, this.x, this.y - 10, 6, ['w', 'G'], 60, 0.25);
+      return;
+    }
     if (this.shield) {
       // Carnaval shield eats the hit.
       this.shield = false;

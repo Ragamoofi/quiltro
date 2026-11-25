@@ -53,6 +53,10 @@ export interface BaseMods {
   startingKites: number;
   /** Extra experience from food (Olfato pillar of La Cucha). */
   xpMult: number;
+  /** The ¡GUAU! cooldown multiplier change (−0.2 = 20 % less). */
+  guauCooldownMult: number;
+  /** A free shield every this many seconds (0 = none). */
+  shieldEvery: number;
 }
 
 export const NO_BASE_MODS: BaseMods = {
@@ -66,6 +70,8 @@ export const NO_BASE_MODS: BaseMods = {
   critChance: 0,
   startingKites: 0,
   xpMult: 0,
+  guauCooldownMult: 0,
+  shieldEvery: 0,
 };
 
 /** A weapon's numbers after its levels and the dog's passives. */
@@ -185,7 +191,7 @@ export class Build {
       projectiles: 0,
       critChance: PLAYER_BASE.critChance + b.critChance,
       xpMult: 1 + b.xpMult,
-      shieldEvery: 0,
+      shieldEvery: b.shieldEvery,
       killHaste: 0,
       restRegen: 0,
       bell: 0,
@@ -219,7 +225,7 @@ export class Build {
       s.xpMult += bonus.xpMult ?? 0;
       s.areaMult += bonus.areaMult ?? 0;
       s.projectiles += bonus.projectiles ?? 0;
-      if (bonus.shieldEvery) s.shieldEvery = bonus.shieldEvery;
+      if (bonus.shieldEvery) s.shieldEvery = s.shieldEvery > 0 ? Math.min(s.shieldEvery, bonus.shieldEvery) : bonus.shieldEvery;
     }
     s.cooldownMult = Math.max(MIN_COOLDOWN_MULT, s.cooldownMult);
     return s;
@@ -254,6 +260,7 @@ export class Build {
     n.damage *= stats.damageMult * (1 + (owned?.rarityBonus ?? 0));
     n.cooldown *= stats.cooldownMult * (b.cooldown !== undefined ? 1 + (owned?.cooldownBonus ?? 0) : 1);
     n.area *= stats.areaMult;
+    if (id === 'guau') n.cooldown *= 1 + this.base.guauCooldownMult;
     if (def.takesSlot && b.count !== undefined) n.count += stats.projectiles;
     if (owned && owned.extra > 0) {
       if (b.count !== undefined) n.count += owned.extra;

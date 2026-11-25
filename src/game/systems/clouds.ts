@@ -32,7 +32,7 @@ export class Clouds {
     for (const c of this.list) {
       c.life -= dt;
       c.tick -= dt;
-      if (c.tick <= 0 && (p.x - c.x) ** 2 + (p.y - c.y) ** 2 < RADIUS ** 2) {
+      if (!p.hazardProof && c.tick <= 0 && (p.x - c.x) ** 2 + (p.y - c.y) ** 2 < RADIUS ** 2) {
         c.tick = TICK;
         p.takeDamage(DAMAGE, c.x, c.y, ctx, 'chingue');
       }

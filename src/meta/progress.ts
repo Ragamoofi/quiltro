@@ -197,7 +197,7 @@ export function checkUnlocks(save: SaveData): string[] {
     const ok =
       u.kind === 'inicio' ||
       (u.kind === 'llegarA' && save.best.km >= (CIUDADES.find((x) => x.id === u.ciudad)?.km ?? Infinity)) ||
-      (u.kind === 'total' && (u.stat === 'sopaipillas' ? save.totals.sopaipillas : save.totals.palomas) >= u.cantidad) ||
+      (u.kind === 'total' && save.totals[u.stat] >= u.cantidad) ||
       (u.kind === 'vencer' && save.bossesBeaten.includes(u.jefe));
     if (ok) {
       save.characters.push(c.id);
