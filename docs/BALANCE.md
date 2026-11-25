@@ -248,6 +248,14 @@ Bot medio, Quiltro, 20 viajes (semillas 7000–7019), 16 minutos máximo:
 
 **Lectura:** el jefe final no es el muro: de los 6 viajes que llegan a Patagonia, solo 2 mueren ahí. Las peleas medidas duran 25–41 s, **por debajo de la meta de 45–120 s**, así que por ahora no lo subo: la muestra es de 3 peleas, el bot medio no juega bien los patrones y el muro real sigue siendo el Norte (11 de 20 muertes, el Alicanto). Se revisa con tus partidas; si te parece fácil, subo su vida (9.000 base) o acorto el tiempo entre ataques.
 
+## 11.1 — El bot ahora es repetible
+
+**Problema:** con la misma semilla el bot daba partidas distintas cada vez (la misma semilla dio 10,65 y 13,79 minutos). Causa: cuando el juego cambia la velocidad (cámara lenta al subir de nivel, al reiniciar escena) volvía a prender el bucle real, que metía pasos de simulación entre los del bot. Solución: `GameLoop.locked`; mientras el bot maneja la simulación el bucle real no avanza.
+
+**Comprobación:** las mismas 6 semillas dos veces dan resultados idénticos (minuto, muertes y nivel de cada partida). La medición de 20 viajes (semillas 7000–7019, bot medio, Quiltro) da 10 % de victorias, 6,37 min, 1.992 km, 17,6 niveles y 2.527 enemigos, **exactamente igual** a la tomada antes de partir `runScene` y `main`: esa refactorización no cambió el juego.
+
+**Qué significa para las cifras anteriores:** las mediciones de la Fase 9 y 10 se hicieron con este ruido (con la pestaña a la vista o no, el resultado podía cambiar mucho). Sus conclusiones generales sirven, pero las comparaciones finas entre personajes y armas hay que repetirlas. **Línea base nueva, repetible: bot medio, Quiltro, 20 viajes = 10 % de victorias, 6,37 min.**
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

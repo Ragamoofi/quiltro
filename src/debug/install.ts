@@ -196,7 +196,7 @@ export async function installDebug(env: DebugEnv): Promise<void> {
     const botHooks = {
       start(seed: number, character?: string): RunScene {
         const r = env.startBotRun(seed, character);
-        loop.timeScale = 0;
+        loop.locked = true;
         return r;
       },
       tick(frames: number): void {
@@ -218,7 +218,7 @@ export async function installDebug(env: DebugEnv): Promise<void> {
               botState.error = String(err);
             }
             botState.running = false;
-            loop.timeScale = 1;
+            loop.locked = false;
           })();
         },
         /** Weapon bench: `__quiltroBot.bench(['volantin','fuegos'], [1,3,5], [8,30])`, then `.benchResults()`. */
@@ -236,7 +236,7 @@ export async function installDebug(env: DebugEnv): Promise<void> {
               benchState.error = String(err);
             }
             benchState.running = false;
-            loop.timeScale = 1;
+            loop.locked = false;
           })();
         },
         benchResults: () => ({ running: benchState.running, error: benchState.error, results: benchState.results }),

@@ -29,6 +29,8 @@ export function advance(
 export class GameLoop {
   /** 1 = normal, 0.3 = level-up slow motion, 0 = frozen (hit-stop). */
   timeScale = 1;
+  /** The balance bot drives the simulation by hand: the real loop must not add steps of its own. */
+  locked = false;
   /** Measured render frames per second (smoothed). */
   fps = 0;
   /** Measured updates per second (smoothed). */
@@ -65,8 +67,9 @@ export class GameLoop {
     const realDt = (now - this.last) / 1000;
     this.last = now;
 
-    const { steps, accumulator } = advance(this.accumulator, realDt, this.timeScale);
-    this.accumulator = accumulator;
+    const { steps: wanted, accumulator } = advance(this.accumulator, realDt, this.timeScale);
+    const steps = this.locked ? 0 : wanted;
+    this.accumulator = this.locked ? 0 : accumulator;
     for (let i = 0; i < steps; i++) this.hooks.update(STEP);
     this.hooks.render(this.accumulator / STEP, realDt);
 
