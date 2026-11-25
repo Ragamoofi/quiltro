@@ -18,6 +18,18 @@ Meta de la fase: que el juego aguante 20+ partidas sin repetirse, sin romper el 
 - **Hallazgo y arreglo (hecho):** con la misma semilla el bot daba partidas distintas cada vez. No era el generador de números: era el bucle real, que se volvía a encender durante la cámara lenta y metía pasos de simulación entre los del bot. Ahora el bot lo bloquea (`GameLoop.locked`) y las mismas semillas dan partidas idénticas. Línea base nueva en `BALANCE.md`. Las cifras de personajes y armas de las fases 9 y 10 hay que repetirlas con el bot repetible (se hace junto con la 11.5).
 - **Listo cuando:** ningún archivo de `src/game` pasa de ~600 líneas, 128 pruebas siguen verdes y la misma semilla da la misma partida.
 
+### 11.1a — Pantalla completa y La Cucha (pedido del 2026-11-25, **prioridad alta**; 1 jornada)
+Lo que se ve en las capturas del usuario (navegador de escritorio, ventana de ~1919×920):
+- **Franjas oscuras alrededor del juego.** El juego mide 480×270 y se muestra a una escala entera (×3 = 1440×810), así que en una ventana de 1919×920 sobran bordes a los lados y arriba/abajo. Mi arreglo anterior (medios pasos y tecla F) no alcanza: con la barra del navegador la ventana no es 16:9.
+- **La Cucha se ve mal:** la escena está pensada para 480×270 y en pantalla grande queda con el suelo y el cielo cortados, y los objetos apretados.
+- **El Cóndor se mezcla con el chanchito de la Cuenta RUT** (el objeto `chanchito` de `data/cucha.ts` cae justo encima del personaje y no se distingue).
+
+Plan:
+1. Reproducir a 1919×920, 1920×1080 (pantalla completa), 1366×768 y 2560×1440, con capturas antes/después.
+2. **Llenar la pantalla sin bordes**: el área de juego se adapta a la forma de la ventana (más ancho o más alto que 16:9) en vez de dejar franjas. Se ve más mundo a los lados, y el HUD y los menús se anclan a los bordes. Se mantiene la escala entera donde se pueda, y si no, escala fraccionaria con borde nítido. Opción en Opciones: "Pantalla: llenar / nítida".
+3. **La Cucha**: recolocar objetos, personaje y chanchito sin que se pisen (posiciones fijas por objeto, personaje a un lado), y que el fondo cubra todo el ancho.
+4. **Listo cuando:** en las cuatro resoluciones no hay franjas, nada se corta ni se pisa, y tú lo apruebas con tus propias capturas.
+
 ### 11.1b — Mapas vivos y fieles a su lugar (pedido del 2026-11-25; 3–4 jornadas, se hace por ambiente)
 Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos propios y más vida. Se parte por el Norte y Valparaíso y después se recorre el resto, un ambiente por commit y con capturas antes/después.
 
@@ -63,7 +75,7 @@ Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos 
 - **Yo**: ajustar el equilibrio con tus datos, subir capturas a itch.io y publicar.
 
 ## Orden recomendado
-11.0 → 11.1 → 11.1b (mapas vivos) → 11.2 → 11.3 → 11.4 → 11.5 → 11.6 → 11.7 → 11.8. Los logros van antes que los eventos para poder premiarlos; el código se ordena primero porque los eventos tocan `runScene`.
+11.0 → 11.1 → **11.1a (pantalla y Cucha)** → 11.1b (mapas vivos) → 11.2 → 11.3 → 11.4 → 11.5 → 11.6 → 11.7 → 11.8. Los logros van antes que los eventos para poder premiarlos; el código se ordena primero porque los eventos tocan `runScene`.
 
 ## Lo que necesito que decidas
 1. ¿Apruebas el orden? (si quieres ver novedades jugables rápido, se puede adelantar 11.5 antes que 11.2).
