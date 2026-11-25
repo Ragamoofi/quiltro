@@ -19,7 +19,7 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 #### Cambiado
 - Partidas guardadas pasan a la versión 5 (pasajes y marcas).
-- Todo medido con el bot en .
+- Todo medido con el bot en `docs/BALANCE.md`.
 
 ### Fase 10.1 — Personajes: arma propia, pasiva única y desbloqueo en orden
 
