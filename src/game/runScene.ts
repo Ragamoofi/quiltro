@@ -1,5 +1,5 @@
-import { Container, Sprite } from 'pixi.js';
-import { anim, frameAt } from '../art/assets.ts';
+import { Container } from 'pixi.js';
+
 import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
 import { ambienteAt } from '../data/zonas.ts';
 import type { Sfx } from '../audio/sfx.ts';
@@ -7,21 +7,21 @@ import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
 import { deriveSeed, Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
-import { CAJA, ENEMY_CAP, LEVEL_UP, PICKUPS, xpToNext } from '../data/balance.ts';
-import { CIUDADES } from '../data/zonas.ts';
+import { ENEMY_CAP, LEVEL_UP, xpToNext } from '../data/balance.ts';
+
 import { t, tList } from '../i18n/index.ts';
 import { Banner } from '../ui/banner.ts';
 import { CajaView } from '../ui/cajaView.ts';
-import { pillarOf, pillarTier } from '../data/pilares.ts';
-import { LUCAS_CARD, pillarLine } from '../ui/cardText.ts';
+
+import { pillarLine } from '../ui/cardText.ts';
 import { EndScreen } from '../ui/endScreen.ts';
 import { Hud } from '../ui/hud.ts';
 import { LevelUpView } from '../ui/levelUp.ts';
 import { PauseView } from '../ui/pauseView.ts';
 import { LOGROS } from '../data/logros.ts';
-import { cityAt as cityId, type RunResult, type RunRewards } from '../meta/progress.ts';
+import type { RunResult, RunRewards } from '../meta/progress.ts';
 import { shareText, type DailyRun, type ShareInfo } from '../meta/daily.ts';
-import { EVOLUCIONES } from '../data/evoluciones.ts';
+
 import { Build, type Offer } from './build.ts';
 import type { Music } from '../audio/music.ts';
 import { setForZone } from '../audio/musicData.ts';
@@ -37,7 +37,9 @@ import { DamageNumbers } from './fx/damageNumbers.ts';
 import { Particles } from './fx/particles.ts';
 import { ScreenFx } from './fx/screenFx.ts';
 import { Shake } from './fx/shake.ts';
+import { applyOffer, replacementFor, rollCaja } from './cards.ts';
 import { Journey } from './journey.ts';
+import { cityName, emptyReport, runResult, shareInfo, snapshot } from './runReport.ts';
 import { Clouds } from './systems/clouds.ts';
 import { EnemyShots } from './systems/enemyShots.ts';
 import { SpatialGrid } from './systems/spatialGrid.ts';
@@ -49,31 +51,13 @@ import { FloorLayer } from './world/floor.ts';
 import { Hazards } from './world/hazards.ts';
 import { Passives } from './systems/passives.ts';
 import { AmbientLife } from './world/ambient.ts';
+import { AnimatedMoai } from './world/moai.ts';
 import { Cities } from './world/cities.ts';
 import { Horizon } from './world/horizon.ts';
 import { Weather } from './world/weather.ts';
 
 const ENEMY_POOL = 320;
 
-/** A friendly moai whose eyes glow (Guardianes). */
-class AnimatedMoai {
-  readonly sprite: Sprite;
-  private t = 0;
-  private readonly a = anim('moai', 'saludo');
-
-  constructor(x: number, y: number) {
-    this.sprite = new Sprite(this.a.textures[0]);
-    this.sprite.anchor.set(0.5, 1);
-    this.sprite.position.set(Math.round(x), Math.round(y));
-    this.sprite.zIndex = y;
-  }
-
-  update(dt: number): void {
-    this.t += dt;
-    const tex = this.a.textures[frameAt(this.a, this.t)];
-    if (tex) this.sprite.texture = tex;
-  }
-}
 /** Seconds of the death animation before the end screen. */
 const DEATH_DELAY = 1.6;
 
@@ -645,23 +629,12 @@ export class RunScene implements Scene {
   }
 
   private applyOffer(offer: Offer): void {
-    const ctx = this.ctx;
-    if (offer.kind === 'heal') ctx.player.heal(PICKUPS.moteConHuesillo.heal, ctx);
-    else if (offer.kind === 'lucas') ctx.progress.lucas += LUCAS_CARD;
-    else {
-      const line = pillarLine(offer, ctx.build);
-      ctx.build.apply(offer);
-      if (line?.unlocks && offer.kind === 'trait') {
-        // A pillar bonus just woke up: say which one and what it does.
-        const pillar = pillarOf(offer.id);
-        const tier = pillar ? pillarTier(ctx.build.pillarPoints(pillar.id)) : 0;
-        if (pillar && tier > 0) {
-          this.banner.show(t('efectos.pilarBono', { pilar: t(`${pillar.i18n}.nombre`) }), 'a', t(`${pillar.i18n}.bono${tier}`));
-          ctx.sfx.play('cargaLista', { pitch: 1.2 });
-        }
-      }
+    const woke = applyOffer(this.ctx, offer);
+    if (woke) {
+      // A pillar bonus just woke up: say which one and what it does.
+      this.banner.show(woke.title, 'a', woke.text);
+      this.ctx.sfx.play('cargaLista', { pitch: 1.2 });
     }
-    ctx.refreshMods();
   }
 
   private reroll(): void {
@@ -676,11 +649,7 @@ export class RunScene implements Scene {
     if (!offer || this.banishes <= 0 || offer.kind === 'heal' || offer.kind === 'lucas') return;
     this.banishes--;
     this.ctx.build.banished.add(offer.id);
-    const taken = new Set(this.offers.map((o) => ('id' in o ? o.id : o.kind)));
-    const replacement = this.ctx.build
-      .offers(this.ctx.rngCards, 6)
-      .find((o) => !taken.has('id' in o ? o.id : o.kind));
-    this.offers[i] = replacement ?? { kind: 'lucas', rarity: 'comun' };
+    this.offers[i] = replacementFor(this.ctx, this.offers);
     this.showOffers(false);
   }
 
@@ -709,28 +678,12 @@ export class RunScene implements Scene {
 
   private openCaja(golden: boolean): void {
     const ctx = this.ctx;
-    const roll = ctx.rngCards.weighted(CAJA.rewards.map((r) => r.chance));
-    let count: number = CAJA.rewards[roll]?.count ?? 1;
-    if (golden) count = Math.max(3, count);
-    const rewards: Offer[] = [];
-    // An evolution, if one is ready, always comes out first.
-    const evo = ctx.build.evolutionReady();
+    const { rewards, evolution: evo } = rollCaja(ctx, golden);
     if (evo) {
-      const offer: Offer = { kind: 'evolution', id: evo.weapon, evolution: evo.id, rarity: 'legendaria' };
-      ctx.build.apply(offer);
-      rewards.push(offer);
-      count = Math.max(1, count - 1);
       ctx.banner(t(evo.nameKey), 'a', t('ui.evoluciona'));
       // Cielo del Dieciocho: 20 s of cueca in 6/8 with palmas (GDD "Música").
       if (evo.id === 'cieloDelDieciocho') this.music.startCueca(20);
     }
-    for (let i = 0; i < count; i++) {
-      const offer = ctx.build.offers(ctx.rngCards, 1)[0];
-      if (!offer) break;
-      ctx.build.apply(offer);
-      rewards.push(offer);
-    }
-    ctx.refreshMods();
     this.mode = 'caja';
     this.input.clear();
     ctx.sfx.setBuzz(0);
@@ -821,40 +774,16 @@ export class RunScene implements Scene {
     this.music.stop();
     ctx.sfx.play(victory ? 'victoria' : 'derrota');
     const km = this.journey.km(ctx.time);
-    // Only what is new since the last report counts (a run that continued into Antarctica reports twice).
-    const r = this.reported;
-    const killsBy: Record<string, number> = {};
-    for (const [k, v] of Object.entries(ctx.stats.killsBy)) killsBy[k] = v - (r.killsBy[k] ?? 0);
-    const rewards = this.opts.onFinish({
-      km: km - r.km,
-      bestKm: km,
-      kills: ctx.stats.kills - r.kills,
-      bosses: ctx.progress.bosses - r.bosses,
-      bossesBeaten: ctx.stats.bossesBeaten,
-      zones: this.journey.visited,
-      killsBy,
-      sopaipillas: ctx.stats.food - r.food,
-      lucasInRun: ctx.progress.lucas - r.lucas,
-      victory,
-      achievements: [...this.earned],
-      continued: r.km > 0,
-    });
-    this.reported = {
-      km,
-      kills: ctx.stats.kills,
-      bosses: ctx.progress.bosses,
-      food: ctx.stats.food,
-      lucas: ctx.progress.lucas,
-      killsBy: { ...ctx.stats.killsBy },
-    };
-    const info = this.shareInfo(km, victory);
+    const rewards = this.opts.onFinish(runResult(ctx, km, this.journey.visited, victory, this.earned, this.reported));
+    this.reported = snapshot(ctx, km);
+    const info = shareInfo(ctx, this.opts.loadout, this.opts.daily, km, victory);
     const text = shareText(info);
     const daily = this.opts.daily;
     this.end.show(
       {
         victory,
         km,
-        city: this.cityAt(km),
+        city: cityName(km),
         seconds: ctx.time,
         kills: ctx.stats.kills,
         level: ctx.progress.level,
@@ -874,39 +803,7 @@ export class RunScene implements Scene {
     );
   }
 
-  /** What the share text and the image card say about this trip. */
-  private shareInfo(km: number, victory: boolean): ShareInfo {
-    const b = this.ctx.build;
-    const evo = EVOLUCIONES.find((e) => b.evolved.has(e.weapon));
-    let strongest = this.opts.loadout.character.startingWeapon;
-    let most = -1;
-    for (const w of b.slotWeapons) {
-      const dealt = this.ctx.stats.damageBy[w.def.id] ?? 0;
-      if (dealt > most) {
-        most = dealt;
-        strongest = w.def.id;
-      }
-    }
-    const weapon = b.weapon(strongest);
-    const label = evo
-      ? t(evo.nameKey)
-      : weapon
-        ? `${t(`${weapon.def.i18n}.nombre`)} ${t('ui.nivelCorto', { n: weapon.level })}`
-        : '';
-    const city = CIUDADES.find((c) => c.id === cityId(km));
-    return {
-      km,
-      city: city ? t(city.i18n) : '',
-      build: label,
-      icons: [...b.slotWeapons.map((w) => w.def.id), ...b.traits.map((tr) => tr.def.id)],
-      character: this.opts.loadout.character.id,
-      daily: this.opts.daily ? { number: this.opts.daily.number, counted: this.opts.daily.counted } : null,
-      victory,
-      link: `${location.origin}${location.pathname}`,
-    };
-  }
-
-  private reported = { km: 0, kills: 0, bosses: 0, food: 0, lucas: 0, killsBy: {} as Record<string, number> };
+  private reported = emptyReport();
 
   /** After beating Cai Cai Vilú: keep going into the endless south. */
   private continueToAntarctica(): void {
@@ -920,14 +817,6 @@ export class RunScene implements Scene {
   get won(): boolean {
     return this.victory;
   }
-
-  private cityAt(km: number): string {
-    let city = CIUDADES[0];
-    for (const c of CIUDADES) if (km >= c.km) city = c;
-    return city ? t(city.i18n) : '';
-  }
-
-  // ---------------------------------------------------------------- render
 
   render(alpha: number): void {
     const ctx = this.ctx;
@@ -978,7 +867,7 @@ export class RunScene implements Scene {
         xp: ctx.progress.xp,
         xpNext: xpToNext(ctx.progress.level),
         km,
-        city: this.cityAt(km),
+        city: cityName(km),
         seconds: ctx.time,
         kills: ctx.stats.kills,
       },

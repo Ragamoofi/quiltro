@@ -13,7 +13,10 @@ Meta de la fase: que el juego aguante 20+ partidas sin repetirse, sin romper el 
 
 ### 11.1 — Salud del código (1 jornada)
 - Partir `runScene.ts` (945 líneas) y `main.ts`: sacar eventos de partida, depuración y bot a módulos propios, sin cambiar el comportamiento.
-- **Listo cuando:** ningún archivo de `src/game` pasa de ~600 líneas, 128 pruebas siguen verdes y la partida del bot da los mismos resultados con la misma semilla.
+- **Hecho en la primera pasada:** el panel de depuración y los ganchos del bot salieron de `main.ts` (`src/debug/install.ts`); de `runScene.ts` salieron las cartas y la caja (`cards.ts`), el informe de fin de partida (`runReport.ts`) y el moai (`world/moai.ts`). `main.ts` pasó de 568 a ~360 líneas y `runScene.ts` de ~1.010 a ~835.
+- **Falta:** sacar el flujo de menús de la partida (cartas, caja, pausa, final) a su propia clase; ahí `runScene.ts` bajaría a ~600.
+- **Hallazgo:** con la misma semilla el bot da partidas distintas cada vez (la misma semilla dio 10,65 y 13,79 min). El generador `rng` se usa también en el dibujo, así que la cantidad de cuadros dibujados cambia la partida. Hay que separar el `rng` cosmético del de jugabilidad para que las mediciones sean repetibles; se arregla antes de la 11.1b.
+- **Listo cuando:** ningún archivo de `src/game` pasa de ~600 líneas, 128 pruebas siguen verdes y la misma semilla da la misma partida.
 
 ### 11.1b — Mapas vivos y fieles a su lugar (pedido del 2026-11-25; 3–4 jornadas, se hace por ambiente)
 Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos propios y más vida. Se parte por el Norte y Valparaíso y después se recorre el resto, un ambiente por commit y con capturas antes/después.
