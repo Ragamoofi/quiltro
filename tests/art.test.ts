@@ -54,18 +54,20 @@ describe('sprites', () => {
 
   it('pack without overlaps', () => {
     const layout = layoutSheet(SPRITES);
-    const taken = new Set<string>();
+    // One flag per pixel of the sheet; a frame that lands on a used pixel is an overlap.
+    const used = new Uint8Array(layout.width * layout.height);
+    const problems: string[] = [];
     for (const f of layout.frames) {
-      expect(f.x + f.w).toBeLessThanOrEqual(layout.width);
-      expect(f.y + f.h).toBeLessThanOrEqual(layout.height);
-      for (let y = f.y; y < f.y + f.h; y++) {
-        for (let x = f.x; x < f.x + f.w; x++) {
-          const k = `${x},${y}`;
-          expect(taken.has(k)).toBe(false);
-          taken.add(k);
+      if (f.x + f.w > layout.width || f.y + f.h > layout.height) problems.push(`${f.key} se sale de la hoja`);
+      for (let y = f.y; y < Math.min(layout.height, f.y + f.h); y++) {
+        for (let x = f.x; x < Math.min(layout.width, f.x + f.w); x++) {
+          const i = y * layout.width + x;
+          if (used[i]) problems.push(`${f.key} pisa a otro cuadro en ${x},${y}`);
+          used[i] = 1;
         }
       }
     }
+    expect(problems.slice(0, 5)).toEqual([]);
     expect(rasterize(layout)).toHaveLength(layout.width * layout.height * 4);
   });
 });
