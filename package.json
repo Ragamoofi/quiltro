@@ -16,7 +16,8 @@
     "check": "npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
-    "pixi.js": "^8.23.0"
+    "pixi.js": "^8.23.0",
+    "tone": "^15.1.22"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
