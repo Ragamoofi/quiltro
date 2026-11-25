@@ -178,28 +178,32 @@ const gato: Draw = (pose) => {
 const pudu: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
-  const lie = pose.legs === 'lie';
-  // Round body, arched back: dark along the spine, warm on the sides, paler underneath; tiny tail.
-  p.ellipse(9.5, 14 + y, 6.5, lie ? 3.2 : 3.9, 'O');
-  p.ellipse(9, 11.2 + y, 5, 1.3, 'd');
-  p.ellipse(10, 16.8 + y, 4.2, 0.9, 'C');
-  p.rect(2, 12 + y + (pose.wiggle ? 1 : 0), 2, 1, 'd');
-  // Short neck and a small head held low, with a pointed dark snout and a black nose.
-  p.rect(14, 11 + y, 2, 3, 'O');
-  p.disc(16.5, 10.5 + y, 2.9, 'O');
-  p.rect(18, 11 + y, 3, 2, 'd').set(20, 11 + y, 'k').set(19, 13 + y, 'd');
-  // Big round ears with pink inside.
-  p.ellipse(14, 7 + y, 1.7, 2.2, 'O').rect(14, 6 + y, 1, 2, 'p');
-  p.ellipse(18.5, 7.5 + y, 1.6, 2, 'O').set(18, 7 + y, 'p');
+  // Drawn by hand: a little hunched deer, rump higher than the shoulders, dark chocolate coat, the
+  // head held low with a rusty face, big round ears with pale rims, two short spikes and rusty legs
+  // (d chocolate · O rust · o pale rust · C belly · k black).
+  p.rows(0, 2 + y, [
+    '...........o.......o',
+    '..........oOo.....oOo',
+    '..........oOpo...oOpo',
+    '...........oOOOOOOOo',
+    '............dOOOOOOO',
+    '...OOOOOO...dOOOOOOOd',
+    '..ddddddddd.dOOOOOOddk',
+    '.dddddddddddddOOOOdd',
+    '.ddddddddddddddOOO',
+    '.ddddddddddddddd',
+    '.dddddddddddddd',
+    '..dddddddddddd',
+    '...CCCCCCCCC',
+  ]);
   // Two short spike antlers between the ears.
-  p.rect(15, 4 + y, 1, 3, 'd').rect(17, 4 + y, 1, 3, 'd');
-  // Big shiny eye.
-  if (pose.eye === 'open') p.rect(16, 9 + y, 2, 2, 'k').set(16, 9 + y, 'W');
-  else if (pose.eye === 'closed') p.rect(16, 10 + y, 2, 1, 'k');
-  else p.set(16, 9 + y, 'k').set(17, 10 + y, 'k');
-  if (pose.mouth) p.rect(19, 13 + y, 2, 1, 'R');
-  // Thin short legs with dark hooves.
-  legs(p, pose, [5, 7, 11, 13], 18 + y, 'd', 'k', true);
+  p.set(16, 3 + y, 'k').set(17, 3 + y, 'k');
+  if (pose.wiggle) p.set(0, 8 + y, 'd');
+  if (pose.eye === 'open') p.rect(16, 7 + y, 2, 2, 'k').set(16, 7 + y, 'W');
+  else if (pose.eye === 'closed') p.rect(16, 8 + y, 2, 1, 'k');
+  else p.set(16, 7 + y, 'k').set(17, 8 + y, 'k');
+  if (pose.mouth) p.rect(19, 9 + y, 2, 1, 'R');
+  legs(p, pose, [3, 5, 11, 13], 15 + y, 'O', 'k', true);
   return p;
 };
 
@@ -232,7 +236,13 @@ const pinguino: Draw = (pose) => {
   if (pose.eye === 'open') p.set(14 + x, 4 + y, 'W');
   else if (pose.eye === 'hurt') p.set(14 + x, 4 + y, 'r');
   // Flipper that swings with the walk.
-  p.ellipse(6 + x + (pose.wiggle ? -1 : 0), 13 + y, 1.8, 4.2, 'k');
+  // The flipper: a slim dark paddle down the side, from the shoulder, swinging out a little.
+  const out = pose.wiggle ? 1 : 0;
+  for (let i = 0; i < 7; i++) {
+    const fx = 9 + x - Math.floor((i * (1 + out)) / 3);
+    p.rect(fx, 9 + y + i, i < 5 ? 2 : 1, 1, 'k');
+    if (i < 4) p.set(fx + 1, 9 + y + i, 'K');
+  }
   const fy = 20;
   p.rect(9 + (pose.legs === 'a' ? -1 : 0), fy, 3, 2, 'p').rect(13 + (pose.legs === 'b' ? 1 : 0), fy, 3, 2, 'p');
   return p;
@@ -272,29 +282,37 @@ const zorro: Draw = (pose) => {
   const y = pose.dy;
   const lie = pose.legs === 'lie';
   const tw = pose.wiggle ? 1 : 0;
-  // The big brush of a tail, held low and out behind, grizzled grey with a black tip.
-  p.ellipse(4 - tw * 0.5, 15 + y, 4, 2.6, 'm').ellipse(4.5 - tw * 0.5, 14.3 + y, 3, 1.2, 'n');
-  p.disc(1.5 - tw * 0.5, 16 + y, 1.6, 'k');
-  // A dark seam where the tail meets the body, so the two never read as one shape.
-  p.rect(7, 12 + y, 1, 5, 'd');
-  // Slim body: rusty sides, the grey saddle on the back, white chest.
-  p.ellipse(11, 14.5 + y, 5.5, lie ? 3 : 3.4, 'O');
-  p.ellipse(11, 12 + y, 4.5, 1.4, 'm');
-  p.ellipse(14.5, 14.5 + y, 2, 2.4, 'w');
-  // Long fiery face, white cheek and chin, black nose.
-  p.disc(16, 9.5 + y, 3.2, 'o').rect(18, 10 + y, 4, 2, 'o').rect(17, 12 + y, 4, 1, 'w').set(21, 10 + y, 'k');
-  // Big pointed ears with black backs.
-  p.rows(13, 3 + y, ['k...k.', 'Ok..Ok', 'OO..OO']);
-  p.set(14, 5 + y, 'k').set(18, 5 + y, 'k');
-  if (pose.eye === 'open') p.set(17, 9 + y, 'a').set(18, 9 + y, 'k');
-  else if (pose.eye === 'closed') p.rect(17, 9 + y, 2, 1, 'k');
-  else p.set(17, 8 + y, 'k').set(18, 10 + y, 'k');
-  if (pose.mouth) p.rect(19, 12 + y, 2, 1, 'R');
-  // Legs rusty on top, black socks below.
-  legs(p, pose, [8, 10, 13, 15], 17 + y, 'o', 'k', true);
-  if (!lie && pose.legs !== 'tuck') for (const lx of [8, 10, 13, 15]) {
-    const sw = pose.legs === 'a' ? ([8, 13].includes(lx) ? -1 : 1) : pose.legs === 'b' ? ([8, 13].includes(lx) ? 1 : -1) : 0;
-    p.rect(lx + sw, 19 + y, 1, 2, 'k');
+  // Drawn by hand, pixel by pixel: a long horizontal body, the head held high, and a huge brush of a
+  // tail straight out behind, grizzled grey with a black tip (o fire · O rust · m/n grizzled grey ·
+  // w white · k black).
+  p.rows(0, 2 + y, [
+    '...............OO..OO',
+    '...............OkO.Ok',
+    '...............oooooo',
+    '..............oooooooo',
+    '..............ooooooOk',
+    '..............ooowwww',
+  ]);
+  p.rows(0, 8 + y + tw, ['.nnmm', 'nmmmmmm', 'kmmmmmmm', 'kkmmmm', '.kk']);
+  p.rows(0, 8 + y, [
+    '.............oooww',
+    '.......nnnnnnnmoow',
+    '........mmmmmmmooww',
+    '......OOOOOOOOOooww',
+    '......OOOOOOOOOoow',
+    '......OwwwwwwwOOo',
+  ]);
+  if (pose.eye === 'open') p.set(17, 5 + y, 'a').set(18, 5 + y, 'k');
+  else if (pose.eye === 'closed') p.rect(17, 5 + y, 2, 1, 'O');
+  else p.set(17, 4 + y, 'k').set(18, 5 + y, 'k');
+  if (pose.mouth) p.rect(18, 7 + y, 3, 1, 'R').set(21, 7 + y, 'w');
+  // Long thin legs, rust on top and black socks.
+  legs(p, pose, [7, 9, 14, 16], 14 + y, 'O', 'k', true);
+  if (!lie && pose.legs !== 'tuck') {
+    [7, 9, 14, 16].forEach((x, i) => {
+      const sw = pose.legs === 'a' ? (i % 2 === 0 ? -1 : 1) : pose.legs === 'b' ? (i % 2 === 0 ? 1 : -1) : 0;
+      p.rect(x + sw, 18 + y, 1, 2, 'K');
+    });
   }
   return p;
 };
@@ -305,26 +323,26 @@ const zorro: Draw = (pose) => {
 const chingue: Draw = (pose) => {
   const p = new Pix(22, 22);
   const y = pose.dy;
-  const lie = pose.legs === 'lie';
   const tw = pose.wiggle ? 1 : 0;
-  // The plume: it rises from the rump and curls forward over the back, with white along it.
-  p.ellipse(4.5 - tw * 0.5, 9 + y, 4, 6, 'K');
-  p.ellipse(5.5 - tw * 0.5, 4.5 + y, 3, 2.4, 'K');
-  p.rect(4 - tw, 4 + y, 1, 9, 'w').rect(5 - tw, 3 + y, 2, 1, 'w');
-  p.set(2 - tw, 6 + y, 'g').set(7 - tw, 8 + y, 'g');
-  // Low, long body with the two white stripes along the back.
-  p.ellipse(11, 15 + y, 6.5, lie ? 2.8 : 3.4, 'K');
-  p.rect(7, 12 + y, 9, 1, 'w').rect(8, 13 + y, 7, 1, 'K').rect(8, 14 + y, 6, 1, 'w');
-  // Small head with the white blaze, a long pig-like snout and a pink nose; small round ears.
-  p.disc(17, 12 + y, 2.8, 'K');
-  p.rect(16, 9 + y, 2, 3, 'w');
-  p.rect(19, 13 + y, 3, 1, 'K').set(21, 13 + y, 'p').set(21, 12 + y, 'p');
-  p.set(15, 9 + y, 'K').set(18, 9 + y, 'K');
+  // Drawn by hand: long and low to the ground, one white stripe from the crown along the whole back
+  // into the tall S of the tail (white on its front edge), a small head with a long snout and a
+  // pink nose (K black fur · k ink · w white · p nose).
+  p.rows(-tw, 1 + y, ['...KKK', '..KKgKK', '.KKwwKKK', '.KwwKKgK', '.KwKKKKK', '..wKKKK', '..wKKKK']);
+  p.rows(0, 8 + y, [
+    '...wKKKKKKK',
+    '..KKwwwwwwwKKK',
+    '.KKKKKKKKKwwwwKK.K',
+    '.KKKKKKKKKKKKKwwKK',
+    '.KKKKKKKKKKKKKKwKKKK',
+    '.KKKKKKKKKKKKKKKKKKKp',
+    '..KKKKKKKKKKKKKKKKK',
+    '...KKKKKKKKKKKKKK',
+  ]);
   if (pose.eye === 'open') p.set(18, 12 + y, 'W');
   else if (pose.eye === 'closed') p.set(18, 12 + y, 'g');
   else p.set(18, 12 + y, 'r');
   if (pose.mouth) p.rect(19, 14 + y, 2, 1, 'R');
-  legs(p, pose, [7, 10, 13, 16], 18 + y, 'K', 'k');
+  legs(p, pose, [4, 6, 12, 14], 16 + y, 'K', 'k');
   return p;
 };
 
@@ -381,7 +399,7 @@ export const personajesSprites: SpriteDef[] = [
   // The pudú runs in little hops.
   character('pudu', pudu, (pose) => ({
     // In the air the legs fold under the body; they reach the ground only when it lands.
-    trotar: { fps: 9, frames: [pose({ legs: 'a', dy: 0 }), pose({ legs: 'tuck', dy: -2 }), pose({ legs: 'tuck', dy: -3, wiggle: 1 }), pose({ legs: 'b', dy: 0 })] },
+    trotar: { fps: 9, frames: [pose({ legs: 'a', dy: 0 }), pose({ legs: 'tuck', dy: -1 }), pose({ legs: 'tuck', dy: -2, wiggle: 1 }), pose({ legs: 'b', dy: 0 })] },
   })),
   character('pinguino', pinguino),
   // The pigeon walks when it stands still and flies when it moves.
