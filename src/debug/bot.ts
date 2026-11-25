@@ -423,6 +423,73 @@ export async function playRun(hooks: BotHooks, seed: number, skill: Skill, maxMi
   };
 }
 
+export interface BenchResult {
+  weapon: string;
+  level: number;
+  /** Enemies kept alive around the dog. */
+  density: number;
+  /** Damage per second dealt by this weapon alone. */
+  dps: number;
+  kills: number;
+}
+
+/**
+ * Weapon bench: a controlled arena to compare weapons without the noise of a whole trip.
+ * The dog stands still and cannot die, carrying ONLY this weapon at this level (common cards),
+ * and `density` enemies of the same kind (a 60 HP micro at minute 0) are kept around it for `seconds`.
+ */
+export async function benchWeapon(hooks: BotHooks, weaponId: string, level: number, density: number, seconds = 30): Promise<BenchResult> {
+  const run = hooks.start(777);
+  const ctx = run.ctx;
+  ctx.debug.invincible = true;
+  run.spawner.enabled = false;
+  // Drop every weapon but the one under test (¡GUAU! needs a hold, which the bench never does).
+  const set = run.weapons as unknown as { active: Map<string, { root: { visible: boolean } }> };
+  for (const id of [...set.active.keys()]) {
+    if (id !== weaponId) {
+      const w = set.active.get(id);
+      if (w) w.root.visible = false;
+      set.active.delete(id);
+    }
+  }
+  ctx.build.weapons.splice(0, ctx.build.weapons.length, ...ctx.build.weapons.filter((w) => w.def.id === weaponId));
+  if (!ctx.build.weapon(weaponId)) ctx.build.apply({ kind: 'weapon', id: weaponId, rarity: 'comun', toLevel: 1 });
+  for (let l = (ctx.build.weapon(weaponId)?.level ?? 1) + 1; l <= level; l++) {
+    ctx.build.apply({ kind: 'weapon', id: weaponId, rarity: 'comun', toLevel: l });
+  }
+  ctx.refreshMods();
+
+  const p = ctx.player;
+  const frames = Math.round(seconds * 60);
+  let yieldAt = performance.now();
+  const channel = new MessageChannel();
+  for (let f = 0; f < frames; f++) {
+    // Keep the crowd topped up every quarter second, in a ring around the dog.
+    if (f % 15 === 0) {
+      const missing = density - ctx.enemies.activeCount;
+      for (let i = 0; i < missing; i++) {
+        const a = (i / Math.max(1, missing)) * Math.PI * 2 + f * 0.1;
+        ctx.enemies.spawn('micro', p.x + Math.cos(a) * 150, p.y - 8 + Math.sin(a) * 110, 0, ctx);
+      }
+    }
+    hooks.tick(1);
+    if (performance.now() - yieldAt > 80) {
+      yieldAt = performance.now();
+      await new Promise<void>((resolve) => {
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage(0);
+      });
+    }
+  }
+  return {
+    weapon: weaponId,
+    level,
+    density,
+    dps: Math.round((ctx.stats.damageBy[weaponId] ?? 0) / seconds),
+    kills: ctx.stats.killsBy[weaponId] ?? 0,
+  };
+}
+
 function roundAll(m: Record<string, number>): Record<string, number> {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, Math.round(v)]));
 }

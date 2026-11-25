@@ -4,6 +4,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.2b — Banco de armas y Alicanto
+
+#### Agregado
+- Banco de armas en el bot (`__quiltroBot.bench`): arena controlada para medir el daño por segundo de cada arma sola, a distintas densidades de enemigos.
+- `Enemies.slam` acepta el origen del daño, para que la telemetría distinga los golpes de jefe.
+
+#### Cambiado
+- **Alicanto:** la picada se anuncia con un círculo rojo y se compromete a un punto fijo (antes seguía al quiltro sin aviso); el golpe hace 14, el contacto baja de 14 a 8 y las plumas de 8 a 6. Con el bot medio, las muertes en el Norte bajan de 16 a 7 de 20 y el minuto promedio de muerte sube de 5,6 a 9,1. Detalle en `docs/BALANCE.md`.
+
 ### Fase 9.2 — Rarezas, cartas y pilares
 
 #### Agregado

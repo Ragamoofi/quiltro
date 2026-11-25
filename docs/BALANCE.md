@@ -89,6 +89,39 @@ Daño por minuto del volantín: medio 1.596 → 2.349, experto 1.704 → 5.031. 
 - **El Alicanto sigue siendo el muro del Norte** (10 a 16 de 20 muertes ahí). Ni las rarezas ni los pilares lo tocan: hay que mirar el jefe mismo.
 - **La disparidad de armas sigue**: los fuegos todavía hacen 6 a 15 veces el daño del volantín. Medirla con partidas completas mezcla demasiadas cosas (qué cartas salieron, cuánto se vivió). Falta un **banco de armas** (arena controlada, mismos enemigos, mismo nivel) para ajustar arma por arma con datos limpios.
 
+## 9.2b — Banco de armas y Alicanto
+
+### Banco de armas (`__quiltroBot.bench([...armas], [niveles], [densidades], segundos)`)
+Arena controlada: el quiltro quieto e invencible, solo con esa arma (cartas comunes) y `densidad` micros (60 de vida) a su alrededor, durante 30 s. Daño por segundo del arma sola:
+
+| Arma, nivel 5 | 8 enemigos | 30 | 100 | 250 |
+| --- | --- | --- | --- | --- |
+| Volantín | 22 | 59 | 101 | 142 |
+| Trompo | 53 | 43 | 62 | 30 |
+| Cables | 21 | 45 | 95 | 101 |
+| Chaya | 9 | 31 | 116 | 70 |
+| Fuegos | 41 | 44 | 118 | 232 |
+| Rayuela | 24 | 30 | 80 | 136 |
+
+**Lectura:** con las mismas condiciones el volantín no es el arma más débil (es de las más altas hasta 100 enemigos). La gran diferencia que se veía en los viajes completos (fuegos 6 a 15 veces más) viene de que los fuegos son daño en área y se disparan con multitudes de 150 a 300 enemigos, y que en una partida cuentan muchas más cosas (qué cartas salieron, evoluciones, cuánto se vivió). Los cohetes a 250 enemigos hacen ~1,6 veces el daño del siguiente. Es un resultado razonable: un arma de área debe ganar en multitudes y una de un solo golpe, en duelos.
+**Pendientes que sale del banco:** el trompo no escala bien con el nivel (53 → 30 a 250 enemigos, cuando debería subir) y los números varían mucho entre ejecuciones de 30 s. Hay que investigarlo en la 9.5 y repetir cada punto con varias semillas.
+
+### Alicanto
+Causa: más de la mitad del daño de los viajes que mueren en el Norte venía del **cuerpo del jefe**. Su picada seguía al quiltro sin ningún aviso y el contacto dolía 14. Cambios (`bosses/alicanto.ts`):
+- La picada ahora **se anuncia**: un círculo rojo que se llena durante 1,15 s en el lugar donde estaba el quiltro, y el pájaro se compromete a ese punto (antes seguía al quiltro). Moverse la esquiva.
+- El golpe de la picada hace 14 de daño de área; el contacto con el cuerpo baja de 14 a 8; las plumas de 8 a 6.
+
+| Viajes de 20 | Antes | Después |
+| --- | --- | --- |
+| Medio: mueren en el Norte | 16 | **7** |
+| Medio: minuto promedio de muerte | 5,6 | **9,1** |
+| Medio: llegan al Sur / a Patagonia | 15 % / 15 % | **50 % / 45 %** |
+| Experto: mueren en el Norte | 10 | **7** |
+| Experto: llegan al Sur / a Patagonia | 40 % / 35 % | **55 % / 25 %** |
+
+El objetivo era menos de 25 % de muertes en el Norte (5 de 20); queda en 35 %. Mejor, pero no cumplido del todo.
+**Nuevo muro: el Centro.** Mueren ahí 6 a 8 de 20 (micros del camino y lobos marinos), y el Taco dura 131 s con el bot medio (meta 45 a 90 s). Es el siguiente a atacar. Nadie vence al jefe final todavía.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

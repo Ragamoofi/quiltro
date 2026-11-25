@@ -488,7 +488,8 @@ async function boot(): Promise<void> {
 
   // Test hook (only with ?debug): advance the simulation without waiting for frames.
   if (new URLSearchParams(location.search).has('debug')) {
-    const { playRun, summarize } = await import('./debug/bot.ts');
+    const { playRun, summarize, benchWeapon } = await import('./debug/bot.ts');
+    const benchState = { running: false, results: [] as unknown[], error: '' };
     /** Balance bot: `__quiltroBot.start('medio', 20)` runs in the background; read `.status()`. */
     const botState = { running: false, done: 0, total: 0, reports: [] as unknown[], error: '' };
     const botHooks = {
@@ -519,6 +520,25 @@ async function boot(): Promise<void> {
             loop.timeScale = 1;
           })();
         },
+        /** Weapon bench: `__quiltroBot.bench(['volantin','fuegos'], [1,3,5], [8,30])`, then `.benchResults()`. */
+        bench(weapons: string[], levels: number[], densities: number[], seconds = 30): void {
+          if (benchState.running) return;
+          Object.assign(benchState, { running: true, results: [], error: '' });
+          void (async () => {
+            try {
+              for (const d of densities) {
+                for (const w of weapons) {
+                  for (const l of levels) benchState.results.push(await benchWeapon(botHooks, w, l, d, seconds));
+                }
+              }
+            } catch (err) {
+              benchState.error = String(err);
+            }
+            benchState.running = false;
+            loop.timeScale = 1;
+          })();
+        },
+        benchResults: () => ({ running: benchState.running, error: benchState.error, results: benchState.results }),
         status: () => ({ running: botState.running, done: botState.done, total: botState.total, error: botState.error }),
         reports: () => botState.reports,
         summary: () => summarize(botState.reports as Parameters<typeof summarize>[0]),

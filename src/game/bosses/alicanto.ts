@@ -5,6 +5,10 @@ import type { BossDef } from '../../data/jefes.ts';
 import type { RunContext } from '../context.ts';
 import { Boss } from './boss.ts';
 
+/** Seconds the dive lasts (the warning circle fills during it) and the size of the strike. */
+const SWOOP = 1.5;
+const DIVE_R = 26;
+
 /**
  * El Alicanto: a metallic bird that circles the dog firing fans of gold and
  * silver feathers. Phase 2: it turns invisible but for its eyes and leaves a
@@ -21,6 +25,8 @@ export class Alicanto extends Boss {
   private shotT = 2;
   private nuggetT = 0;
   private swoopT = 4;
+  private diveX = 0;
+  private diveY = 0;
 
   constructor(def: BossDef, minutes: number, returns: number) {
     super(def, minutes, returns);
@@ -38,7 +44,8 @@ export class Alicanto extends Boss {
     this.x = this.prevX = x;
     this.y = this.prevY = y;
     this.angle = Math.atan2(y - ctx.player.y, x - ctx.player.x);
-    this.addPart(16, 14, ctx);
+    // Body contact: 14 → 8 (Fase 9.2b); the dive strike and the feathers are the real threats.
+    this.addPart(16, 8, ctx);
   }
 
   protected partPositions(): { x: number; y: number }[] {
@@ -50,13 +57,33 @@ export class Alicanto extends Boss {
     // Circle the dog close enough for the kites on a long line, a bit faster in phase 2;
     // every few seconds it swoops through the short-line orbit.
     this.angle += (this.phase === 1 ? 0.55 : 0.85) * dt;
+    const wasSwooping = this.swoopT < SWOOP;
     this.swoopT -= dt;
     if (this.swoopT <= 0) this.swoopT = this.phase === 1 ? 6 : 4.5;
-    const swooping = this.swoopT < 1.2;
-    const r = swooping ? 22 + Math.abs(this.swoopT - 0.6) * 90 : 80;
-    const tx = p.x + Math.cos(this.angle) * r;
-    const ty = p.y - 20 + Math.sin(this.angle) * r * 0.65;
-    const k = 1 - Math.exp(-dt / (swooping ? 0.25 : 0.6));
+    const swooping = this.swoopT < SWOOP;
+    if (swooping && !wasSwooping) {
+      // Fase 9.2b: the dive is announced. It commits to where the dog is NOW (a red circle
+      // that fills up), so moving away dodges it; before, it homed in with no warning and
+      // the bot lost most of its runs to the body contact.
+      this.diveX = p.x;
+      this.diveY = p.y - 20;
+      const dx = this.diveX;
+      const dy = this.diveY;
+      ctx.telegraphs.circle(dx, dy + 12, DIVE_R, SWOOP - 0.35, () => {
+        ctx.enemies.slam(dx, dy + 4, DIVE_R, 14 * this.dmg, ctx, 'alicanto');
+        ctx.particles.burst(ctx.rng, dx, dy + 12, 12, ['a', 'y', 'W'], 70, 0.4);
+      });
+    }
+    let tx: number;
+    let ty: number;
+    if (swooping) {
+      tx = this.diveX;
+      ty = this.diveY;
+    } else {
+      tx = p.x + Math.cos(this.angle) * 80;
+      ty = p.y - 20 + Math.sin(this.angle) * 80 * 0.65;
+    }
+    const k = 1 - Math.exp(-dt / (swooping ? 0.3 : 0.6));
     this.x += (tx - this.x) * k;
     this.y += (ty - this.y) * k;
 
@@ -65,7 +92,7 @@ export class Alicanto extends Boss {
       this.shotT = this.phase === 1 ? 2.4 : 3.2;
       const a = Math.atan2(p.y - 8 - this.y, p.x - this.x);
       // A fan with clear gaps: the first boss should be readable for a new player.
-      ctx.shots.fan(this.x, this.y, a, this.phase === 1 ? 5 : 4, 1.2, px(150), 8 * this.dmg);
+      ctx.shots.fan(this.x, this.y, a, this.phase === 1 ? 5 : 4, 1.2, px(150), 6 * this.dmg);
       ctx.sfx.play('golpe', { pitch: 2.5 });
     }
     if (this.phase === 2) {
@@ -75,7 +102,7 @@ export class Alicanto extends Boss {
         const nx = this.x;
         const ny = this.y + 16;
         ctx.telegraphs.circle(nx, ny, 14, 1.3, () => {
-          ctx.enemies.slam(nx, ny - 8, 14, 14 * this.dmg, ctx);
+          ctx.enemies.slam(nx, ny - 8, 14, 14 * this.dmg, ctx, 'alicanto');
           ctx.particles.burst(ctx.rng, nx, ny, 10, ['a', 'y', 'W'], 60, 0.35);
         }, 'a');
       }

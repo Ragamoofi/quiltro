@@ -575,11 +575,11 @@ export class Enemies {
   }
 
   /** Area hit on the dog (lobo marino flop, boss slams). */
-  slam(x: number, y: number, r: number, damage: number, ctx: RunContext): void {
+  slam(x: number, y: number, r: number, damage: number, ctx: RunContext, source = 'loboMarino'): void {
     const p = ctx.player;
     ctx.shake.add(0.25);
     ctx.particles.burst(ctx.rng, x, y + 8, 10, ['n', 'm', 'W'], r * 2, 0.3);
-    if ((p.x - x) ** 2 + (p.y - 8 - y) ** 2 < (r + p.radius) ** 2) p.takeDamage(damage, x, y, ctx, 'loboMarino');
+    if ((p.x - x) ** 2 + (p.y - 8 - y) ** 2 < (r + p.radius) ** 2) p.takeDamage(damage, x, y, ctx, source);
   }
 
   /** A weapon hit: rolls the critical, then applies damage. */
