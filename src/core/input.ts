@@ -76,6 +76,49 @@ export class Input {
     this.pressedListeners.set(code, fn);
   }
 
+  /** 'alternar': a tap starts giving line, the next tap releases (Opciones). */
+  holdMode: 'mantener' | 'alternar' = 'mantener';
+  /** 'fijo': the touch joystick is anchored bottom-left instead of where you touch. */
+  joystickMode: 'flotante' | 'fijo' = 'flotante';
+  private latched = false;
+  private rawHoldBefore = false;
+  private padButtons: boolean[] = [];
+  /** True once any gamepad has been used (to show pad hints). */
+  usedPad = false;
+
+  /** Gamepad buttons → the same codes the keyboard uses, so scenes need no extra code. */
+  private static readonly PAD_CODES: Readonly<Record<number, string>> = {
+    0: 'GamepadA',
+    1: 'Escape',
+    3: 'KeyR',
+    9: 'Escape',
+    12: 'ArrowUp',
+    13: 'ArrowDown',
+    14: 'ArrowLeft',
+    15: 'ArrowRight',
+  };
+
+  private pollPad(): { x: number; y: number; hold: boolean } | null {
+    const pads = typeof navigator.getGamepads === 'function' ? navigator.getGamepads() : [];
+    const pad = [...pads].find((p) => p?.connected);
+    if (!pad) return null;
+    pad.buttons.forEach((b, i) => {
+      const pressed = b.pressed;
+      if (pressed && !this.padButtons[i]) {
+        this.usedPad = true;
+        const code = Input.PAD_CODES[i];
+        if (code) this.pressedListeners.get(code)?.();
+      }
+      this.padButtons[i] = pressed;
+    });
+    const ax = pad.axes[0] ?? 0;
+    const ay = pad.axes[1] ?? 0;
+    const mag = Math.hypot(ax, ay);
+    const hold = !!pad.buttons[0]?.pressed || (pad.buttons[7]?.value ?? 0) > 0.3;
+    if (mag > 0.2 || hold) this.usedPad = true;
+    return mag > 0.2 ? { x: ax, y: ay, hold } : { x: 0, y: 0, hold };
+  }
+
   /** Recomputes `state` from raw devices. Call once per fixed update. */
   poll(): void {
     let x = 0;
@@ -84,6 +127,11 @@ export class Input {
     if (KEYS_RIGHT.some((k) => this.down.has(k))) x += 1;
     if (KEYS_UP.some((k) => this.down.has(k))) y -= 1;
     if (KEYS_DOWN.some((k) => this.down.has(k))) y += 1;
+    const pad = this.pollPad();
+    if (pad && (pad.x !== 0 || pad.y !== 0)) {
+      x = pad.x;
+      y = pad.y;
+    }
 
     if (this.stick) {
       const dx = this.stick.x - this.stick.ox;
@@ -103,8 +151,19 @@ export class Input {
     }
     this.state.moveX = x;
     this.state.moveY = y;
-    this.state.hold =
-      this.mouseHold || this.holdTouch !== null || KEYS_HOLD.some((k) => this.down.has(k));
+    const raw = this.mouseHold || this.holdTouch !== null || KEYS_HOLD.some((k) => this.down.has(k)) || !!pad?.hold;
+    if (this.holdMode === 'alternar') {
+      if (raw && !this.rawHoldBefore) this.latched = !this.latched;
+      this.state.hold = this.latched;
+    } else {
+      this.state.hold = raw;
+    }
+    this.rawHoldBefore = raw;
+  }
+
+  /** Where the fixed joystick sits (client px). */
+  private fixedOrigin(): { x: number; y: number } {
+    return { x: window.innerWidth * 0.16, y: window.innerHeight * 0.78 };
   }
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
@@ -132,6 +191,7 @@ export class Input {
     this.mouseHold = false;
     this.stick = null;
     this.holdTouch = null;
+    this.latched = false;
   };
 
   private readonly onPointerDown = (e: PointerEvent): void => {
@@ -142,7 +202,8 @@ export class Input {
     e.preventDefault();
     const leftHalf = e.clientX < window.innerWidth / 2;
     if (leftHalf && !this.stick) {
-      this.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
+      const o = this.joystickMode === 'fijo' ? this.fixedOrigin() : { x: e.clientX, y: e.clientY };
+      this.stick = { id: e.pointerId, ox: o.x, oy: o.y, x: e.clientX, y: e.clientY };
     } else if (!leftHalf && this.holdTouch === null) {
       this.holdTouch = e.pointerId;
     }
