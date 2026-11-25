@@ -281,13 +281,13 @@ export class Player {
       ctx.sfx.play('cargaLista', { pitch: 0.8 });
       return;
     }
-    const dmg = Math.max(1, amount - this.armor);
+    const dmg = Math.max(1, (source === 'proyectil' ? amount * (1 - Math.min(0.75, ctx.mods.shotArmor)) : amount) - this.armor);
     this.hp -= dmg;
     this.sinceHurt = 0;
     ctx.stats.damageTaken += dmg;
     ctx.stats.damageFrom[source] = (ctx.stats.damageFrom[source] ?? 0) + dmg;
     ctx.stats.lastHit = source;
-    this.invulnerable = PLAYER_BASE.invulnerability;
+    this.invulnerable = PLAYER_BASE.invulnerability + ctx.mods.invulnerability;
     this.hurtTime = HURT_ANIM;
     const d = Math.hypot(this.x - fromX, this.y - fromY) || 1;
     this.vx += ((this.x - fromX) / d) * 90;

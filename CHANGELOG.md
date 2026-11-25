@@ -4,6 +4,23 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 11.4 a 11.7, tutorial y HUD
+
+#### Agregado
+- **Contador de lucas en el HUD:** una moneda dorada arriba a la derecha con las lucas que lleva el viaje (kilómetros, enemigos, jefes y cartas, ya con tus mejoras y el pasaje). El contador de zancudos de siempre es el de enemigos derrotados. Bajo la vida, un contador de sopaipillas comidas.
+- **Tutorial que explica el juego:** al juntar la primera comida explica qué son las sopaipillas, los completos y las chorrillanas, con cuánta experiencia da cada una; a los 40 s explica qué son las lucas y que se gastan en La Cucha; al 1:30 muestra el mote (cura), la caja (mejoras) y el silbido (atrae la comida).
+- **Guardianes de zona (11.4):** un enemigo grande por zona con pisotón anunciado y botín propio.
+- **Cinco armas del barrio (11.5):** Choripán (rebota entre enemigos), Pandero (onda en abanico que empuja), Cacerola (suena sola y devuelve el golpe cuando te pegan), Boleadora (amarra a dos enemigos con una cuerda) y Sopaipilla caliente (aceite hirviendo). Cada una con su evolución (Asado de domingo, Cueca Brava, Cacerolazo, Las Tres Marías, Sopaipilla pasada).
+- **Seis pasivas (11.5):** Mate (cura al comer), Poncho (menos daño de proyectiles), Chasquilla (críticos más fuertes), Gorro de lana (más tiempo sin daño tras un golpe), Cuchara de palo (más empuje) y Cachaña (más cartas buenas). Todas dentro de un pilar.
+- **Pasajes (11.6):** al vencer a Cai Cai Vilú se abre «Hora punta» y al vencerlo ahí, «Último bus». Más vida, daño y enemigos (los jefes también), y las lucas del viaje se multiplican por 1,6 y 2,5. Se elige en Elegir personaje. La Ruta del día siempre usa el normal. Partidas guardadas viejas: quien ya desbloqueó La Antártica parte con el primer pasaje ganado.
+- **Marcas (11.7):** pestaña nueva en Logros con mejor distancia, mejor viaje en lucas, viajes, enemigos, sopaipillas, personaje más usado, lo que más te mata y pasajes ganados.
+- **Volantín con picada y peso al corte (11.7).**
+- Los proyectiles enemigos tienen un halo blanco para leerse mejor.
+
+#### Cambiado
+- Partidas guardadas pasan a la versión 5 (pasajes y marcas).
+- Todo medido con el bot en .
+
 ### Fase 10.1 — Personajes: arma propia, pasiva única y desbloqueo en orden
 
 #### Cambiado

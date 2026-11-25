@@ -2,6 +2,7 @@ import type { Sfx } from '../audio/sfx.ts';
 import type { Rng } from '../core/rng.ts';
 import type { Build, Stats } from './build.ts';
 import type { Enemies, Enemy } from './entities/enemies.ts';
+import type { PasajeDef } from '../data/pasajes.ts';
 import type { Food } from './entities/food.ts';
 import type { Player } from './entities/player.ts';
 import type { DamageNumbers } from './fx/damageNumbers.ts';
@@ -34,6 +35,8 @@ export interface RunContext {
   readonly player: Player;
   readonly enemies: Enemies;
   readonly food: Food;
+  /** The difficulty of this trip (Fase 11.6). */
+  readonly pasaje: PasajeDef;
   readonly build: Build;
   readonly telegraphs: Telegraphs;
   readonly shots: EnemyShots;

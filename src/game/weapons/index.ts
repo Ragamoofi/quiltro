@@ -10,6 +10,7 @@ import { Rayuela } from './rayuela.ts';
 import { Ronda } from './ronda.ts';
 import { Trompo } from './trompo.ts';
 import { Volantin } from './volantin.ts';
+import { Boleadora, Cacerola, Choripan, Pandero, SopaipillaCaliente } from './barrio.ts';
 import type { Weapon } from './weapon.ts';
 
 const FACTORIES: Record<string, () => Weapon> = {
@@ -23,6 +24,11 @@ const FACTORIES: Record<string, () => Weapon> = {
   emboque: () => new Emboque(),
   elastico: () => new Elastico(),
   ronda: () => new Ronda(),
+  choripan: () => new Choripan(),
+  pandero: () => new Pandero(),
+  cacerola: () => new Cacerola(),
+  boleadora: () => new Boleadora(),
+  sopaipillaCaliente: () => new SopaipillaCaliente(),
 };
 
 /**

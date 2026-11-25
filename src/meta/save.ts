@@ -3,7 +3,7 @@
  * older versions, a backup copy of the previous save, and export/import as a
  * text code for the Opciones screen. Pure data + functions; no rendering.
  */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** Player options (GDD "Opciones"). */
 export interface Settings {
@@ -80,6 +80,11 @@ export interface SaveData {
   daily: { key: string; counted: boolean; km: number };
   /** Fase 11.2: what the dog has met. Enemies beaten (count), weapons ever used and evolutions ever seen. */
   bestiary: { kills: Record<string, number>; weapons: string[]; evolutions: string[] };
+  /** Fase 11.6: pasajes cleared (0 to 3) and the one chosen for the next trip (index). */
+  pasajesGanados: number;
+  pasaje: number;
+  /** Fase 11.7: trips per character and deaths per cause, for the statistics tab. */
+  stats: { characters: Record<string, number>; deaths: Record<string, number> };
 }
 
 export function defaultSave(now = Date.now()): SaveData {
@@ -104,6 +109,9 @@ export function defaultSave(now = Date.now()): SaveData {
     introSeen: false,
     daily: { key: '', counted: false, km: 0 },
     bestiary: { kills: {}, weapons: [], evolutions: [] },
+    pasajesGanados: 0,
+    pasaje: 0,
+    stats: { characters: {}, deaths: {} },
   };
 }
 
@@ -122,6 +130,8 @@ const MIGRATIONS: Record<number, Migration> = {
   2: (old) => ({ ...old, daily: { key: '', counted: false, km: 0 }, version: 3 }),
   // v4 (Fase 11.2): the bestiary starts from what the totals already say.
   3: (old) => ({ ...old, bestiary: { kills: {}, weapons: [], evolutions: [] }, version: 4 }),
+  // v5 (Fase 11.6): pasajes. Whoever already unlocked La Antártica has won the normal one.
+  4: (old) => ({ ...old, pasajesGanados: old.antartica === true ? 1 : 0, pasaje: 0, stats: { characters: {}, deaths: {} }, version: 5 }),
 };
 
 /** Brings any old save up to date and fills missing fields with defaults. */

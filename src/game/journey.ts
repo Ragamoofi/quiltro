@@ -174,6 +174,7 @@ export class Journey {
           : id === 'caleuche'
             ? new Caleuche(def, minutes, returns)
             : new CaiCai(def, minutes, returns);
+    boss.applyPasaje(ctx.pasaje.hp, ctx.pasaje.damage);
     if (boss instanceof Caleuche) boss.setFog = (side) => this.hooks.setHalfFog(side);
     const p = ctx.player;
     const a = Math.atan2(p.vy, p.vx) || -Math.PI / 2;

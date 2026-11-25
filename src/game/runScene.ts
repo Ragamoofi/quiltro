@@ -7,6 +7,7 @@ import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
 import { deriveSeed, Rng } from '../core/rng.ts';
 import type { Scene } from '../core/scene.ts';
+import { pasajeAt } from '../data/pasajes.ts';
 import { ENEMY_CAP, LEVEL_UP, lucasForRun, xpToNext } from '../data/balance.ts';
 
 import { t, tList } from '../i18n/index.ts';
@@ -193,6 +194,7 @@ export class RunScene implements Scene {
       rngDirector: new Rng(deriveSeed(opts.seed, 1)),
       rngCards: new Rng(deriveSeed(opts.seed, 2)),
       sfx,
+      pasaje: pasajeAt(lo.pasaje),
       particles,
       numbers,
       shake: new Shake(),
@@ -789,6 +791,7 @@ export class RunScene implements Scene {
         character: this.opts.loadout.character.id,
         daily: this.opts.daily?.counted === true,
         noHitToSantiago: this.noHitToSantiago,
+        pasaje: this.opts.loadout.pasaje,
       }),
     );
     this.reported = snapshot(ctx, km);
@@ -889,7 +892,7 @@ export class RunScene implements Scene {
         city: cityName(km),
         seconds: ctx.time,
         kills: ctx.stats.kills,
-        lucas: Math.floor(lucasForRun(km, ctx.stats.kills, ctx.progress.bosses, 1 + this.opts.loadout.meta.lucasMult)) + ctx.progress.lucas,
+        lucas: Math.floor(lucasForRun(km, ctx.stats.kills, ctx.progress.bosses, (1 + this.opts.loadout.meta.lucasMult) * ctx.pasaje.lucas)) + Math.floor(ctx.progress.lucas * ctx.pasaje.lucas),
         food: ctx.stats.food,
       },
       ctx.build,

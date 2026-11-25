@@ -17,7 +17,7 @@ export abstract class Boss implements BossTarget {
   readonly root = new Container();
   readonly def: BossDef;
   hp: number;
-  readonly maxHp: number;
+  maxHp: number;
   phase: 1 | 2 = 1;
   intro = 2;
   dead = false;
@@ -36,6 +36,12 @@ export abstract class Boss implements BossTarget {
     this.def = def;
     this.maxHp = this.hp = def.hp * bossHpMult(minutes, returns);
     this.dmg = 1 + 0.08 * minutes;
+  }
+
+  /** Fase 11.6: a harder pasaje gives the boss more life and a harder hand. Call before `start`. */
+  applyPasaje(life: number, damage: number): void {
+    this.maxHp = this.hp = this.hp * life;
+    this.dmg *= damage;
   }
 
   get invulnerable(): boolean {

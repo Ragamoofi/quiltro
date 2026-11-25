@@ -31,6 +31,7 @@ export interface TripExtras {
   character: string;
   daily: boolean;
   noHitToSantiago: boolean;
+  pasaje: number;
 }
 
 export function runResult(ctx: RunContext, km: number, zones: string[], victory: boolean, earned: Iterable<string>, r: Reported, extras: TripExtras): RunResult {
@@ -56,6 +57,8 @@ export function runResult(ctx: RunContext, km: number, zones: string[], victory:
     evolutions: EVOLUCIONES.filter((e) => ctx.build.evolved.has(e.weapon)).map((e) => e.id),
     daily: extras.daily,
     noHitToSantiago: extras.noHitToSantiago,
+    pasaje: extras.pasaje,
+    deathBy: !victory && ctx.player.dead && ctx.stats.lastHit ? ctx.stats.lastHit : undefined,
   };
 }
 

@@ -212,8 +212,8 @@ export class Enemies {
     e.x = e.prevX = x;
     e.y = e.prevY = y;
     e.vx = e.vy = e.kx = e.ky = 0;
-    e.maxHp = e.hp = def.hp * enemyHpMult(minutes) * (elite ? ELITE.hpMult : 1);
-    e.damage = def.damage * enemyDamageMult(minutes);
+    e.maxHp = e.hp = def.hp * enemyHpMult(minutes) * (elite ? ELITE.hpMult : 1) * ctx.pasaje.hp;
+    e.damage = def.damage * enemyDamageMult(minutes) * ctx.pasaje.damage;
     e.speed = px(def.speed) * ctx.rngDirector.range(0.9, 1.1);
     e.radius = look.radius + (elite ? 2 : 0);
     e.flash = e.kiteCooldown = e.stun = e.slow = e.slowTime = 0;
@@ -612,7 +612,7 @@ export class Enemies {
   /** A weapon hit: rolls the critical, then applies damage. */
   hit(e: Enemy, base: number, fromX: number, fromY: number, knock: number, ctx: RunContext, source: string): void {
     const crit = ctx.rng.chance(ctx.mods.critChance);
-    this.damage(e, base * (crit ? PLAYER_BASE.critMultiplier : 1), crit, fromX, fromY, knock, ctx, source);
+    this.damage(e, base * (crit ? PLAYER_BASE.critMultiplier + ctx.mods.critDamage : 1), crit, fromX, fromY, knock * (1 + ctx.mods.knockMult), ctx, source);
   }
 
   damage(e: Enemy, amount: number, crit: boolean, fromX: number, fromY: number, knock: number, ctx: RunContext, source: string): void {

@@ -10,6 +10,7 @@ import { Input } from './core/input.ts';
 import { GameLoop } from './core/loop.ts';
 import { SceneManager, type Scene } from './core/scene.ts';
 import { PERSONAJES } from './data/personajes.ts';
+import { pasajeAt, pasajesOpen } from './data/pasajes.ts';
 import { defaultLoadout, type Loadout } from './game/loadout.ts';
 import { t } from './i18n/index.ts';
 import { affordable, applyRun, checkUnlocks, metaBonus, type RunResult, type RunRewards } from './meta/progress.ts';
@@ -128,6 +129,7 @@ async function boot(): Promise<void> {
     known: [...data.achievements],
     settings: forDaily ? { ...data.settings, tips: false } : data.settings,
     tipsShown: [...data.tipsShown],
+    pasaje: forDaily ? 0 : Math.min(data.pasaje, pasajesOpen(data.pasajesGanados) - 1),
   });
 
   // ---- Sharing: text to the clipboard, image through the phone's share sheet or a download ----
@@ -204,16 +206,17 @@ async function boot(): Promise<void> {
   const onFinishOn = (
     save: typeof data,
     result: RunResult,
-  ): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
+  ): RunRewards & { affordable: string | null; newCharacterNames: string[]; newPasajeName: string | null } => {
     const rewards = applyRun(save, result);
     const cheap = affordable(save);
     return {
       ...rewards,
       affordable: cheap ? t(cheap.nameKey) : null,
       newCharacterNames: rewards.newCharacters.map((id) => t(PERSONAJES.find((p) => p.id === id)?.nameKey ?? id)),
+      newPasajeName: rewards.newPasaje !== undefined ? t(`${pasajeAt(rewards.newPasaje).i18n}.nombre`) : null,
     };
   };
-  const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[] } => {
+  const onFinish = (result: RunResult): RunRewards & { affordable: string | null; newCharacterNames: string[]; newPasajeName: string | null } => {
     const rewards = onFinishOn(data, result);
     data.lastSeen = Date.now();
     persist();
@@ -229,13 +232,15 @@ async function boot(): Promise<void> {
   };
 
   /** `botSeed`: a balance-bot trip (plain Quiltro, fixed seed, nothing is saved). */
-  const makeRun = (daily: DailyRun | null = null, botSeed?: number, botCharacter?: string): RunScene =>
+  const makeRun = (daily: DailyRun | null = null, botSeed?: number, botCharacter?: string, botPasaje = 0): RunScene =>
     new RunScene(input, sfx, music, {
       seed: daily ? daily.seed : (botSeed ?? Date.now() >>> 0),
       mobile: isMobile(),
       loadout: botCharacter
-        ? { ...loadout(true), character: PERSONAJES.find((p) => p.id === botCharacter) ?? defaultLoadout().character }
-        : loadout(daily !== null || botSeed !== undefined),
+        ? { ...loadout(true), character: PERSONAJES.find((p) => p.id === botCharacter) ?? defaultLoadout().character, pasaje: botPasaje }
+        : botSeed !== undefined
+          ? { ...loadout(true), pasaje: botPasaje }
+          : loadout(daily !== null),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
@@ -355,8 +360,8 @@ async function boot(): Promise<void> {
     debug, app, loop, scenes, engine, music, sfx, data, restart, goCucha, goDaily, persist, wipeAll, renderCard,
     run: () => run,
     fit: () => fit,
-    startBotRun: (seed: number, character?: string) => {
-      switchTo(() => (run = makeRun(null, seed, character)));
+    startBotRun: (seed: number, character?: string, pasaje?: number) => {
+      switchTo(() => (run = makeRun(null, seed, character, pasaje)));
       return run;
     },
   });

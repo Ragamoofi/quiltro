@@ -1,3 +1,4 @@
+import { PASAJES, pasajeAt } from '../data/pasajes.ts';
 import { FIRST_ZONE_BONUS_LUCAS, lucasForRun, upgradeCost } from '../data/balance.ts';
 import { CUCHA_PILARES, CUCHA_PILAR_NIVELES, IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
 import { LOGROS } from '../data/logros.ts';
@@ -148,6 +149,10 @@ export interface RunResult {
   daily?: boolean;
   /** Reached Santiago without taking damage. */
   noHitToSantiago?: boolean;
+  /** Fase 11.6: the pasaje (difficulty index) of the trip. */
+  pasaje?: number;
+  /** What dealt the last hit, when the trip ended in a death (Fase 11.7). */
+  deathBy?: string | undefined;
 }
 
 export interface RunRewards {
@@ -159,6 +164,8 @@ export interface RunRewards {
   achievementLucas: number;
   newCharacters: string[];
   newRecord: boolean;
+  /** The pasaje that this victory opened, if it was a new one (index). */
+  newPasaje?: number | undefined;
 }
 
 export function cityAt(km: number): string {
@@ -170,7 +177,8 @@ export function cityAt(km: number): string {
 /** Adds a finished run to the save and returns what was earned. */
 export function applyRun(save: SaveData, r: RunResult): RunRewards {
   const bonus = metaBonus(save);
-  const runLucas = Math.floor(lucasForRun(r.km, r.kills, r.bosses, 1 + bonus.lucasMult)) + r.lucasInRun;
+  const pasaje = pasajeAt(r.pasaje ?? 0);
+  const runLucas = Math.floor(Math.floor(lucasForRun(r.km, r.kills, r.bosses, 1 + bonus.lucasMult)) * pasaje.lucas) + Math.floor(r.lucasInRun * pasaje.lucas);
   const newZones = r.zones.filter((z) => !save.zonesReached.includes(z));
   const zoneBonus = newZones.length * FIRST_ZONE_BONUS_LUCAS;
   save.zonesReached.push(...newZones);
@@ -180,8 +188,20 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
 
   for (const b of r.bossesBeaten) if (!save.bossesBeaten.includes(b)) save.bossesBeaten.push(b);
   if (r.victory) save.antartica = true;
+  let newPasaje: number | undefined;
+  if (r.victory && !r.daily) {
+    const index = Math.max(0, Math.min(PASAJES.length - 1, Math.floor(r.pasaje ?? 0)));
+    if (save.pasajesGanados < index + 1) {
+      save.pasajesGanados = index + 1;
+      if (index + 1 < PASAJES.length) newPasaje = index + 1;
+    }
+  }
 
-  if (!r.continued) save.totals.runs++;
+  if (!r.continued) {
+    save.totals.runs++;
+    if (r.character) save.stats.characters[r.character] = (save.stats.characters[r.character] ?? 0) + 1;
+  }
+  if (r.deathBy && !r.victory) save.stats.deaths[r.deathBy] = (save.stats.deaths[r.deathBy] ?? 0) + 1;
   save.totals.kills += r.kills;
   save.totals.sopaipillas += r.sopaipillas;
   save.totals.palomas += r.killsBy.paloma ?? 0;
@@ -206,7 +226,7 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
   save.bestRunLucas = Math.max(save.bestRunLucas, runLucas);
 
   const newCharacters = checkUnlocks(save);
-  return { lucas, runLucas, zoneBonus, newZones, newAchievements, achievementLucas, newCharacters, newRecord };
+  return { lucas, runLucas, zoneBonus, newZones, newAchievements, achievementLucas, newCharacters, newRecord, newPasaje };
 }
 
 /** Unlocks characters whose condition is now met; returns the new ones. */

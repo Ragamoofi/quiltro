@@ -53,20 +53,20 @@ Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos 
 - Máximo 1 evento activo a la vez y nunca durante un jefe. Mismo flujo con la semilla para que la ruta del día sea justa.
 - **Listo cuando:** el bot medio no cae más de 10 puntos en llegada a Patagonia y los eventos se ven y leen bien en 480×270.
 
-### 11.4 — Élites y minijefes (1–2 jornadas)
+### 11.4 — Élites y minijefes (1–2 jornadas) — HECHO (2026-11-25: un guardián por zona con pisotón anunciado y botín propio)
 - Un élite por zona a ~mitad de camino (variante grande de un enemigo propio del ambiente, con un ataque con aviso) y un botín propio (caja o cofre).
 - **Listo cuando:** un build decente los derrota en 15–40 s y sueltan algo que se note.
 
-### 11.5 — Más armas y pasivas (2 jornadas, la tanda más grande)
+### 11.5 — Más armas y pasivas (2 jornadas, la tanda más grande) — HECHO (2026-11-25: 5 armas y 6 pasivas; nombres de la lista, a revisar contigo)
 - +5 armas (hasta 16) y +6 pasivas con efecto real, con evoluciones para las armas nuevas. Ideas: **Choripán** (proyectil con rebote), **Pandero** (onda corta que empuja), **Cacerola** (escudo que devuelve daño), **Trompo-Boleadora** (cadena entre dos enemigos), **Sopaipilla caliente** (quema); pasivas: Mate (regenera al quedarse quieto), Poncho (menos daño de proyectiles), Chasquilla (más crítico)…  (nombres a revisar contigo).
 - Cada arma entra solo si el banco de armas del bot la ubica entre el 70 % y el 130 % del promedio.
 - **Listo cuando:** `tests/contenido.test.ts` cubre todo lo nuevo, contraste sigue 100 % y el banco de armas queda documentado.
 
-### 11.6 — Dificultad después de ganar: Pasajes (1 jornada)
+### 11.6 — Dificultad después de ganar: Pasajes (1 jornada) — HECHO (2026-11-25: tres pasajes, selector en Elegir personaje)
 - Tres pasajes con enemigos más duros y premios mayores: Pasaje normal, "Hora punta", "Último bus". Se desbloquean al ganar el anterior. La Antártica sigue como modo infinito.
 - **Listo cuando:** el bot experto gana el pasaje 1 en ~50–70 % de las partidas, y el 3 en menos del 15 %.
 
-### 11.7 — Volantín, claridad y estadísticas (1–2 jornadas)
+### 11.7 — Volantín, claridad y estadísticas (1–2 jornadas) — PARCIAL (2026-11-25: volantín con picada y peso al corte; faltan tope de enemigos visibles, contorno de proyectiles y pantalla de estadísticas)
 - Volantín: aplicar la idea 3 "picada" + la 1 "más peso al corte" (lo decides tú); probar con una partida tuya.
 - Legibilidad: tope de enemigos visibles y contorno de proyectiles enemigos, medido con el banco de rendimiento.
 - Pantalla de estadísticas (mejores marcas, personaje más usado, causa de muerte más común).

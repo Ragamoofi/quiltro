@@ -31,7 +31,7 @@ export interface DebugEnv {
   data: SaveData;
   run: () => RunScene;
   fit: () => DisplayFit;
-  startBotRun: (seed: number, character?: string) => RunScene;
+  startBotRun: (seed: number, character?: string, pasaje?: number) => RunScene;
   restart: () => void;
   goCucha: () => void;
   goDaily: () => void;
@@ -192,10 +192,10 @@ export async function installDebug(env: DebugEnv): Promise<void> {
     const { playRun, summarize, benchWeapon } = await import('./bot.ts');
     const benchState = { running: false, results: [] as unknown[], error: '' };
     /** Balance bot: `__quiltroBot.start('medio', 20)` runs in the background; read `.status()`. */
-    const botState = { running: false, done: 0, total: 0, reports: [] as unknown[], error: '' };
+    const botState = { running: false, done: 0, total: 0, reports: [] as unknown[], error: '', pasaje: 0 };
     const botHooks = {
       start(seed: number, character?: string): RunScene {
-        const r = env.startBotRun(seed, character);
+        const r = env.startBotRun(seed, character, botState.pasaje);
         loop.locked = true;
         return r;
       },
@@ -205,8 +205,9 @@ export async function installDebug(env: DebugEnv): Promise<void> {
     };
     Object.assign(window, {
       __quiltroBot: {
-        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16, invincible = false, character = 'quiltro'): void {
+        start(skill: 'novato' | 'medio' | 'experto', runs: number, seed0 = 1000, maxMinutes = 16, invincible = false, character = 'quiltro', pasaje = 0): void {
           if (botState.running) return;
+          botState.pasaje = pasaje;
           Object.assign(botState, { running: true, done: 0, total: runs, reports: [], error: '' });
           void (async () => {
             try {

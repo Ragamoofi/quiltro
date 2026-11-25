@@ -15,7 +15,7 @@ export interface RunSummary {
   level: number;
   lucas: number;
   damageBy: Record<string, number>;
-  rewards?: RunRewards & { affordable?: string | null; newCharacterNames?: string[] };
+  rewards?: RunRewards & { affordable?: string | null; newCharacterNames?: string[]; newPasajeName?: string | null };
 }
 
 const fmtTime = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -128,6 +128,7 @@ export class EndScreen {
       if (rw.achievementLucas > 0) parts.push(t('meta.logrosLucas', { n: rw.achievementLucas }));
       center(new PixelText(parts.join('  ·  '), { color: 'G', outline: 'k' }), 3);
       for (const name of rw.newCharacterNames ?? []) center(new PixelText(t('meta.nuevoPersonaje', { nombre: name }), { color: 's', outline: 'k' }), 3);
+      if (rw.newPasajeName) center(new PixelText(t('pasajes.desbloqueado', { nombre: rw.newPasajeName }), { color: 'a', outline: 'k' }), 3);
       if (rw.affordable) center(new PixelText(t('ui.teAlcanza', { mejora: rw.affordable }), { color: 'V', outline: 'k' }), 3);
     }
     if (onContinue) center(new PixelText(t('zonasExtra.antarticaDesbloqueada'), { color: 'i', outline: 'k' }), 3);

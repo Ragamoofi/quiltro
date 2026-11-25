@@ -32,5 +32,10 @@ export const EVOLUCIONES: readonly EvolutionDef[] = [
   { id: 'emboqueEterno', nameKey: 'evoluciones.emboqueEterno', weapon: 'emboque', trait: 'hambreDeLunes', params: {} },
   { id: 'elasticoSinFin', nameKey: 'evoluciones.elasticoSinFin', weapon: 'elastico', trait: 'cascabel', params: {} },
   { id: 'rondaDeLaManada', nameKey: 'evoluciones.rondaDeLaManada', weapon: 'ronda', trait: 'manadaChica', params: {} },
+  { id: 'asadoDeDomingo', nameKey: 'evoluciones.asadoDeDomingo', weapon: 'choripan', trait: 'mate', params: {} },
+  { id: 'cuecaBrava', nameKey: 'evoluciones.cuecaBrava', weapon: 'pandero', trait: 'cucharaDePalo', params: {} },
+  { id: 'cacerolazo', nameKey: 'evoluciones.cacerolazo', weapon: 'cacerola', trait: 'poncho', params: {} },
+  { id: 'tresMarias', nameKey: 'evoluciones.tresMarias', weapon: 'boleadora', trait: 'cachana', params: {} },
+  { id: 'sopaipillaPasada', nameKey: 'evoluciones.sopaipillaPasada', weapon: 'sopaipillaCaliente', trait: 'chasquilla', params: {} },
   { id: 'aullidoDeLas12', nameKey: 'evoluciones.aullidoDeLas12', weapon: 'guau', trait: 'alTiro', params: {} },
 ];

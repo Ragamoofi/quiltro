@@ -5,13 +5,49 @@ import { ENEMIGOS, ENEMIGOS_ESPECIALES } from '../data/enemigos.ts';
 import { EVOLUCIONES } from '../data/evoluciones.ts';
 import { JEFES } from '../data/jefes.ts';
 import { LOGROS } from '../data/logros.ts';
-import { t } from '../i18n/index.ts';
+import { PERSONAJES } from '../data/personajes.ts';
+import { formatNumber, hasKey, t } from '../i18n/index.ts';
 import type { SaveData } from '../meta/save.ts';
 import { PixelText } from './text.ts';
 import { Button, C, ditherOverlay, panel } from './widgets.ts';
 
 /** What the view reads from the save. */
-export type AchievementsSave = Pick<SaveData, 'achievements' | 'bestiary' | 'bossesBeaten'>;
+export type AchievementsSave = Pick<SaveData, 'achievements' | 'bestiary' | 'bossesBeaten' | 'totals' | 'best' | 'bestRunLucas' | 'stats' | 'pasajesGanados'>;
+
+type Tab = 'logros' | 'bestiario' | 'estadisticas';
+
+/** The key with the most votes in a count table, with its count. */
+export function topOf(table: Readonly<Record<string, number>>): { id: string; n: number } | null {
+  let best: { id: string; n: number } | null = null;
+  for (const [id, n] of Object.entries(table)) if (n > (best?.n ?? 0)) best = { id, n };
+  return best;
+}
+
+/** A readable name for what killed the dog: an enemy, a boss or one of the dangers of the road. */
+export function causeName(id: string): string {
+  const enemy = [...ENEMIGOS, ...ENEMIGOS_ESPECIALES].find((e) => e.id === id);
+  if (enemy) return t(enemy.nameKey);
+  const boss = JEFES.find((j) => j.id === id);
+  if (boss) return t(`${boss.i18n}.nombre`);
+  return hasKey(`estadisticas.causa.${id}`) ? t(`estadisticas.causa.${id}`) : id;
+}
+
+/** The lines of the statistics tab: label and value. */
+export function statLines(save: AchievementsSave): { label: string; value: string }[] {
+  const char = topOf(save.stats.characters);
+  const death = topOf(save.stats.deaths);
+  return [
+    { label: t('estadisticas.mejorKm'), value: `${formatNumber(Math.round(save.best.km))} km` },
+    { label: t('estadisticas.mejorLucas'), value: formatNumber(save.bestRunLucas) },
+    { label: t('estadisticas.viajes'), value: formatNumber(save.totals.runs) },
+    { label: t('estadisticas.enemigos'), value: formatNumber(save.totals.kills) },
+    { label: t('estadisticas.sopaipillas'), value: formatNumber(save.totals.sopaipillas) },
+    { label: t('estadisticas.lucas'), value: formatNumber(save.totals.lucasEarned) },
+    { label: t('estadisticas.personaje'), value: char ? `${t(PERSONAJES.find((c) => c.id === char.id)?.nameKey ?? 'personajes.quiltro')} (${char.n})` : '-' },
+    { label: t('estadisticas.muerte'), value: death ? `${causeName(death.id)} (${death.n})` : '-' },
+    { label: t('estadisticas.pasajes'), value: `${save.pasajesGanados}/3` },
+  ];
+}
 
 /** Sprite shown for each boss in the bestiary (the Taco is drawn as a car). */
 const BOSS_SPRITE: Readonly<Record<string, string>> = { alicanto: 'alicanto', taco: 'auto', caleuche: 'caleuche', caiCai: 'caiCai' };
@@ -51,7 +87,7 @@ const KIND_COLOR: Readonly<Record<Entry['kind'], string>> = { enemigo: 'r', jefe
  * Achievements and bestiary in one panel, two tabs, with pages. Secret achievements stay hidden
  * until earned; bestiary entries show a silhouette until the dog has beaten, used or seen them.
  */
-export function achievementsView(save: AchievementsSave, viewW: number, viewH: number, onClose: () => void, startTab: 'logros' | 'bestiario' = 'logros'): Container {
+export function achievementsView(save: AchievementsSave, viewW: number, viewH: number, onClose: () => void, startTab: Tab = 'logros'): Container {
   const root = new Container();
   root.addChild(ditherOverlay(viewW, viewH));
   const w = Math.min(viewW - 16, 320);
@@ -74,15 +110,16 @@ export function achievementsView(save: AchievementsSave, viewW: number, viewH: n
 
   const draw = (): void => {
     body.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const title = new PixelText(t(tab === 'logros' ? 'meta.logrosTitulo' : 'meta.bestiarioTitulo'), { color: 'a', outline: 'k' }, 2);
+    const title = new PixelText(t(tab === 'logros' ? 'meta.logrosTitulo' : tab === 'bestiario' ? 'meta.bestiarioTitulo' : 'meta.estadisticasTitulo'), { color: 'a', outline: 'k' }, 2);
     title.position.set(Math.round((w - title.width) / 2), 5);
     body.addChild(title);
 
     // Tabs.
-    const half = Math.floor((w - 24) / 2);
-    const tabs: { id: 'logros' | 'bestiario'; label: string }[] = [
+    const half = Math.floor((w - 28) / 3);
+    const tabs: { id: Tab; label: string }[] = [
       { id: 'logros', label: t('meta.pestanaLogros') },
       { id: 'bestiario', label: t('meta.pestanaBestiario') },
+      { id: 'estadisticas', label: t('meta.pestanaEstadisticas') },
     ];
     tabs.forEach((tb, i) => {
       const b = new Button(tb.label, half, 14, () => {
@@ -118,6 +155,18 @@ export function achievementsView(save: AchievementsSave, viewW: number, viewH: n
           swatch.position.set(w - 16, y + 1);
           body.addChild(swatch);
         }
+      });
+    } else if (tab === 'estadisticas') {
+      const lines = statLines(save);
+      const rowH = Math.max(14, Math.min(22, Math.floor(area / lines.length)));
+      lines.forEach((ln, i) => {
+        const y = TOP + 6 + i * rowH;
+        const label = new PixelText(ln.label, { color: 'w', outline: 'k' });
+        const value = new PixelText(ln.value, { color: 'a', outline: 'k' });
+        label.position.set(12, y);
+        value.position.set(w - value.width - 12, y);
+        const rule = new Graphics().rect(10, y + label.height + 2, w - 20, 1).fill(C('g'));
+        body.addChild(label, value, rule);
       });
     } else {
       const entries = bestiaryEntries(save);

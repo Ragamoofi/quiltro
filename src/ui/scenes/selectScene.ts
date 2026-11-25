@@ -5,6 +5,7 @@ import type { Input } from '../../core/input.ts';
 import type { Scene } from '../../core/scene.ts';
 import { ARMAS } from '../../data/armas.ts';
 import { JEFES } from '../../data/jefes.ts';
+import { pasajeAt, pasajesOpen } from '../../data/pasajes.ts';
 import { PERSONAJES, PLAYER_BASE, type CharacterDef } from '../../data/personajes.ts';
 import { CIUDADES } from '../../data/zonas.ts';
 import { formatNumber, t } from '../../i18n/index.ts';
@@ -65,6 +66,14 @@ export class SelectScene implements Scene {
   private cycle(dir: number): void {
     this.index = (this.index + dir + PERSONAJES.length) % PERSONAJES.length;
     this.sfx.play('carga', { pitch: 1.5 });
+    this.build();
+  }
+
+  private cyclePasaje(): void {
+    const open = pasajesOpen(this.data.pasajesGanados);
+    this.data.pasaje = (Math.min(this.data.pasaje, open - 1) + 1) % open;
+    this.hooks.save();
+    this.sfx.play('carga', { pitch: 1.3 });
     this.build();
   }
 
@@ -159,9 +168,22 @@ export class SelectScene implements Scene {
     box.position.set(px0, py0);
     this.root.addChild(box);
 
+    // Fase 11.6: the pasaje (difficulty), once the first trip is won.
+    let below = portrait ? h - 56 : py0 + y + 10;
+    if (this.data.pasajesGanados > 0) {
+      const open = pasajesOpen(this.data.pasajesGanados);
+      const chosen = Math.min(this.data.pasaje, open - 1);
+      const def = pasajeAt(chosen);
+      const label = `${t('pasajes.cambiar', { nombre: t(`${def.i18n}.nombre`) })} (${t('pasajes.lucas', { n: `x${def.lucas}` })})`;
+      const pas = new Button(label, portrait ? w - 28 : pw, 18, () => this.cyclePasaje(), 'b', 'w');
+      pas.setEnabled(open > 1);
+      pas.position.set(px0, below);
+      this.root.addChild(pas);
+      below += 24;
+    }
     const go = new Button(t('menu.partir'), portrait ? w - 28 : pw, 24, () => this.choose(), 'a', 'k');
     go.setEnabled(unlocked);
-    go.position.set(px0, portrait ? h - 56 : py0 + y + 10);
+    go.position.set(px0, portrait ? below : below);
     const back = new Button(t('menu.volver'), portrait ? w - 28 : pw, 18, () => this.hooks.back(), 'K', 'w');
     back.position.set(px0, go.y + 30);
     this.root.addChild(go, back);

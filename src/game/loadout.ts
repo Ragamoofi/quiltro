@@ -13,6 +13,8 @@ export interface Loadout {
   settings: Settings;
   /** Tutorial tips already shown. */
   tipsShown: readonly string[];
+  /** Fase 11.6: index of the pasaje (difficulty) of this trip. */
+  pasaje: number;
 }
 
 export const NO_META: MetaBonus = {
@@ -33,7 +35,7 @@ export const NO_META: MetaBonus = {
 };
 
 export function defaultLoadout(): Loadout {
-  return { character: PERSONAJES[0] as CharacterDef, meta: NO_META, bandana: 'b', known: [], settings: defaultSettings(), tipsShown: [] };
+  return { character: PERSONAJES[0] as CharacterDef, meta: NO_META, bandana: 'b', known: [], settings: defaultSettings(), tipsShown: [], pasaje: 0 };
 }
 
 /** Character traits + permanent upgrades as the build's starting bonuses. */

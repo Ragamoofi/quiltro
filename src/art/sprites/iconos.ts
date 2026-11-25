@@ -311,6 +311,129 @@ const ICONS: Record<string, Frame> = {
       .set(4, 7, 'W')
       .set(8, 7, 'W'),
   ),
+  // ---- Fase 11.5 ----
+  // Choripán: a bun with a sausage and mustard.
+  choripan: icon(
+    P()
+      .rect(1, 4, 12, 6, 'C')
+      .rect(1, 4, 12, 1, 'l')
+      .rect(1, 9, 12, 1, 'a')
+      .rect(0, 5, 14, 3, 'R')
+      .rect(0, 5, 14, 1, 'r')
+      .rows(1, 6, ['.y.y.y.y.y.y']),
+  ),
+  // Pandero: a tambourine with its jingles.
+  pandero: icon(
+    P()
+      .disc(7, 7, 6.2, 'd')
+      .disc(7, 7, 4.6, 'C')
+      .disc(7, 7, 3.4, 'l')
+      .set(7, 1, 'a')
+      .set(7, 12, 'a')
+      .set(1, 7, 'a')
+      .set(12, 7, 'a')
+      .set(3, 3, 'a')
+      .set(10, 3, 'a')
+      .set(3, 10, 'a')
+      .set(10, 10, 'a')
+      .set(6, 6, 'W'),
+  ),
+  // Cacerola: a pot with two handles and a shine.
+  cacerola: icon(
+    P()
+      .rect(2, 5, 10, 7, 's')
+      .rect(2, 5, 10, 1, 'w')
+      .rect(2, 11, 10, 1, 'g')
+      .rect(0, 6, 2, 2, 'K')
+      .rect(12, 6, 2, 2, 'K')
+      .rect(3, 3, 8, 2, 'g')
+      .rect(6, 2, 2, 1, 'K')
+      .rect(4, 7, 1, 3, 'W'),
+  ),
+  // Boleadora: three stones tied together.
+  boleadora: icon(
+    P()
+      .rect(7, 5, 1, 4, 'l')
+      .rect(4, 9, 3, 1, 'l')
+      .rect(8, 9, 3, 1, 'l')
+      .disc(7, 3, 2.6, 'd')
+      .disc(3, 11, 2.6, 'd')
+      .disc(11, 11, 2.6, 'd')
+      .set(6, 2, 'C')
+      .set(2, 10, 'C')
+      .set(10, 10, 'C'),
+  ),
+  // Sopaipilla caliente: a round sopaipilla on fire.
+  sopaipillaCaliente: icon(
+    P()
+      .rows(4, 0, ['..y..', '.yry.', '.rRr.'])
+      .disc(7, 9, 4.8, 'a')
+      .disc(7, 9, 3.3, 'A')
+      .set(5, 8, 'y')
+      .set(9, 10, 'y')
+      .set(7, 7, 'W'),
+  ),
+  // Mate: a gourd with the bombilla.
+  mate: icon(
+    P()
+      .ellipse(6, 9, 4.8, 4, 'd')
+      .rect(2, 6, 8, 3, 'f')
+      .rect(3, 6, 6, 1, 'v')
+      .rect(9, 0, 1, 7, 'w')
+      .set(9, 0, 'W')
+      .set(4, 11, 'C'),
+  ),
+  // Poncho: a striped woollen poncho.
+  poncho: icon(
+    P()
+      .rect(5, 1, 4, 2, 'r')
+      .rect(3, 3, 8, 3, 'r')
+      .rect(1, 6, 12, 3, 'R')
+      .rect(0, 9, 14, 3, 'r')
+      .rect(1, 7, 12, 1, 'y')
+      .rect(0, 10, 14, 1, 'y')
+      .rect(6, 1, 2, 1, 'k'),
+  ),
+  // Chasquilla: a face with a fringe of hair.
+  chasquilla: icon(
+    P()
+      .ellipse(7, 8, 5, 5, 'l')
+      .rect(2, 2, 10, 4, 'd')
+      .rect(1, 4, 2, 7, 'd')
+      .rect(11, 4, 2, 7, 'd')
+      .rows(3, 6, ['.d.d.d.d.'])
+      .rect(4, 8, 2, 2, 'k')
+      .rect(8, 8, 2, 2, 'k')
+      .rect(6, 11, 2, 1, 'R'),
+  ),
+  // Gorro de lana: a blue beanie with a pompom.
+  gorroDeLana: icon(
+    P()
+      .ellipse(7, 7, 5.5, 5, 'b')
+      .rect(1, 9, 12, 3, 'B')
+      .rows(1, 9, ['.b.b.b.b.b.b'])
+      .disc(7, 1.5, 1.8, 'W')
+      .rect(4, 4, 1, 3, 's'),
+  ),
+  // Cuchara de palo: a wooden spoon.
+  cucharaDePalo: icon(
+    P()
+      .ellipse(4.5, 4.5, 3.5, 3.5, 'C')
+      .ellipse(4.5, 4.5, 2.4, 2.4, 'l')
+      .rows(5, 5, ['..d.....', '...d....', '....d...', '.....d..', '......d.', '.......d'])
+      .rect(8, 8, 4, 4, '.')
+      .rows(6, 6, ['.dd.....', '..dd....', '...dd...', '....dd..', '.....dd.', '......dd']),
+  ),
+  // Cachaña: a four-leaf clover.
+  cachana: icon(
+    P()
+      .disc(4.5, 4.5, 3, 'v')
+      .disc(9.5, 4.5, 3, 'v')
+      .disc(4.5, 9.5, 3, 'v')
+      .disc(9.5, 9.5, 3, 'v')
+      .disc(7, 7, 1.6, 'f')
+      .rect(7, 9, 1, 5, 'd'),
+  ),
 };
 
 export const ICON_IDS = Object.keys(ICONS);

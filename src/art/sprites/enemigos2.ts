@@ -238,8 +238,8 @@ export const enemigosFase3: SpriteDef[] = [
 ];
 
 /** Enemy projectiles are always rojo copihue with a white pixel in the centre (GDD). */
-const PROYECTIL = outlined(new Pix(4, 4).disc(2, 2, 2, 'r').rect(1, 1, 2, 2, 'W').frame());
-const PEPITA = outlined(new Pix(4, 4).disc(2, 2, 2, 'a').set(1, 1, 'W').set(2, 2, 'y').frame());
+const PROYECTIL = outlined(new Pix(5, 5).disc(2.5, 2.5, 2.6, 'W').disc(2.5, 2.5, 1.8, 'r').rect(2, 2, 1, 1, 'W').frame());
+const PEPITA = outlined(new Pix(5, 5).disc(2.5, 2.5, 2.5, 'a').set(1, 1, 'W').set(2, 2, 'y').frame());
 const ROCA = outlined(new Pix(8, 7).ellipse(4, 3.5, 4, 3.5, 'm').ellipse(3, 2.5, 2, 1.5, 'n').ellipse(5, 5, 2.5, 1.2, 'M').frame());
 const NUBE = new Pix(14, 10)
   .ellipse(7, 5, 7, 5, 'v')
@@ -251,8 +251,8 @@ const NUBE = new Pix(14, 10)
 export const proyectiles: SpriteDef = {
   name: 'proyectil',
   group: 'efectos',
-  width: 6,
-  height: 6,
+  width: 7,
+  height: 7,
   anchor: { x: 0.5, y: 0.5 },
   animations: {
     rojo: { fps: 1, frames: [PROYECTIL] },

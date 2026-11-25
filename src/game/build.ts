@@ -34,6 +34,16 @@ export interface Stats {
   bell: number;
   /** Friendly dogs that bite on their own (Manada chica). */
   pets: number;
+  /** HP healed per piece of food (Mate). */
+  foodHeal: number;
+  /** Share of enemy projectile damage that is blocked (Poncho). */
+  shotArmor: number;
+  /** Added to the critical multiplier (Chasquilla). */
+  critDamage: number;
+  /** Seconds of invulnerability added after a hit (Gorro de lana). */
+  invulnerability: number;
+  /** Added to every hit's knockback (Cuchara de palo). */
+  knockMult: number;
 }
 
 /**
@@ -116,6 +126,12 @@ export interface OwnedTrait {
     restRegen: number;
     xpMult: number;
     bell: number;
+    foodHeal: number;
+    shotArmor: number;
+    critDamage: number;
+    invulnerability: number;
+    knockMult: number;
+    luck: number;
   };
 }
 
@@ -196,6 +212,11 @@ export class Build {
       restRegen: 0,
       bell: 0,
       pets: 0,
+      foodHeal: 0,
+      shotArmor: 0,
+      critDamage: 0,
+      invulnerability: 0,
+      knockMult: 0,
     };
     for (const t of this.traits) {
       s.speedMult += t.totals.speedMult;
@@ -211,6 +232,11 @@ export class Build {
       s.restRegen += t.totals.restRegen;
       s.xpMult += t.totals.xpMult;
       s.bell += t.totals.bell;
+      s.foodHeal += t.totals.foodHeal;
+      s.shotArmor += t.totals.shotArmor;
+      s.critDamage += t.totals.critDamage;
+      s.invulnerability += t.totals.invulnerability;
+      s.knockMult += t.totals.knockMult;
       const at = t.def.perLevel.projectilesAtLevels;
       if (at) s.projectiles += at.filter((l) => t.level >= l).length;
       const pets = t.def.perLevel.petsAtLevels;
@@ -310,7 +336,8 @@ export class Build {
   }
 
   rollRarity(rng: Rng): Rarity {
-    const shift = Math.min(0.3, this.luck * 0.02);
+    const luck = this.luck + this.traits.reduce((a, t) => a + t.totals.luck, 0);
+    const shift = Math.min(0.3, luck * 0.02);
     const weights = RARITY.map((r) => (r.id === 'comun' ? r.chance - shift : r.chance + (shift * r.chance) / 0.3));
     return RARITY[rng.weighted(weights)]?.id ?? 'comun';
   }
@@ -374,6 +401,12 @@ export class Build {
             restRegen: 0,
             xpMult: 0,
             bell: 0,
+            foodHeal: 0,
+            shotArmor: 0,
+            critDamage: 0,
+            invulnerability: 0,
+            knockMult: 0,
+            luck: 0,
           },
         };
         this.traits.push(t);
@@ -393,6 +426,12 @@ export class Build {
       t.totals.restRegen += (p.restRegen ?? 0) * mult;
       t.totals.xpMult += (p.xpMult ?? 0) * mult;
       t.totals.bell += (p.bell ?? 0) * mult;
+      t.totals.foodHeal += (p.foodHeal ?? 0) * mult;
+      t.totals.shotArmor += (p.shotArmor ?? 0) * mult;
+      t.totals.critDamage += (p.critDamage ?? 0) * mult;
+      t.totals.invulnerability += (p.invulnerability ?? 0) * mult;
+      t.totals.knockMult += (p.knockMult ?? 0) * mult;
+      t.totals.luck += (p.luck ?? 0) * mult;
     }
   }
 }

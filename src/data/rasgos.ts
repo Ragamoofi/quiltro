@@ -22,6 +22,18 @@ export interface TraitEffect {
   readonly xpMult?: number;
   /** Cascabel: each point widens the ring in which enemies are pushed away. */
   readonly bell?: number;
+  /** Mate: HP healed for every piece of food picked up. */
+  readonly foodHeal?: number;
+  /** Poncho: fraction of the damage from enemy projectiles that does not get through. */
+  readonly shotArmor?: number;
+  /** Chasquilla: added to the critical multiplier (2 → 2,2…). */
+  readonly critDamage?: number;
+  /** Gorro de lana: seconds of invulnerability added after a hit. */
+  readonly invulnerability?: number;
+  /** Cuchara de palo: fraction added to the knockback of every hit. */
+  readonly knockMult?: number;
+  /** Cachaña: luck, makes the rarer cards show up more often. */
+  readonly luck?: number;
   /** Manada chica: one more friendly dog (bites on its own) at each listed level. */
   readonly petsAtLevels?: readonly number[];
 }
@@ -52,4 +64,11 @@ export const RASGOS: readonly TraitDef[] = [
   { id: 'hambreDeLunes', i18n: 'rasgos.hambreDeLunes', maxLevel: 5, perLevel: { xpMult: 0.08 } },
   { id: 'cascabel', i18n: 'rasgos.cascabel', maxLevel: 5, perLevel: { bell: 1 } },
   { id: 'manadaChica', i18n: 'rasgos.manadaChica', maxLevel: 5, perLevel: { petsAtLevels: [1, 3, 5] } },
+  // Fase 11.5
+  { id: 'mate', i18n: 'rasgos.mate', maxLevel: 5, perLevel: { foodHeal: 0.04 } },
+  { id: 'poncho', i18n: 'rasgos.poncho', maxLevel: 5, perLevel: { shotArmor: 0.12 } },
+  { id: 'chasquilla', i18n: 'rasgos.chasquilla', maxLevel: 5, perLevel: { critDamage: 0.2 } },
+  { id: 'gorroDeLana', i18n: 'rasgos.gorroDeLana', maxLevel: 5, perLevel: { invulnerability: 0.1 } },
+  { id: 'cucharaDePalo', i18n: 'rasgos.cucharaDePalo', maxLevel: 5, perLevel: { knockMult: 0.15 } },
+  { id: 'cachana', i18n: 'rasgos.cachana', maxLevel: 5, perLevel: { luck: 1.5 } },
 ];

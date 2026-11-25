@@ -144,6 +144,34 @@
     "imanCorto": "Imán",
     "guau": "Mantén para dar hilo, suelta para ¡GUAU!"
   },
+  "estadisticas": {
+    "mejorKm": "Mejor distancia",
+    "mejorLucas": "Mejor viaje en lucas",
+    "viajes": "Viajes",
+    "enemigos": "Enemigos derrotados",
+    "sopaipillas": "Sopaipillas comidas",
+    "lucas": "Lucas ganadas",
+    "personaje": "Personaje más usado",
+    "muerte": "Lo que más te pega",
+    "pasajes": "Pasajes ganados",
+    "causa": {
+      "jefe": "Un jefe",
+      "proyectil": "Proyectiles",
+      "microQueNoPara": "La micro que no para",
+      "otro": "Otra cosa",
+      "perfume": "Perfume"
+    }
+  },
+  "pasajes": {
+    "titulo": "Pasaje",
+    "cambiar": "Pasaje: {nombre}",
+    "bloqueado": "Gana el pasaje anterior",
+    "desbloqueado": "¡Pasaje desbloqueado: {nombre}!",
+    "lucas": "{n} lucas",
+    "normal": { "nombre": "Normal", "desc": "El viaje de siempre" },
+    "horaPunta": { "nombre": "Hora punta", "desc": "Enemigos más duros y más numerosos" },
+    "ultimoBus": { "nombre": "Último bus", "desc": "Casi nadie llega. Pagan harto" }
+  },
   "zonas": {
     "norte": { "titulo": "EL NORTE GRANDE", "subtitulo": "Aquí no llueve nunca. Pero zancudos hay." },
     "centro": { "titulo": "SANTIAGO", "subtitulo": "Cuidado: la micro no para." },
@@ -199,6 +227,11 @@
     "emboque": { "nombre": "Emboque", "efecto": "La bola con cuerda sale, pega y vuelve a tu mano" },
     "elastico": { "nombre": "Elástico", "efecto": "Una banda estirada que barre a tu alrededor y empuja" },
     "ronda": { "nombre": "Ronda", "efecto": "Un anillo de colores que crece desde ti y golpea a todos" },
+    "choripan": { "nombre": "Choripán", "efecto": "Sale volando, pega y rebota de un enemigo a otro" },
+    "pandero": { "nombre": "Pandero", "efecto": "Un golpe de pandero: onda en abanico que empuja hacia delante" },
+    "cacerola": { "nombre": "Cacerola", "efecto": "Suena sola y, si te pegan, devuelve el golpe con una cacerolada" },
+    "boleadora": { "nombre": "Boleadora", "efecto": "Amarra a dos enemigos con una cuerda que corta y frena" },
+    "sopaipillaCaliente": { "nombre": "Sopaipilla caliente", "efecto": "Cae al piso y deja aceite hirviendo que quema" },
     "guau": { "nombre": "¡GUAU!", "efecto": "El ladrido: onda de choque que empuja a todos" }
   },
   "rasgos": {
@@ -215,7 +248,13 @@
     "siesta": { "nombre": "Siesta", "carta": "Quieto un ratito y listo" },
     "hambreDeLunes": { "nombre": "Hambre de lunes", "carta": "Todo le sabe a poco" },
     "cascabel": { "nombre": "Cascabel", "carta": "Se oye venir" },
-    "manadaChica": { "nombre": "Manada chica", "carta": "Un perrito y su amigo" }
+    "manadaChica": { "nombre": "Manada chica", "carta": "Un perrito y su amigo" },
+    "mate": { "nombre": "Mate", "carta": "Cada comida te da un traguito de vida" },
+    "poncho": { "nombre": "Poncho", "carta": "Los proyectiles rebotan en la lana" },
+    "chasquilla": { "nombre": "Chasquilla", "carta": "Los críticos pegan más fuerte" },
+    "gorroDeLana": { "nombre": "Gorro de lana", "carta": "Más tiempo para arrancar tras un golpe" },
+    "cucharaDePalo": { "nombre": "Cuchara de palo", "carta": "Todo golpe empuja más lejos" },
+    "cachana": { "nombre": "Cachaña", "carta": "Salen más cartas buenas" }
   },
   "evoluciones": {
     "cieloDelDieciocho": "Cielo del Dieciocho",
@@ -228,7 +267,12 @@
     "emboqueEterno": "Emboque Eterno",
     "elasticoSinFin": "Elástico sin Fin",
     "rondaDeLaManada": "Ronda de la Manada",
-    "aullidoDeLas12": "Aullido de las 12"
+    "aullidoDeLas12": "Aullido de las 12",
+    "asadoDeDomingo": "Asado de domingo",
+    "cuecaBrava": "Cueca Brava",
+    "cacerolazo": "Cacerolazo",
+    "tresMarias": "Las Tres Marías",
+    "sopaipillaPasada": "Sopaipilla pasada"
   },
   "evolucionesEfecto": {
     "cieloDelDieciocho": "8 volantines de colores con estela; curan 1 de vida por enemigo cortado",
@@ -241,7 +285,12 @@
     "emboqueEterno": "Una bola gigante que va y vuelve dos veces",
     "elasticoSinFin": "Las bandas no descansan nunca y son más largas",
     "rondaDeLaManada": "Dos anillos más cada vez, y más fuertes",
-    "aullidoDeLas12": "El ladrido cargado no tiene enfriamiento y todos los perros aúllan contigo"
+    "aullidoDeLas12": "El ladrido cargado no tiene enfriamiento y todos los perros aúllan contigo",
+    "asadoDeDomingo": "Rebota 3 veces más y pega 30 % más fuerte",
+    "cuecaBrava": "El pandero suena en círculo completo y dos veces seguidas",
+    "cacerolazo": "La cacerolada es más grande, más fuerte y además aturde",
+    "tresMarias": "Las bolas se enredan de a tres: una cuerda más y más daño",
+    "sopaipillaPasada": "El aceite se extiende más, dura más y quema el doble"
   },
   "meta": {
     "logro": "¡Logro! {nombre}",
@@ -268,6 +317,8 @@
     "bestiarioTitulo": "Bestiario",
     "pestanaLogros": "Logros",
     "pestanaBestiario": "Bestiario",
+    "pestanaEstadisticas": "Marcas",
+    "estadisticasTitulo": "Tus marcas",
     "bestiarioEnemigos": "Enemigos",
     "bestiarioJefes": "Jefes",
     "bestiarioArmas": "Armas",

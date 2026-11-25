@@ -55,7 +55,7 @@ export class Spawner {
 
     const pool = this.pool(zoneId, km);
     const weights = pool.map((id) => this.weight(id));
-    this.acc += spawnPerSecond(minutes) * (bossActive ? 0.4 : 1) * dt;
+    this.acc += spawnPerSecond(minutes) * (bossActive ? 0.4 : 1) * ctx.pasaje.spawn * dt;
     while (this.acc >= 1) {
       const group = Math.min(Math.floor(this.acc), ctx.rngDirector.int(1, 4));
       this.acc -= group;

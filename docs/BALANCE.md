@@ -273,3 +273,40 @@ Se mantienen las del plan (`docs/PLAN-FASE9.md`, sección 3) con estos ajustes p
 - Volantín y ¡GUAU! deben quedar dentro de ±25 % del promedio de las demás armas; hoy el volantín está ~80 % por debajo.
 - El Alicanto no debe matar a más del 25 % de los viajes medios.
 - El primer objetivo concreto de la Fase 9.2 es reducir la disparidad entre armas.
+
+## 11.4 a 11.7 — Guardianes, armas del barrio, pasajes y volantín (2026-11-25)
+
+Bot medio, mismas semillas desde 7000. Línea base de la 11.3: 15 % de victorias, 7,25 min, 35 % llega a Patagonia.
+
+| Cambio medido | Viajes | Victorias | Minuto prom. de muerte | Llegan a Patagonia |
+| --- | --- | --- | --- | --- |
+| + guardianes de zona (11.4) | 20 | 20 % | 7,58 | 35 % |
+| + 5 armas y 6 pasivas, primera pasada (11.5) | 20 | 15 % | 8,76 | 45 % |
+| + armas con números ajustados | 30 | 7 % | 9,07 | 50 % |
+| + ajuste de Pandero, Cacerola y Boleadora, volantín con picada (11.7) | 16 | 19 % | 10,55 | 56 % |
+
+**Guardianes (11.4):** un enemigo grande por zona, un minuto y medio después de entrar, con 8 veces la vida del normal, un pisotón con círculo rojo de 1 s cada 5 s y botín propio (caja dorada, lluvia de comida y 40 lucas). No movieron el equilibrio fuera del ruido.
+
+**Armas nuevas (11.5), daño por minuto por viaje en que aparecen** (viaje completo con el bot medio; el banco de armas no sirve para compararlas porque se congela en la primera subida de nivel):
+
+| Arma | Primera pasada | Segunda pasada | Comentario |
+| --- | --- | --- | --- |
+| Sopaipilla caliente | 22.170 | 11.828 | bajé el daño 8 → 6,5; ahora entre las armas medias |
+| Choripán | 8.828 | 8.306 | sin cambios |
+| Pandero | 1.262 | 2.869 | ahora apunta al enemigo más cercano y pega 20 → 40 |
+| Boleadora | 1.790 | 2.420 | daño 9 → 26 |
+| Cacerola | 396 | 1.956 | daño 18 → 52 y su golpe periódico sube a 80 %; es defensiva y la devuelve al recibir daño |
+
+Aun así Pandero, Boleadora y Cacerola quedan por debajo del 70 % del promedio en daño bruto con el bot (2 a 5 viajes cada una, muestra chica). El bot no aprovecha que Cacerola devuelve golpes ni que el Pandero empuja. **Pendiente: que las juegues y me digas si se sienten flojas.** Nada se subió más a ciegas.
+
+**Pasajes (11.6)**, bot medio, 16 viajes por pasaje:
+
+| Pasaje | Vida × / daño × / aparición × / lucas × | Victorias | Minuto de muerte | Llegan a Patagonia |
+| --- | --- | --- | --- | --- |
+| Normal | 1 / 1 / 1 / 1 | 19 % | 10,6 | 56 % |
+| Hora punta | 1,3 / 1,2 / 1,25 / 1,6 | 25 % | 9,4 | 50 % |
+| Último bus | 1,7 / 1,4 / 1,5 / 2,5 | 0 % | 6,1 | 25 % |
+
+El pasaje también escala la vida y la mano de los jefes. La curva de supervivencia baja como debe (10,6 → 9,4 → 6,1 min y 56 → 25 % en Patagonia) y el Último bus no lo gana nadie con el bot (meta: menos de 15 %). **La meta de que el experto gane el pasaje 1 entre 50 % y 70 % no se puede medir con este bot** (el experto casi no gana ni el normal, como ya decía el informe de la 10.2); queda para tus partidas. La diferencia de victorias entre Normal y Hora punta (19 % contra 25 %) está dentro del ruido de 16 viajes.
+
+**Volantín (11.7):** la picada (un volantín se lanza al enemigo más cercano cada 1,1 s, con 60 % más de daño) y el peso al corte (destello blanco del hilo, tirón de 2 px hacia el perro y una pequeña sacudida) entraron sin mover el daño por minuto del volantín (6.361 antes, 7.964 después). **Hay que jugarlo para saber si por fin convence.**

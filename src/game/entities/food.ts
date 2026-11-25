@@ -49,6 +49,8 @@ export class Food {
   private readonly pool: Piece[] = [];
   private readonly anims: Record<PickupKind, Anim>;
   private foodCount = 0;
+  /** Mate: fractions of life earned from food, paid out in whole points. */
+  private healDebt = 0;
 
   constructor(capacity = 420) {
     this.anims = Object.fromEntries(
@@ -134,6 +136,14 @@ export class Food {
   private collect(p: Piece, ctx: RunContext): void {
     this.release(p);
     ctx.stats.food += 1;
+    if (ctx.mods.foodHeal > 0) {
+      this.healDebt += ctx.mods.foodHeal;
+      if (this.healDebt >= 1) {
+        const whole = Math.floor(this.healDebt);
+        this.healDebt -= whole;
+        ctx.player.heal(whole, ctx);
+      }
+    }
     ctx.progress.xp += p.xp * ctx.mods.xpMult;
     ctx.sfx.pickup();
     ctx.particles.burst(ctx.rng, p.x, p.y, 3, ['y', 'W', 'a'], 30, 0.2);
