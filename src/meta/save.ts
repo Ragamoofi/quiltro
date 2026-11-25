@@ -3,7 +3,7 @@
  * older versions, a backup copy of the previous save, and export/import as a
  * text code for the Opciones screen. Pure data + functions; no rendering.
  */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Player options (GDD "Opciones"). */
 export interface Settings {
@@ -78,6 +78,8 @@ export interface SaveData {
   introSeen: boolean;
   /** Ruta del día: the last date played, whether its counted attempt is used, and its km. */
   daily: { key: string; counted: boolean; km: number };
+  /** Fase 11.2: what the dog has met. Enemies beaten (count), weapons ever used and evolutions ever seen. */
+  bestiary: { kills: Record<string, number>; weapons: string[]; evolutions: string[] };
 }
 
 export function defaultSave(now = Date.now()): SaveData {
@@ -101,6 +103,7 @@ export function defaultSave(now = Date.now()): SaveData {
     tipsShown: [],
     introSeen: false,
     daily: { key: '', counted: false, km: 0 },
+    bestiary: { kills: {}, weapons: [], evolutions: [] },
   };
 }
 
@@ -117,6 +120,8 @@ const MIGRATIONS: Record<number, Migration> = {
   },
   // v3 (Phase 7): Ruta del día.
   2: (old) => ({ ...old, daily: { key: '', counted: false, km: 0 }, version: 3 }),
+  // v4 (Fase 11.2): the bestiary starts from what the totals already say.
+  3: (old) => ({ ...old, bestiary: { kills: {}, weapons: [], evolutions: [] }, version: 4 }),
 };
 
 /** Brings any old save up to date and fills missing fields with defaults. */
@@ -136,6 +141,7 @@ export function migrate(raw: unknown): SaveData {
   merged.best = { ...base.best, ...(data.best as object | undefined) };
   merged.settings = { ...base.settings, ...(data.settings as object | undefined) };
   merged.daily = { ...base.daily, ...(data.daily as object | undefined) };
+  merged.bestiary = { ...base.bestiary, ...(data.bestiary as object | undefined) };
   merged.version = SAVE_VERSION;
   if (!merged.characters.includes('quiltro')) merged.characters.unshift('quiltro');
   if (!merged.vecinos.includes('almacen')) merged.vecinos.unshift('almacen');

@@ -144,7 +144,7 @@ export function characterAnims(f: Record<keyof typeof RAW, Frame>): Anims {
 }
 
 /** Bandana colours unlocked by achievements: palette char → its shade. */
-export const PAÑOLETAS: Readonly<Record<string, string>> = { b: 'B', r: 'R', y: 'A', w: 'G', a: 'A', f: 'F', p: 'r', t: 'T' };
+export const PAÑOLETAS: Readonly<Record<string, string>> = { b: 'B', r: 'R', y: 'A', w: 'G', a: 'A', f: 'F', p: 'r', t: 'T', o: 'O', v: 'f', i: 'I' };
 
 const base = characterAnims(F);
 const bandanas: Record<string, Anims[string]> = {};

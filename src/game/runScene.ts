@@ -1,7 +1,7 @@
 import { Container } from 'pixi.js';
 
 import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
-import { ambienteAt } from '../data/zonas.ts';
+import { ambienteAt, CIUDADES } from '../data/zonas.ts';
 import type { Sfx } from '../audio/sfx.ts';
 import { Camera } from '../core/camera.ts';
 import type { Input } from '../core/input.ts';
@@ -528,6 +528,10 @@ export class RunScene implements Scene {
     if (this.mode === 'end') return;
     // City scenery: landmark on the horizon, local props on the ground, and the small events.
     const km = this.journey.km(ctx.time);
+    if (!this.santiagoSeen && km >= (CIUDADES.find((c) => c.id === 'santiago')?.km ?? Infinity)) {
+      this.santiagoSeen = true;
+      this.noHitToSantiago = ctx.stats.damageTaken === 0;
+    }
     this.cities.update(dt, ctx, km, this.journey.bossActive);
     const city = this.journey.antartica ? null : this.cities.view(km);
     // Environment: floor, horizon colours and weather follow the place (Santiago ≠ the coast).
@@ -774,7 +778,13 @@ export class RunScene implements Scene {
     this.music.stop();
     ctx.sfx.play(victory ? 'victoria' : 'derrota');
     const km = this.journey.km(ctx.time);
-    const rewards = this.opts.onFinish(runResult(ctx, km, this.journey.visited, victory, this.earned, this.reported));
+    const rewards = this.opts.onFinish(
+      runResult(ctx, km, this.journey.visited, victory, this.earned, this.reported, {
+        character: this.opts.loadout.character.id,
+        daily: this.opts.daily?.counted === true,
+        noHitToSantiago: this.noHitToSantiago,
+      }),
+    );
     this.reported = snapshot(ctx, km);
     const info = shareInfo(ctx, this.opts.loadout, this.opts.daily, km, victory);
     const text = shareText(info);
@@ -804,6 +814,9 @@ export class RunScene implements Scene {
   }
 
   private reported = emptyReport();
+  /** Reached Santiago's kilometre without taking damage (for the achievement). */
+  private noHitToSantiago = false;
+  private santiagoSeen = false;
 
   /** After beating Cai Cai Vilú: keep going into the endless south. */
   private continueToAntarctica(): void {

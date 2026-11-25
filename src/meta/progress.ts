@@ -1,6 +1,7 @@
 import { FIRST_ZONE_BONUS_LUCAS, lucasForRun, upgradeCost } from '../data/balance.ts';
 import { CUCHA_PILARES, CUCHA_PILAR_NIVELES, IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
 import { LOGROS } from '../data/logros.ts';
+import { tripAchievements } from './logros.ts';
 import { PERSONAJES } from '../data/personajes.ts';
 import { CIUDADES } from '../data/zonas.ts';
 import type { SaveData } from './save.ts';
@@ -136,6 +137,17 @@ export interface RunResult {
   victory: boolean;
   /** Achievement ids earned during the run. */
   achievements: readonly string[];
+  /** Fase 11.2: details the new achievements and the bestiary read (all optional). */
+  seconds?: number;
+  level?: number;
+  character?: string;
+  /** Weapons the dog had at the end, and the evolutions it reached. */
+  weapons?: readonly string[];
+  evolutions?: readonly string[];
+  /** A counted Ruta del día. */
+  daily?: boolean;
+  /** Reached Santiago without taking damage. */
+  noHitToSantiago?: boolean;
 }
 
 export interface RunRewards {
@@ -164,7 +176,6 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
   save.zonesReached.push(...newZones);
 
   const newAchievements = r.achievements.filter((a) => !save.achievements.includes(a));
-  const achievementLucas = newAchievements.reduce((s, id) => s + (LOGROS.find((l) => l.id === id)?.lucas ?? 0), 0);
   save.achievements.push(...newAchievements);
 
   for (const b of r.bossesBeaten) if (!save.bossesBeaten.includes(b)) save.bossesBeaten.push(b);
@@ -174,10 +185,20 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
   save.totals.kills += r.kills;
   save.totals.sopaipillas += r.sopaipillas;
   save.totals.palomas += r.killsBy.paloma ?? 0;
+  // The bestiary: who was beaten, which weapons were used, which evolutions were seen.
+  for (const [id, n] of Object.entries(r.killsBy)) save.bestiary.kills[id] = (save.bestiary.kills[id] ?? 0) + n;
+  for (const w of r.weapons ?? []) if (!save.bestiary.weapons.includes(w)) save.bestiary.weapons.push(w);
+  for (const e of r.evolutions ?? []) if (!save.bestiary.evolutions.includes(e)) save.bestiary.evolutions.push(e);
 
   const reached = r.bestKm ?? r.km;
   const newRecord = reached > save.best.km;
   if (newRecord) save.best = { km: reached, city: cityAt(reached) };
+
+  // Achievements that are worked out now (from this trip and the whole save).
+  const computed = tripAchievements(save, r);
+  save.achievements.push(...computed);
+  newAchievements.push(...computed);
+  const achievementLucas = newAchievements.reduce((s, id) => s + (LOGROS.find((l) => l.id === id)?.lucas ?? 0), 0);
 
   const lucas = runLucas + zoneBonus + achievementLucas;
   save.lucas += lucas;

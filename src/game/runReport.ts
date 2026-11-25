@@ -26,7 +26,14 @@ export function cityName(km: number): string {
 }
 
 /** Only what is new since the last report counts. */
-export function runResult(ctx: RunContext, km: number, zones: string[], victory: boolean, earned: Iterable<string>, r: Reported): RunResult {
+/** What the achievements and the bestiary read besides the numbers of the trip. */
+export interface TripExtras {
+  character: string;
+  daily: boolean;
+  noHitToSantiago: boolean;
+}
+
+export function runResult(ctx: RunContext, km: number, zones: string[], victory: boolean, earned: Iterable<string>, r: Reported, extras: TripExtras): RunResult {
   const killsBy: Record<string, number> = {};
   for (const [k, v] of Object.entries(ctx.stats.killsBy)) killsBy[k] = v - (r.killsBy[k] ?? 0);
   return {
@@ -42,6 +49,13 @@ export function runResult(ctx: RunContext, km: number, zones: string[], victory:
     victory,
     achievements: [...earned],
     continued: r.km > 0,
+    seconds: ctx.time,
+    level: ctx.progress.level,
+    character: extras.character,
+    weapons: ctx.build.slotWeapons.map((w) => w.def.id),
+    evolutions: EVOLUCIONES.filter((e) => ctx.build.evolved.has(e.weapon)).map((e) => e.id),
+    daily: extras.daily,
+    noHitToSantiago: extras.noHitToSantiago,
   };
 }
 

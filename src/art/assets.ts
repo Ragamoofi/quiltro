@@ -33,3 +33,18 @@ export function frameAt(a: Anim, time: number): number {
   const i = Math.floor(time * a.fps);
   return a.loop ? i % a.textures.length : Math.min(i, a.textures.length - 1);
 }
+
+/** The first frame of the first animation of a sprite (for lists that only need a picture). */
+export function firstFrame(sprite: string): Texture | undefined {
+  if (!sheet) return undefined;
+  const prefix = `${sprite}/`;
+  for (const [key, frames] of Object.entries(sheet.animations)) {
+    if (key.startsWith(prefix) && !key.endsWith('_blanco')) return frames[0];
+  }
+  return undefined;
+}
+
+/** Does this sprite have this animation? */
+export function hasAnim(sprite: string, name: string): boolean {
+  return Boolean(sheet?.animations[animKey(sprite, name)]);
+}

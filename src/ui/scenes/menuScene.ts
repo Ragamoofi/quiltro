@@ -189,7 +189,7 @@ export class MenuScene implements Scene {
 
   private showAchievements(): void {
     this.closeOverlay();
-    this.overlay.addChild(achievementsView(this.data.achievements, this.w, this.h, () => this.closeOverlay()));
+    this.overlay.addChild(achievementsView(this.data, this.w, this.h, () => this.closeOverlay()));
   }
 
   private closeOverlay(): void {

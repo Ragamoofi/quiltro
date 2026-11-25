@@ -12,6 +12,16 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Logros y bestiario (Fase 11.2)
+
+#### Añadido
+- **De 7 a 44 logros** (3 secretos): llegar a cada ciudad (Antofagasta… Coyhaique, la Antártica), vencer a cada jefe, 3 jefes en un viaje, cantidades (enemigos en un viaje y en total, sopaipillas, nivel 20 y 40), aguantar 10 y 15 minutos, constancia (10 y 50 viajes, 5 y 10 personajes, vencer al jefe final con otro personaje), armas y evoluciones, mejoras de La Cucha, vecinos, la ruta del día y "Nada me toca" (llegar a Santiago sin un golpe). Los siete primeros se anuncian en la partida; los demás se calculan al terminar el viaje, a partir del viaje y de todo el guardado, así que quien ya hizo algo lo gana en su próximo viaje.
+- Tres pañoletas nuevas (naranja, verde y celeste) por los logros más difíciles.
+- **Bestiario**: pestaña nueva junto a los logros, con los enemigos (cuántos has derrotado), los jefes, las armas usadas y las evoluciones vistas; lo que aún no conoces aparece como silueta. Se llena con cada viaje (guardado versión 4; los guardados viejos parten con el bestiario vacío).
+- La lista de logros ahora tiene pestañas y páginas (antes era una sola columna que no habría cabido) y se abre igual desde el menú y desde La Cucha.
+- Pruebas nuevas (`tests/logros.test.ts`): cada logro tiene su condición y no se gana por accidente.
+- Neutral para el equilibrio: el bot da exactamente lo mismo (10 %, 6,37 min).
+
 ### Mapas vivos, cuarta tanda: Santiago (Fase 11.1b)
 
 #### Añadido

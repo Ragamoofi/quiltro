@@ -46,7 +46,7 @@ const run = (over: Partial<RunResult> = {}): RunResult => ({
 describe('save', () => {
   it('migrates old or partial saves and fills defaults', () => {
     const s = migrate({ lucas: 50 });
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.lucas).toBe(50);
     expect(s.characters).toContain('quiltro');
     expect(s.totals.runs).toBe(0);
@@ -57,7 +57,7 @@ describe('save', () => {
   it('v1 → v2 adds options; players who already played skip the intro', () => {
     const v1 = { version: 1, lucas: 10, totals: { runs: 3, kills: 0, sopaipillas: 0, palomas: 0, lucasEarned: 0 } };
     const s = migrate(v1);
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
     expect(s.daily.counted).toBe(false);
     expect(s.introSeen).toBe(true);
     expect(s.settings.holdMode).toBe('mantener');
@@ -135,14 +135,17 @@ describe('La Cucha', () => {
   it('a run pays lucas, first-time zones, achievements and Cuenta RUT', () => {
     const s = defaultSave();
     const r = applyRun(s, run({ achievements: ['laMicroSiParo'] }));
-    // (1200/20 + 600/30 + 50) × 2 (LUCAS_SCALE) = 260, + 10 in-run; 2 new zones = 200; achievement 100.
+    // (1200/20 + 600/30 + 50) × 2 (LUCAS_SCALE) = 260, + 10 in-run; 2 new zones = 200.
+    // Achievements: La micro sí paró (100, earned in the run) + the ones worked out at the end:
+    // Rumbo al sur (60, 1.200 km), Capitalino (80) and Se le acabó el oro (100, the trip beat the Alicanto).
     expect(r.runLucas).toBe(270);
     expect(r.zoneBonus).toBe(200);
-    expect(r.achievementLucas).toBe(100);
-    expect(s.lucas).toBe(570);
+    expect(r.achievementLucas).toBe(340);
+    expect(s.lucas).toBe(810);
     const again = applyRun(s, run({ achievements: ['laMicroSiParo'] }));
     expect(again.zoneBonus).toBe(0);
-    expect(again.achievementLucas).toBe(0);
+    // Nothing earned twice; only Mil y una (80) is new, with 1.200 enemies in total.
+    expect(again.achievementLucas).toBe(80);
     s.upgrades.cuentaRut = 5;
     // Cuenta RUT ×5 = +50 %, plus the Barrio pillar perk (+5 % from 4 levels).
     expect(applyRun(s, run()).runLucas).toBe(Math.floor(130 * 1.55 * 2) + 10);

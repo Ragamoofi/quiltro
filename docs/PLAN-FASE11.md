@@ -40,7 +40,7 @@ Pedido: que cada mapa se sienta como el lugar donde estamos, con más elementos 
 - Reglas: todo sin imágenes externas (se dibuja con el sistema de sprites propio), sin marcas ni lugares reales con logo; contraste 100 % con `npm run contraste`; sin bajar de 55 fps en el banco de rendimiento; el bot no debe caer más de 10 puntos por el cambio de decorado.
 - **Listo cuando:** cada ambiente tiene capturas antes/después en `docs/` y tú das el visto bueno de que "se siente como ahí".
 
-### 11.2 — Logros y bestiario (1 jornada)
+### 11.2 — Logros y bestiario (1 jornada) — HECHO (2026-11-25: 44 logros, bestiario con silueta, pruebas)
 - De 7 a ~35 logros: por jefe, por personaje, por arma/evolución, por km, por ambiente, por enemigo, de práctica ("sin recibir daño en un jefe"), secretos (2–3).
 - **Bestiario**: pantalla que registra enemigos, jefes y armas vistos (con silueta hasta descubrirlos).
 - Recompensas: lucas, bandanas y algún desbloqueo (un arma o un fondo de Cucha), nada que desequilibre.

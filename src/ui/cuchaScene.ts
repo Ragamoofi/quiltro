@@ -8,6 +8,7 @@ import type { Scene } from '../core/scene.ts';
 import { CUCHA_PILARES, CUCHA_PILAR_NIVELES, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
 import { JEFES } from '../data/jefes.ts';
 import { LOGROS } from '../data/logros.ts';
+import { achievementsView } from './achievementsView.ts';
 import { PERSONAJES, type CharacterDef } from '../data/personajes.ts';
 import { CIUDADES } from '../data/zonas.ts';
 import { FloorLayer } from '../game/world/floor.ts';
@@ -446,7 +447,7 @@ export class CuchaScene implements Scene {
   }
 
   private bandanas(): string[] {
-    const fromAchievements = LOGROS.filter((l) => this.data.achievements.includes(l.id)).map((l) => l.bandana);
+    const fromAchievements = LOGROS.filter((l) => this.data.achievements.includes(l.id)).flatMap((l) => (l.bandana ? [l.bandana] : []));
     return ['b', ...fromAchievements.filter((c) => c in PAÑOLETAS)];
   }
 
@@ -559,33 +560,6 @@ export class CuchaScene implements Scene {
 
   private showAchievements(): void {
     this.closeOverlay();
-    this.overlay.addChild(ditherOverlay(this.viewW, this.viewH));
-    const w = Math.min(this.viewW - 20, 300);
-    const box = new Container();
-    const g = new Graphics();
-    box.addChild(g);
-    let y = 8;
-    const title = new PixelText(t('meta.logrosTitulo'), { color: 'a', outline: 'k' }, 2);
-    title.position.set(Math.round((w - title.width) / 2), y);
-    box.addChild(title);
-    y += title.height + 6;
-    for (const l of LOGROS) {
-      const got = this.data.achievements.includes(l.id);
-      const hidden = l.secret && !got;
-      const name = new PixelText(`${got ? '+' : '·'} ${hidden ? '???' : t(`${l.i18n}.nombre`)}`, { color: got ? 'a' : 'G', outline: 'k' });
-      const desc = new PixelText(hidden ? '???' : `${t(`${l.i18n}.desc`)} (${l.lucas})`, { color: got ? 'w' : 'g', outline: 'k', maxWidth: w - 24 });
-      const swatch = new Graphics().rect(0, 0, 6, 6).fill(C(l.bandana)).stroke({ width: 1, color: C('k') });
-      swatch.position.set(w - 16, y + 1);
-      name.position.set(10, y);
-      desc.position.set(18, y + name.height + 1);
-      box.addChild(name, desc, swatch);
-      y += name.height + desc.height + 5;
-    }
-    const close = new Button(t('meta.cerrar'), 70, 18, () => this.closeOverlay(), 'K', 'w');
-    close.position.set(Math.round((w - 70) / 2), y + 2);
-    box.addChild(close);
-    panel(g, 0, 0, w, y + 26, 'K', 'k', 'g', 'k');
-    box.position.set(Math.round((this.viewW - w) / 2), Math.max(4, Math.round((this.viewH - y - 26) / 2)));
-    this.overlay.addChild(box);
+    this.overlay.addChild(achievementsView(this.data, this.viewW, this.viewH, () => this.closeOverlay()));
   }
 }
