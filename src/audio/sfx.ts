@@ -1,10 +1,16 @@
+import type { AudioEngine } from './engine.ts';
+
 /**
- * Sound effects synthesised with Web Audio (no files yet).
- * Mixing rules from the GDD: at most 24 voices, identical sounds within 30 ms
- * merge into one, per-sound concurrency limits, random pitch to avoid repetition.
- * The bark is synthesised for now; the CC0 sample replaces it in Phase 6.
+ * Sound effects synthesised with Web Audio.
+ * Mixing rules from the GDD (all in `canPlay`): at most 24 voices, identical
+ * sounds within 30 ms merge into one, the player and the bosses have priority
+ * (they can steal a voice from the rest), per-sound concurrency limits and a
+ * random pitch to avoid repetition.
+ *
+ * The bark is synthesised: the GDD asks for a CC0 sample, which needs a file
+ * download that has to be approved first (see docs/PENDIENTES.md).
  */
-type SoundId =
+export type SoundId =
   | 'golpe'
   | 'puf'
   | 'comida'
@@ -16,16 +22,95 @@ type SoundId =
   | 'bocina'
   | 'tuetue'
   | 'retumbo'
-  | 'campana';
+  | 'campana'
+  | 'motor'
+  | 'guitarra'
+  | 'acordeon'
+  | 'bacan'
+  | 'jefe'
+  | 'elite'
+  | 'latido'
+  | 'zona'
+  | 'alarma'
+  | 'evolucion'
+  | 'victoria'
+  | 'derrota'
+  | 'pajaro'
+  | 'ladridoLejano'
+  | 'moneda'
+  | 'ruleta';
 
-const MAX_VOICES = 24;
-const MERGE_MS = 30;
-const LIMITS: Partial<Record<SoundId, number>> = { golpe: 8, puf: 6, comida: 4, aleteo: 3, bocina: 2, tuetue: 1, retumbo: 1 };
+export const MAX_VOICES = 24;
+export const MERGE_MS = 30;
+
+/** 3 = player and bosses (never dropped), 2 = important cues, 1 = everything else. */
+export const PRIORITY: Readonly<Record<SoundId, 1 | 2 | 3>> = {
+  guau: 3,
+  dano: 3,
+  jefe: 3,
+  retumbo: 3,
+  derrota: 3,
+  victoria: 3,
+  latido: 3,
+  bocina: 2,
+  motor: 2,
+  elite: 2,
+  alarma: 2,
+  evolucion: 2,
+  bacan: 2,
+  guitarra: 2,
+  acordeon: 2,
+  campana: 2,
+  zona: 2,
+  cargaLista: 2,
+  tuetue: 2,
+  aleteo: 2,
+  golpe: 1,
+  puf: 1,
+  comida: 1,
+  carga: 1,
+  pajaro: 1,
+  ladridoLejano: 1,
+  moneda: 1,
+  ruleta: 1,
+};
+
+/** Max overlapping copies of the same sound. */
+export const LIMITS: Partial<Record<SoundId, number>> = {
+  golpe: 8,
+  puf: 6,
+  comida: 4,
+  aleteo: 3,
+  bocina: 2,
+  tuetue: 1,
+  retumbo: 1,
+  jefe: 1,
+  latido: 1,
+  ladridoLejano: 2,
+  pajaro: 2,
+  moneda: 3,
+};
+
+/**
+ * Pure mixing decision (exported for the tests): may a sound start?
+ * `playing` is the number of voices busy, `same` the copies of this sound.
+ */
+export function canPlay(id: SoundId, voices: number, same: number, sinceLast: number): boolean {
+  if (sinceLast < MERGE_MS) return false;
+  if (same >= (LIMITS[id] ?? 4)) return false;
+  // Over the cap only the player's and the bosses' sounds get through (they steal a voice).
+  if (voices >= MAX_VOICES && PRIORITY[id] < 3) return false;
+  // Near the cap, background sounds yield to the important ones.
+  if (voices >= MAX_VOICES - 6 && PRIORITY[id] < 2) return false;
+  return true;
+}
+
 /** Pentatonic scale steps (semitones) for the food jingle. */
 const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36];
 
 export class Sfx {
-  volume = 0.6;
+  volume = 0.7;
+  private readonly engine: AudioEngine;
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private noise: AudioBuffer | null = null;
@@ -36,51 +121,81 @@ export class Sfx {
   private comboUntil = 0;
   private lastHurt = 0;
   private buzz: { osc: OscillatorNode; lfo: OscillatorNode; gain: GainNode } | null = null;
+  /** Sound ids played since the last `drainLog()` (tests and F1). */
+  private readonly log: SoundId[] = [];
+  private logging = false;
 
-  /** Must be called from a user gesture (browsers block audio until then). */
-  unlock(): void {
-    if (this.ctx) {
-      if (this.ctx.state === 'suspended') void this.ctx.resume();
-      return;
-    }
-    const Ctx = window.AudioContext;
-    if (!Ctx) return;
-    this.ctx = new Ctx();
-    this.master = this.ctx.createGain();
+  constructor(engine: AudioEngine) {
+    this.engine = engine;
+    engine.onReady(() => this.setup());
+  }
+
+  private setup(): void {
+    const ctx = this.engine.ctx;
+    if (!ctx || !this.engine.sfxIn) return;
+    this.ctx = ctx;
+    this.master = ctx.createGain();
     this.master.gain.value = this.volume;
-    this.master.connect(this.ctx.destination);
-    const len = this.ctx.sampleRate;
-    this.noise = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    this.master.connect(this.engine.sfxIn);
+    const len = ctx.sampleRate;
+    this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
     const data = this.noise.getChannelData(0);
     for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
   }
 
+  /** Must be called from a user gesture (browsers block audio until then). */
+  unlock(): void {
+    this.engine.unlock();
+  }
+
   suspend(): void {
-    void this.ctx?.suspend();
+    this.engine.suspend();
   }
 
   resume(): void {
-    void this.ctx?.resume();
+    this.engine.resume();
   }
 
-  play(id: SoundId, opts: { pitch?: number; gain?: number } = {}): void {
+  /** Start/stop recording which sounds play (the audio tests read it). */
+  record(on: boolean): void {
+    this.logging = on;
+    this.log.length = 0;
+  }
+
+  drainLog(): SoundId[] {
+    return this.log.splice(0);
+  }
+
+  /** Plays a sound. `pan` is -1 (left) … 1 (right): where the thing is relative to the dog. */
+  play(id: SoundId, opts: { pitch?: number; gain?: number; pan?: number } = {}): void {
     const ctx = this.ctx;
     if (!ctx || !this.master || ctx.state !== 'running') return;
     const now = performance.now();
-    if (now - (this.lastAt.get(id) ?? -1e9) < MERGE_MS) return;
-    if (this.voices >= MAX_VOICES && id !== 'guau' && id !== 'dano') return;
-    if ((this.playing.get(id) ?? 0) >= (LIMITS[id] ?? 4)) return;
+    if (!canPlay(id, this.voices, this.playing.get(id) ?? 0, now - (this.lastAt.get(id) ?? -1e9))) return;
     this.lastAt.set(id, now);
+    if (this.logging) this.log.push(id);
 
     const pitch = opts.pitch ?? 1;
     const gain = opts.gain ?? 1;
-    const dur = this.synth(ctx, this.master, id, pitch, gain);
+    let out: AudioNode = this.master;
+    if (opts.pan !== undefined && typeof ctx.createStereoPanner === 'function') {
+      const p = ctx.createStereoPanner();
+      p.pan.value = Math.max(-1, Math.min(1, opts.pan));
+      p.connect(this.master);
+      out = p;
+    }
+    const dur = this.synth(ctx, out, id, pitch, gain);
     this.voices++;
     this.playing.set(id, (this.playing.get(id) ?? 0) + 1);
     window.setTimeout(() => {
       this.voices--;
       this.playing.set(id, (this.playing.get(id) ?? 1) - 1);
     }, dur * 1000 + 20);
+  }
+
+  /** Lowers the effects 30 % for a moment (a big banner or a boss intro is on screen). */
+  duck(seconds: number): void {
+    this.engine.duckSfx(seconds);
   }
 
   /** Food pickup: each piece in a streak climbs the pentatonic scale; resets after 1.5 s. */
@@ -355,6 +470,359 @@ export class Sfx {
         }
         g.connect(out);
         return 0.65;
+      }
+      case 'motor': {
+        // Bus engine revving up while the horn warns of the charge.
+        const o = ctx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(48 * pitch, t);
+        o.frequency.exponentialRampToValueAtTime(96 * pitch, t + 0.8);
+        const vib = ctx.createOscillator();
+        vib.frequency.value = 22;
+        const vg = ctx.createGain();
+        vg.gain.value = 5;
+        vib.connect(vg).connect(o.frequency);
+        const f = ctx.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.setValueAtTime(220, t);
+        f.frequency.linearRampToValueAtTime(520, t + 0.8);
+        const g = ctx.createGain();
+        env(g, 0.3, 0.1, 0.75);
+        o.connect(f).connect(g).connect(out);
+        o.start(t);
+        vib.start(t);
+        o.stop(t + 0.9);
+        vib.stop(t + 0.9);
+        return 0.9;
+      }
+      case 'guitarra': {
+        // Ascending strum (level up): Em chord plucked low to high.
+        const notes = [164.8, 246.9, 329.6, 392, 493.9, 659.3];
+        notes.forEach((f0, i) => {
+          const s = t + i * 0.045;
+          const o = ctx.createOscillator();
+          o.type = 'triangle';
+          o.frequency.value = f0 * pitch;
+          const o2 = ctx.createOscillator();
+          o2.type = 'sawtooth';
+          o2.frequency.value = f0 * pitch * 2.003;
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(3600, s);
+          lp.frequency.exponentialRampToValueAtTime(700, s + 0.5);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.11 * gainMul, s + 0.004);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + 0.7);
+          o.connect(lp);
+          o2.connect(lp);
+          lp.connect(g).connect(out);
+          o.start(s);
+          o2.start(s);
+          o.stop(s + 0.72);
+          o2.stop(s + 0.72);
+        });
+        return 1;
+      }
+      case 'acordeon': {
+        // Cheerful reed arpeggio (legendary card).
+        [523.3, 659.3, 784, 1046.5].forEach((f0, i) => {
+          const s = t + i * 0.09;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.1 * gainMul, s + 0.02);
+          g.gain.setValueAtTime(0.1 * gainMul, s + (i === 3 ? 0.3 : 0.07));
+          g.gain.exponentialRampToValueAtTime(0.0001, s + (i === 3 ? 0.55 : 0.12));
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 2600;
+          for (const det of [-6, 0, 7]) {
+            const o = ctx.createOscillator();
+            o.type = 'sawtooth';
+            o.frequency.value = f0 * pitch;
+            o.detune.value = det;
+            o.connect(lp);
+            o.start(s);
+            o.stop(s + 0.6);
+          }
+          lp.connect(g).connect(out);
+        });
+        return 0.7;
+      }
+      case 'bacan': {
+        // "¡Ba-cán!": two vowel-like syllables (formant bandpass pairs), the second one higher.
+        const syl = (start: number, f0: number, f1: number, f2: number, len: number): void => {
+          const o = ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.setValueAtTime(f0 * pitch, start);
+          o.frequency.linearRampToValueAtTime(f0 * pitch * 1.12, start + len);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, start);
+          g.gain.exponentialRampToValueAtTime(0.35 * gainMul, start + 0.02);
+          g.gain.setValueAtTime(0.35 * gainMul, start + len * 0.7);
+          g.gain.exponentialRampToValueAtTime(0.0001, start + len);
+          for (const [freq, q] of [[f1, 7], [f2, 9]] as const) {
+            const bp = ctx.createBiquadFilter();
+            bp.type = 'bandpass';
+            bp.frequency.value = freq;
+            bp.Q.value = q;
+            o.connect(bp).connect(g);
+          }
+          g.connect(out);
+          o.start(start);
+          o.stop(start + len + 0.02);
+        };
+        syl(t, 200, 800, 1250, 0.13);
+        syl(t + 0.16, 250, 760, 1180, 0.26);
+        return 0.5;
+      }
+      case 'jefe': {
+        // Boss intro: low brass swell and a timpani roll. Impossible to miss with eyes closed.
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.28 * gainMul, t + 0.6);
+        g.gain.setValueAtTime(0.28 * gainMul, t + 1.3);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 2);
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(180, t);
+        lp.frequency.exponentialRampToValueAtTime(1400, t + 1.1);
+        for (const f0 of [55, 55.4, 82.4]) {
+          const o = ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.value = f0 * pitch;
+          o.connect(lp);
+          o.start(t);
+          o.stop(t + 2.1);
+        }
+        lp.connect(g).connect(out);
+        for (let i = 0; i < 14; i++) {
+          const s = t + i * 0.09;
+          const to = ctx.createOscillator();
+          to.type = 'sine';
+          to.frequency.setValueAtTime(110 * pitch, s);
+          to.frequency.exponentialRampToValueAtTime(60 * pitch, s + 0.12);
+          const tg = ctx.createGain();
+          tg.gain.setValueAtTime(0.0001, s);
+          tg.gain.exponentialRampToValueAtTime((0.12 + i * 0.012) * gainMul, s + 0.005);
+          tg.gain.exponentialRampToValueAtTime(0.0001, s + 0.14);
+          to.connect(tg).connect(out);
+          to.start(s);
+          to.stop(s + 0.16);
+        }
+        return 2.1;
+      }
+      case 'elite': {
+        // Gong: inharmonic partials with a long tail.
+        const g = ctx.createGain();
+        env(g, 0.18, 0.004, 1.5);
+        for (const f0 of [170, 285, 417, 560]) {
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f0 * pitch;
+          o.connect(g);
+          o.start(t);
+          o.stop(t + 1.6);
+        }
+        g.connect(out);
+        return 1.6;
+      }
+      case 'latido': {
+        // Heartbeat: low health. Two soft thumps.
+        for (const s of [0, 0.17]) {
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(75, t + s);
+          o.frequency.exponentialRampToValueAtTime(42, t + s + 0.14);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, t + s);
+          g.gain.exponentialRampToValueAtTime((s === 0 ? 0.5 : 0.35) * gainMul, t + s + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + s + 0.16);
+          o.connect(g).connect(out);
+          o.start(t + s);
+          o.stop(t + s + 0.18);
+        }
+        return 0.4;
+      }
+      case 'zona': {
+        // New zone: three rising quena-like notes with vibrato.
+        [392, 523.3, 659.3].forEach((f0, i) => {
+          const s = t + i * 0.22;
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f0 * pitch;
+          const vib = ctx.createOscillator();
+          vib.frequency.value = 5.5;
+          const vg = ctx.createGain();
+          vg.gain.value = 5;
+          vib.connect(vg).connect(o.frequency);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.14 * gainMul, s + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + (i === 2 ? 0.6 : 0.3));
+          o.connect(g).connect(out);
+          o.start(s);
+          vib.start(s);
+          o.stop(s + 0.65);
+          vib.stop(s + 0.65);
+        });
+        return 1.3;
+      }
+      case 'alarma': {
+        // "¡Te rodearon!": a rising two-tone siren, three times.
+        const o = ctx.createOscillator();
+        o.type = 'square';
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        for (let i = 0; i < 3; i++) {
+          const s = t + i * 0.26;
+          o.frequency.setValueAtTime(466 * pitch, s);
+          o.frequency.setValueAtTime(622 * pitch, s + 0.13);
+          g.gain.exponentialRampToValueAtTime(0.09 * gainMul, s + 0.01);
+          g.gain.setValueAtTime(0.09 * gainMul, s + 0.22);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + 0.25);
+        }
+        o.connect(g).connect(out);
+        o.start(t);
+        o.stop(t + 0.8);
+        return 0.8;
+      }
+      case 'evolucion': {
+        // Evolution fanfare: a rising major arpeggio with a shimmering top.
+        [262, 330, 392, 523, 659, 784, 1047].forEach((f0, i) => {
+          const s = t + i * 0.075;
+          const o = ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.value = f0 * pitch;
+          const o2 = ctx.createOscillator();
+          o2.type = 'sine';
+          o2.frequency.value = f0 * pitch * 2;
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 3200;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.09 * gainMul, s + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + (i === 6 ? 1 : 0.35));
+          o.connect(lp);
+          o2.connect(lp);
+          lp.connect(g).connect(out);
+          o.start(s);
+          o2.start(s);
+          o.stop(s + 1.05);
+          o2.stop(s + 1.05);
+        });
+        return 1.6;
+      }
+      case 'victoria': {
+        // Victory: a bright cueca-flavoured fanfare in D major.
+        [[587, 0], [740, 0.16], [880, 0.32], [1175, 0.48], [880, 0.8], [1175, 0.96], [1480, 1.12], [1175, 1.5]].forEach(([f0, off], i, all) => {
+          const s = t + (off ?? 0);
+          const o = ctx.createOscillator();
+          o.type = 'square';
+          o.frequency.value = (f0 ?? 440) * pitch;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.09 * gainMul, s + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + (i === all.length - 1 ? 1 : 0.28));
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 2800;
+          o.connect(lp).connect(g).connect(out);
+          o.start(s);
+          o.stop(s + 1.1);
+        });
+        return 2.6;
+      }
+      case 'derrota': {
+        // "Se te fue la micro": three falling wah-wah notes, cumbia style.
+        [330, 294, 247].forEach((f0, i) => {
+          const s = t + i * 0.3;
+          const o = ctx.createOscillator();
+          o.type = 'sawtooth';
+          o.frequency.setValueAtTime(f0 * pitch, s);
+          o.frequency.exponentialRampToValueAtTime(f0 * pitch * 0.93, s + (i === 2 ? 0.9 : 0.28));
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(500, s);
+          lp.frequency.linearRampToValueAtTime(1500, s + 0.15);
+          lp.frequency.linearRampToValueAtTime(500, s + 0.28);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.14 * gainMul, s + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + (i === 2 ? 1 : 0.3));
+          o.connect(lp).connect(g).connect(out);
+          o.start(s);
+          o.stop(s + 1.05);
+        });
+        return 1.9;
+      }
+      case 'pajaro': {
+        for (const [s, f0] of [[0, 3100], [0.13, 3700]] as const) {
+          const o = ctx.createOscillator();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(f0 * pitch, t + s);
+          o.frequency.exponentialRampToValueAtTime(f0 * pitch * 1.35, t + s + 0.07);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, t + s);
+          g.gain.exponentialRampToValueAtTime(0.05 * gainMul, t + s + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + s + 0.09);
+          o.connect(g).connect(out);
+          o.start(t + s);
+          o.stop(t + s + 0.1);
+        }
+        return 0.3;
+      }
+      case 'ladridoLejano': {
+        // A dog barking far away: dull, filtered, with a long echo.
+        const o = ctx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(190 * pitch, t);
+        o.frequency.linearRampToValueAtTime(340 * pitch, t + 0.04);
+        o.frequency.exponentialRampToValueAtTime(170 * pitch, t + 0.22);
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 650;
+        bp.Q.value = 2;
+        const g = ctx.createGain();
+        env(g, 0.2, 0.01, 0.22);
+        const d = ctx.createDelay();
+        d.delayTime.value = 0.28;
+        const fb = ctx.createGain();
+        fb.gain.value = 0.35;
+        o.connect(bp).connect(g);
+        g.connect(out);
+        g.connect(d);
+        d.connect(fb).connect(d);
+        d.connect(out);
+        o.start(t);
+        o.stop(t + 0.3);
+        return 1.2;
+      }
+      case 'moneda': {
+        const o = ctx.createOscillator();
+        o.type = 'square';
+        o.frequency.setValueAtTime(988 * pitch, t);
+        o.frequency.setValueAtTime(1319 * pitch, t + 0.05);
+        const g = ctx.createGain();
+        env(g, 0.045, 0.002, 0.11);
+        o.connect(g).connect(out);
+        o.start(t);
+        o.stop(t + 0.12);
+        return 0.12;
+      }
+      case 'ruleta': {
+        const src = this.noiseSource(ctx);
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.value = 2400 * pitch;
+        f.Q.value = 4;
+        const g = ctx.createGain();
+        env(g, 0.3, 0.001, 0.03);
+        src.connect(f).connect(g).connect(out);
+        src.start(t, Math.random());
+        src.stop(t + 0.04);
+        return 0.04;
       }
       case 'aleteo': {
         // A flock taking off: a few quick noise flutters.
