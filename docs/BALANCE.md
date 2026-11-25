@@ -310,3 +310,42 @@ Aun así Pandero, Boleadora y Cacerola quedan por debajo del 70 % del promedio e
 El pasaje también escala la vida y la mano de los jefes. La curva de supervivencia baja como debe (10,6 → 9,4 → 6,1 min y 56 → 25 % en Patagonia) y el Último bus no lo gana nadie con el bot (meta: menos de 15 %). **La meta de que el experto gane el pasaje 1 entre 50 % y 70 % no se puede medir con este bot** (el experto casi no gana ni el normal, como ya decía el informe de la 10.2); queda para tus partidas. La diferencia de victorias entre Normal y Hora punta (19 % contra 25 %) está dentro del ruido de 16 viajes.
 
 **Volantín (11.7):** la picada (un volantín se lanza al enemigo más cercano cada 1,1 s, con 60 % más de daño) y el peso al corte (destello blanco del hilo, tirón de 2 px hacia el perro y una pequeña sacudida) entraron sin mover el daño por minuto del volantín (6.361 antes, 7.964 después). **Hay que jugarlo para saber si por fin convence.**
+
+## 11.14 — Los 26 personajes (2026-11-25)
+
+Bot medio, 8 viajes por personaje (semillas 7000–7007), pasaje Normal. Meta: minuto promedio de muerte entre 70 % y 130 % del Quiltro (11,4 min → entre 8,0 y 14,9). Con 8 viajes el ruido es de ±1,5 min, así que solo se tocó a los que quedaron claramente bajo.
+
+| Personaje | Min. (antes) | Gana | Llega a Patagonia |
+| --- | --- | --- | --- |
+| Quiltro | 11,4 | 25 % | 75 % |
+| Ratonera | 13,8 | 50 % | 88 % |
+| Gato | 8,8 | 38 % | 50 % |
+| Zorro | 7,3 | 25 % | 38 % |
+| Pudú | 7,5 | 25 % | 38 % |
+| Pingüino | 7,8 | 38 % | 38 % |
+| Chingue | 7,1 | 13 % | 38 % |
+| Cóndor | 11,7 | 50 % | 88 % |
+| Guanaco | 13,7 | 63 % | 100 % |
+| Paloma | (se cortaba por un error, ver abajo) | | |
+| Flamenco | 11,6 | 50 % | 75 % |
+| Lobo marino | 12,9 | 75 % | 88 % |
+| Puma | 7,0 | 38 % | 38 % |
+| Monito | 8,8 | 25 % | 63 % |
+| Chinchilla | 7,6 | 38 % | 38 % |
+| Vizcacha | 8,5 | 50 % | 50 % |
+| Huemul | 9,3 | 13 % | 50 % |
+| Carpintero | 9,9 | 25 % | 63 % |
+| Capibara | 11,3 | 25 % | 88 % |
+| Llama | 6,2 | 25 % | 25 % |
+| Tucán | 7,5 | 25 % | 38 % |
+| Jaguar | 7,7 | 38 % | 38 % |
+| Caleuchito | 9,7 | 25 % | 63 % |
+| Perro del Dieciocho | 11,3 | 13 % | 88 % |
+| Pillán | 9,3 | 25 % | 63 % |
+| Trauquito | 10,7 | 38 % | 63 % |
+
+**Ajustes:** más vida al Zorro (95 → 108), Pudú (105 → 118), Pingüino (115 → 128), Chingue (100 → 115, aura 10 → 12), Puma (85 → 100), Chinchilla (60 → 78), Tucán (85 → 100) y Jaguar (100 → 112). La Llama cambia la Rayuela por las Bolitas (escupe en abanico), 140 de vida y +20 % de daño: la Rayuela lanza hacia donde caminas y el bot camina alejándose de los enemigos, así que con ella casi no pegaba.
+
+**Error encontrado al medir:** al terminar la historieta del final (después de vencer a Cai Cai Vilú) el juego intentaba dibujarla justo después de cerrarla y se caía. Le pasaba a cualquiera que ganara; con la Paloma, que gana seguido, salió primero. Arreglado.
+
+**Después de los ajustes** (mismo bot, 8 viajes): Paloma 11,0 (ya no se cae), Zorro 9,6, Pudú 9,8, Pingüino 10,6, Puma 9,5, Chinchilla 8,1, Llama 13,3, Tucán 8,9, Jaguar 9,5 y Chingue 9,0. Al Chingue no le bastó la vida: su arma, el **Elástico**, era la más débil en todas las mediciones, así que se mejoró el arma (daño 15 → 22, alcance 70 → 80, descansa menos), lo que también ayuda al Jaguar. El Quiltro midió 13,0 en esta tanda. Ahora los 26 quedan entre 8,1 y 13,8 minutos, dentro de la meta de 70 % a 130 %.

@@ -157,7 +157,8 @@ export const ARMAS: readonly WeaponDef[] = [
     i18n: 'armas.elastico',
     maxLevel: 5,
     takesSlot: true,
-    base: { damage: 15, count: 1, cooldown: 2.4, duration: 1.2, area: 70, tick: 0.3 },
+    // Fase 11.14: it was the weakest weapon in every measure (15 → 22 damage, 70 → 80 reach, rests less).
+    base: { damage: 22, count: 1, cooldown: 2, duration: 1.3, area: 80, tick: 0.25 },
     levels: [{ areaMult: 0.15 }, { count: 1, damageMult: 0.15 }, { durationMult: 0.2 }, { count: 1, areaMult: 0.15 }],
     evolvesWith: 'cascabel',
   },

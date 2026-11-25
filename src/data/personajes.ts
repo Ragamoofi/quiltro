@@ -126,7 +126,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'yip' },
     unlock: { kind: 'llegarA', ciudad: 'temuco' },
     startingWeapon: 'emboque',
-    mods: { speedMult: 1.05, maxHp: 95, cooldownMult: -0.12, dodgeChance: 0.1 },
+    mods: { speedMult: 1.05, maxHp: 108, cooldownMult: -0.12, dodgeChance: 0.1 },
   },
   {
     id: 'pudu',
@@ -135,7 +135,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'balido' },
     unlock: { kind: 'llegarA', ciudad: 'chiloe' },
     startingWeapon: 'rayuela',
-    mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 105, damageMult: 0.3, dodgeChance: 0.15 },
+    mods: { speedMult: 1.2, hitboxMult: 0.75, maxHp: 118, damageMult: 0.3, dodgeChance: 0.15 },
   },
   {
     id: 'pinguino',
@@ -144,7 +144,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'rebuzno' },
     unlock: { kind: 'vencer', jefe: 'caleuche' },
     startingWeapon: 'chaya',
-    mods: { areaMult: 1.25, maxHp: 115, armor: 1, slides: true, immuneSlow: true, immuneWind: true },
+    mods: { areaMult: 1.25, maxHp: 140, armor: 1, slides: true, immuneSlow: true, immuneWind: true },
   },
   {
     id: 'chingue',
@@ -153,7 +153,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'bufido' },
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 5000 },
     startingWeapon: 'elastico',
-    mods: { speedMult: 0.95, maxHp: 100, aura: { dps: 10, radius: 34 } },
+    mods: { speedMult: 0.95, maxHp: 115, aura: { dps: 12, radius: 36 } },
   },
   {
     id: 'condor',
@@ -208,7 +208,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'rugido' },
     unlock: { kind: 'vencer', jefe: 'alicanto' },
     startingWeapon: 'pandero',
-    mods: { speedMult: 1.12, maxHp: 85, damageMult: 0.25, critBonus: 0.1 },
+    mods: { speedMult: 1.12, maxHp: 100, damageMult: 0.25, critBonus: 0.1 },
   },
   {
     id: 'monito',
@@ -226,7 +226,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'chillido', pitch: 1.4 },
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 2000 },
     startingWeapon: 'trompo',
-    mods: { speedMult: 1.25, maxHp: 60, hitboxMult: 0.7, dodgeChance: 0.15 },
+    mods: { speedMult: 1.25, maxHp: 78, hitboxMult: 0.7, dodgeChance: 0.15 },
   },
   {
     id: 'vizcacha',
@@ -271,8 +271,8 @@ export const PERSONAJES: readonly CharacterDef[] = [
     sprite: 'llamaPj',
     voice: { sound: 'zumbido' },
     unlock: { kind: 'total', stat: 'kills', cantidad: 15000 },
-    startingWeapon: 'rayuela',
-    mods: { speedMult: 0.95, maxHp: 120, damageMult: 0.15, pickupMult: 0.3 },
+    startingWeapon: 'bolitas',
+    mods: { speedMult: 1, maxHp: 140, damageMult: 0.2, pickupMult: 0.3 },
   },
   {
     id: 'tucan',
@@ -281,7 +281,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'graznido', pitch: 1.5 }, flies: true,
     unlock: { kind: 'total', stat: 'sopaipillas', cantidad: 10000 },
     startingWeapon: 'fuegos',
-    mods: { speedMult: 1.1, maxHp: 85, critBonus: 0.1, ignoresHazards: true },
+    mods: { speedMult: 1.1, maxHp: 100, critBonus: 0.1, ignoresHazards: true },
   },
   {
     id: 'jaguar',
@@ -290,7 +290,7 @@ export const PERSONAJES: readonly CharacterDef[] = [
     voice: { sound: 'rugido', pitch: 0.8 },
     unlock: { kind: 'total', stat: 'kills', cantidad: 30000 },
     startingWeapon: 'elastico',
-    mods: { speedMult: 1.05, maxHp: 100, damageMult: 0.35, critBonus: 0.1 },
+    mods: { speedMult: 1.05, maxHp: 112, damageMult: 0.35, critBonus: 0.1 },
   },
   // ---------------- Fase 11.14: special ones (myth and folklore), opened by the pasajes ----------------
   {

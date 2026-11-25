@@ -4,6 +4,21 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Personajes rehechos y 16 nuevos (Fases 11.13 y 11.14)
+
+#### Cambiado
+- **El Quiltro** cambió la pañoleta por un collar con placa y tiene las orejas paradas (el color del collar se elige en La Cucha).
+- **La Ratonera** (antes la Quiltra del Chalequito) es ahora una fox terrier chilena.
+- **El Zorro Culpeo, el Pudú, el Chingue y el Pingüino de Humboldt** se dibujaron de nuevo a mano, mirando fotos y pixel art de referencia.
+- **Todas las cartas dicen qué hacen**: las pasivas nuevas (Mate, Poncho, Chasquilla, Gorro de lana, Cuchara de palo y Cachaña) no tenían texto, y a las armas nuevas les faltaba el nombre de lo que suman por nivel.
+
+#### Agregado
+- **16 personajes**, cada uno con su dibujo, sus animaciones, su grito, su arma, su habilidad y su desbloqueo:
+  - De Chile: Flamenco Chileno, Lobo Marino, Puma, Monito del Monte, Chinchilla, Vizcacha, Huemul y Carpintero Negro.
+  - Del continente: Capibara, Llama, Tucán y Jaguar.
+  - Especiales: El Caleuchito (gana el pasaje Normal), El Pillán (gana Hora punta), El Trauquito (gana Último bus) y El Perro del Dieciocho (30.000 sopaipillas).
+- **11 gritos nuevos** sintetizados: rugido, bramido, chillido, graznido, ladrido de lobo marino, tamborileo, silbido, chasquido, zumbido, aullido fantasma y risa de duende.
+
 ### Arreglos de comida y cofres
 
 - **La comida dejaba de salir** cuando había mucha en el piso: las piezas nuevas se juntaban con la primera de la lista, que podía estar a una pantalla de distancia. Ahora se juntan con la más cercana a donde cae (o salen como pieza nueva), y la comida que queda muy atrás vuelve en las piezas siguientes en vez de tapar el piso.

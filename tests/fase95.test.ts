@@ -41,7 +41,7 @@ describe('Fase 9.5: armas nuevas', () => {
     const el = new Build('elastico');
     raise(el, 'elastico', 'weapon', 5);
     expect(el.numbers('elastico').count).toBe(3);
-    expect(el.numbers('elastico').duration).toBeCloseTo(1.2 * 1.2);
+    expect(el.numbers('elastico').duration).toBeCloseTo(1.3 * 1.2);
 
     const r = new Build('ronda');
     raise(r, 'ronda', 'weapon', 5);

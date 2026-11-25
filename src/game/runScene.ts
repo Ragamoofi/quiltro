@@ -453,8 +453,10 @@ export class RunScene implements Scene {
     this.caja.update(real);
     this.end.update(real);
     if (this.comic) {
-      this.comic.update(real);
-      this.comic.render();
+      // The comic can finish (and close itself) during its own update: only draw it if it is still open.
+      const comic = this.comic;
+      comic.update(real);
+      if (this.comic === comic) comic.render();
     }
 
     if (this.mode === 'caja' && this.caja.done) this.resume();

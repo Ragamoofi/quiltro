@@ -216,7 +216,7 @@ export async function installDebug(env: DebugEnv): Promise<void> {
                 botState.done = i + 1;
               }
             } catch (err) {
-              botState.error = String(err);
+              botState.error = err instanceof Error && err.stack ? err.stack : String(err);
             }
             botState.running = false;
             loop.locked = false;
