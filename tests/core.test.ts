@@ -82,10 +82,45 @@ describe('integer pixel scaling', () => {
     expect(f.cssWidth).toBe(1920);
   });
 
-  it('never stretches: leftover space becomes border', () => {
+  it('never stretches to the whole window: leftover space becomes border', () => {
+    // 1366×768 would fit ×2,84: a whole ×2 fills only 70 %, so it steps up to ×2,5 (never to ×3, which would not fit).
     const f = fitDisplay(1366, 768, 1);
-    expect(f.scale).toBe(2);
-    expect(f.cssWidth).toBe(960);
+    expect(f.scale).toBe(2.5);
+    expect(f.cssWidth).toBe(1200);
+    expect(f.cssHeight).toBe(675);
+  });
+
+  it('a 1080p screen with a browser window about 955 px tall uses ×3,5 instead of leaving a quarter of the screen empty', () => {
+    const f = fitDisplay(1920, 955, 1);
+    expect(f.scale).toBe(3.5);
+    expect(f.cssWidth).toBe(1680);
+    expect(f.cssHeight).toBe(945);
+    // It always fits.
+    expect(f.cssHeight).toBeLessThanOrEqual(955);
+  });
+
+  it('keeps a whole scale when it already fills the screen well', () => {
+    expect(fitDisplay(1920, 1080, 1).scale).toBe(4);
+    expect(fitDisplay(1440, 810, 1).scale).toBe(3);
+    // Windows at 125 %: 1536×864 css = 1920×1080 device pixels, exactly ×4.
+    expect(fitDisplay(1536, 864, 1.25).scale).toBe(4);
+  });
+
+  it('the canvas never exceeds the window, at any size', () => {
+    for (const [w, h, dpr] of [
+      [1280, 720, 1],
+      [1366, 768, 1],
+      [1600, 900, 1],
+      [1920, 937, 1],
+      [2560, 1300, 1],
+      [1536, 730, 1.25],
+      [800, 600, 1],
+      [390, 844, 3],
+    ] as const) {
+      const f = fitDisplay(w, h, dpr);
+      expect(f.cssWidth, `${w}×${h}`).toBeLessThanOrEqual(w + 0.001);
+      expect(f.cssHeight, `${w}×${h}`).toBeLessThanOrEqual(h + 0.001);
+    }
   });
 
   it('switches to 270×480 in portrait and scales in device pixels', () => {

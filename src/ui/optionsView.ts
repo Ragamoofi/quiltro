@@ -11,6 +11,9 @@ export interface OptionsHooks {
   importCode(code: string): boolean;
   wipe(): void;
   replayIntro(): void;
+  /** Is the game in full screen, and switch it (desktop browsers). */
+  fullscreen(): boolean;
+  toggleFullscreen(): void;
   close(): void;
 }
 
@@ -86,6 +89,9 @@ export class OptionsView {
         get: () => s.holdMode,
         set: (v) => (s.holdMode = v as Settings['holdMode']),
       },
+      bool(t('opciones.pantallaCompleta'), () => this.hooks.fullscreen(), (v) => {
+        if (v !== this.hooks.fullscreen()) this.hooks.toggleFullscreen();
+      }),
       {
         kind: 'choice',
         label: t('opciones.joystick'),

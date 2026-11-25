@@ -87,6 +87,17 @@ async function boot(): Promise<void> {
     },
   });
 
+  /** Full screen (the F key and the option): on a 1080p monitor it fills the screen at exactly ×4. */
+  const toggleFullscreen = (): void => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void document.documentElement.requestFullscreen?.().catch(() => undefined);
+  };
+  window.addEventListener('keydown', (e) => {
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (e.code !== 'KeyF' || e.repeat || e.ctrlKey || e.metaKey || e.altKey || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    toggleFullscreen();
+  });
+
   const applyFit = (): void => {
     fit = fitDisplay(window.innerWidth, window.innerHeight, window.devicePixelRatio);
     if (app.renderer.width !== fit.width || app.renderer.height !== fit.height) {
@@ -193,6 +204,8 @@ async function boot(): Promise<void> {
     },
     wipe: () => wipeAll(),
     replayIntro: () => goIntro(() => goMenu()),
+    fullscreen: () => document.fullscreenElement !== null,
+    toggleFullscreen: () => toggleFullscreen(),
   };
   const onFinishOn = (
     save: typeof data,

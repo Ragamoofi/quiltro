@@ -12,6 +12,13 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 - La pantalla de elegir personaje muestra la pasiva. El bot puede jugar con cualquier personaje (`__quiltroBot.start(skill, runs, seed, minutos, invencible, personaje)`).
 - Pruebas de personajes (`tests/personajes.test.ts`).
 
+### Pantalla en PC (1920×1080)
+
+#### Arreglado
+- **El juego se veía chico en monitores de 1080p.** En un navegador de unos 955 px de alto (lo normal en una pantalla de 1920×1080) el juego usaba ×3 y ocupaba solo el 75 % de la pantalla, con barras gigantes a los lados. Ahora, cuando una escala entera deja más del 12 % de borde, sube de a medio paso: **×3,5** a 1920×955 (1680×945 en vez de 1440×810) y ×2,5 en 1366×768. Con ×3,5 cada dos píxeles del juego uno mide 4 y otro 3 píxeles de pantalla, un patrón parejo; la escala entera exacta se mantiene cuando ya llena bien (1920×1080 a ×4).
+- **Pantalla completa:** tecla **F** y una fila nueva en Opciones. A pantalla completa en 1080p el juego llena todo a ×4 exacto.
+- Pruebas de escala (`tests/core.test.ts`): nunca se pasa de la ventana, a ningún tamaño probado.
+
 ### Fase 10.6 — Vida ambiente y Santiago como la Estación Central
 
 #### Agregado
