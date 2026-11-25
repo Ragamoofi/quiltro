@@ -1,0 +1,61 @@
+# Plan de la Fase 11 — Más razones para volver
+
+Sale de `docs/AUDITORIA.md`. Reglas de siempre: tandas chicas, un commit por tanda, `npm run check` verde antes de publicar, textos en `es-CL.json`, y **se mide con el bot (mismas semillas) antes y después** de cada tanda que toque el equilibrio. Nada se descarga sin tu OK.
+
+Meta de la fase: que el juego aguante 20+ partidas sin repetirse, sin romper el equilibrio ya medido (personajes entre 70 % y 130 % del Quiltro, Centro y Alicanto sin muro extra).
+
+## Tandas
+
+### 11.0 — Cierre del jefe y orden de la casa (media jornada)
+- Medir Cai Cai Vilú con el bot (medio y experto, 20 viajes, semillas 7000–7019) y anotar en `docs/BALANCE.md`. Ajustar vida/ataques solo si dura fuera de 45–120 s.
+- Arreglar los textos viejos del "Vecino Viral" que queden en docs y comentarios.
+- **Listo cuando:** número del jefe documentado y `grep` de "Vecino Viral/Tío René" sin resultados fuera del CHANGELOG.
+
+### 11.1 — Salud del código (1 jornada)
+- Partir `runScene.ts` (945 líneas) y `main.ts`: sacar eventos de partida, depuración y bot a módulos propios, sin cambiar el comportamiento.
+- **Listo cuando:** ningún archivo de `src/game` pasa de ~600 líneas, 128 pruebas siguen verdes y la partida del bot da los mismos resultados con la misma semilla.
+
+### 11.2 — Logros y bestiario (1 jornada)
+- De 7 a ~35 logros: por jefe, por personaje, por arma/evolución, por km, por ambiente, por enemigo, de práctica ("sin recibir daño en un jefe"), secretos (2–3).
+- **Bestiario**: pantalla que registra enemigos, jefes y armas vistos (con silueta hasta descubrirlos).
+- Recompensas: lucas, bandanas y algún desbloqueo (un arma o un fondo de Cucha), nada que desequilibre.
+- **Listo cuando:** cada logro tiene una prueba que lo dispara, aparece en la pantalla de logros y el bestiario sobrevive al guardado/carga.
+
+### 11.3 — Eventos y cofres en el camino (2 jornadas)
+- **Cofre de la ruta:** aparece cada ~90 s, se abre con lucas del propio viaje y su precio sube con cada apertura (idea de Megabonk).
+- **Animita:** santuario gratis; quedarse cerca unos segundos da una bendición temporal.
+- **Feriante:** trato con riesgo (más botín, enemigos extra o menos vida un rato).
+- Máximo 1 evento activo a la vez y nunca durante un jefe. Mismo flujo con la semilla para que la ruta del día sea justa.
+- **Listo cuando:** el bot medio no cae más de 10 puntos en llegada a Patagonia y los eventos se ven y leen bien en 480×270.
+
+### 11.4 — Élites y minijefes (1–2 jornadas)
+- Un élite por zona a ~mitad de camino (variante grande de un enemigo propio del ambiente, con un ataque con aviso) y un botín propio (caja o cofre).
+- **Listo cuando:** un build decente los derrota en 15–40 s y sueltan algo que se note.
+
+### 11.5 — Más armas y pasivas (2 jornadas, la tanda más grande)
+- +5 armas (hasta 16) y +6 pasivas con efecto real, con evoluciones para las armas nuevas. Ideas: **Choripán** (proyectil con rebote), **Pandero** (onda corta que empuja), **Cacerola** (escudo que devuelve daño), **Trompo-Boleadora** (cadena entre dos enemigos), **Sopaipilla caliente** (quema); pasivas: Mate (regenera al quedarse quieto), Poncho (menos daño de proyectiles), Chasquilla (más crítico)…  (nombres a revisar contigo).
+- Cada arma entra solo si el banco de armas del bot la ubica entre el 70 % y el 130 % del promedio.
+- **Listo cuando:** `tests/contenido.test.ts` cubre todo lo nuevo, contraste sigue 100 % y el banco de armas queda documentado.
+
+### 11.6 — Dificultad después de ganar: Pasajes (1 jornada)
+- Tres pasajes con enemigos más duros y premios mayores: Pasaje normal, "Hora punta", "Último bus". Se desbloquean al ganar el anterior. La Antártica sigue como modo infinito.
+- **Listo cuando:** el bot experto gana el pasaje 1 en ~50–70 % de las partidas, y el 3 en menos del 15 %.
+
+### 11.7 — Volantín, claridad y estadísticas (1–2 jornadas)
+- Volantín: aplicar la idea 3 "picada" + la 1 "más peso al corte" (lo decides tú); probar con una partida tuya.
+- Legibilidad: tope de enemigos visibles y contorno de proyectiles enemigos, medido con el banco de rendimiento.
+- Pantalla de estadísticas (mejores marcas, personaje más usado, causa de muerte más común).
+
+### 11.8 — Prueba humana y salida (lo hacemos juntos)
+- **Tú**: 3 partidas (minuto y causa de muerte), una prueba en móvil real y dos teléfonos para la ruta del día, instalar la PWA y probar sin conexión en Chrome, oír la mezcla con audífonos.
+- **Yo**: ajustar el equilibrio con tus datos, subir capturas a itch.io y publicar.
+
+## Orden recomendado
+11.0 → 11.1 → 11.2 → 11.3 → 11.4 → 11.5 → 11.6 → 11.7 → 11.8. Los logros van antes que los eventos para poder premiarlos; el código se ordena primero porque los eventos tocan `runScene`.
+
+## Lo que necesito que decidas
+1. ¿Apruebas el orden? (si quieres ver novedades jugables rápido, se puede adelantar 11.5 antes que 11.2).
+2. Volantín: ¿"picada" + "más peso al corte"?
+3. ¿Los nombres de las armas y pasivas nuevas de arriba te sirven, o prefieres otros?
+4. ¿Autorizas descargar un ladrido CC0 (te digo archivo, fuente y peso antes)?
+5. ¿El cooperativo en pantalla compartida queda fuera de esta fase? (lo dejo para la Fase 12).
