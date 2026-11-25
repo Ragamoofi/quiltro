@@ -3,6 +3,7 @@ import { ARMAS, MAX_WEAPONS, type WeaponDef, type WeaponLevelUp } from '../data/
 import { RARITY } from '../data/balance.ts';
 import { EVOLUCIONES, type EvolutionDef } from '../data/evoluciones.ts';
 import { PLAYER_BASE } from '../data/personajes.ts';
+import { PILARES, pillarTier } from '../data/pilares.ts';
 import { MAX_TRAITS, RASGOS, type TraitDef } from '../data/rasgos.ts';
 
 export type Rarity = (typeof RARITY)[number]['id'];
@@ -21,6 +22,10 @@ export interface Stats {
   projectiles: number;
   /** 0..1 */
   critChance: number;
+  /** Multiplier on the experience from food (Olfato pillar). */
+  xpMult: number;
+  /** Seconds between free shields, 0 = none (Aguante pillar). */
+  shieldEvery: number;
 }
 
 /**
@@ -70,6 +75,10 @@ export interface OwnedWeapon {
   level: number;
   /** Extra damage from rare cards (0.1 = +10 %). */
   rarityBonus: number;
+  /** Cooldown change from epic and legendary cards (−0.1 = 10 % faster). */
+  cooldownBonus: number;
+  /** Extra projectile / chain from legendary cards. */
+  extra: number;
 }
 
 export interface OwnedTrait {
@@ -94,6 +103,8 @@ export type Offer =
   | { kind: 'trait'; id: string; rarity: Rarity; toLevel: number }
   | { kind: 'heal'; rarity: Rarity }
   | { kind: 'lucas'; rarity: Rarity };
+
+const RARITY_BY_ID = Object.fromEntries(RARITY.map((r) => [r.id, r])) as Record<Rarity, (typeof RARITY)[number]>;
 
 const RARITY_MULT: Record<Rarity, number> = Object.fromEntries(RARITY.map((r) => [r.id, r.mult])) as Record<
   Rarity,
@@ -139,7 +150,7 @@ export class Build {
   private addWeapon(id: string): OwnedWeapon {
     const def = ARMAS.find((a) => a.id === id);
     if (!def) throw new Error(`Arma desconocida: ${id}`);
-    const w: OwnedWeapon = { def, level: 1, rarityBonus: 0 };
+    const w: OwnedWeapon = { def, level: 1, rarityBonus: 0, cooldownBonus: 0, extra: 0 };
     this.weapons.push(w);
     return w;
   }
@@ -157,6 +168,8 @@ export class Build {
       pickupMult: 1 + b.pickupMult,
       projectiles: 0,
       critChance: PLAYER_BASE.critChance + b.critChance,
+      xpMult: 1,
+      shieldEvery: 0,
     };
     for (const t of this.traits) {
       s.speedMult += t.totals.speedMult;
@@ -170,8 +183,26 @@ export class Build {
       const at = t.def.perLevel.projectilesAtLevels;
       if (at) s.projectiles += at.filter((l) => t.level >= l).length;
     }
+    for (const pillar of PILARES) {
+      const tier = pillarTier(this.pillarPoints(pillar.id));
+      const bonus = tier > 0 ? pillar.tiers[tier - 1] : undefined;
+      if (!bonus) continue;
+      s.critChance += bonus.critChance ?? 0;
+      s.maxHp += bonus.maxHp ?? 0;
+      s.xpMult += bonus.xpMult ?? 0;
+      s.areaMult += bonus.areaMult ?? 0;
+      s.projectiles += bonus.projectiles ?? 0;
+      if (bonus.shieldEvery) s.shieldEvery = bonus.shieldEvery;
+    }
     s.cooldownMult = Math.max(MIN_COOLDOWN_MULT, s.cooldownMult);
     return s;
+  }
+
+  /** Levels summed over the owned traits of a pillar. */
+  pillarPoints(pillarId: string): number {
+    const pillar = PILARES.find((p) => p.id === pillarId);
+    if (!pillar) return 0;
+    return this.traits.filter((t) => pillar.traits.includes(t.def.id)).reduce((a, t) => a + t.level, 0);
   }
 
   /** Final numbers for an owned weapon (or its level-1 numbers if not owned). */
@@ -194,9 +225,13 @@ export class Build {
     const level = owned?.level ?? 1;
     for (let l = 2; l <= level; l++) applyLevel(n, levelUp(def, l));
     n.damage *= stats.damageMult * (1 + (owned?.rarityBonus ?? 0));
-    n.cooldown *= stats.cooldownMult;
+    n.cooldown *= stats.cooldownMult * (b.cooldown !== undefined ? 1 + (owned?.cooldownBonus ?? 0) : 1);
     n.area *= stats.areaMult;
     if (def.takesSlot && b.count !== undefined) n.count += stats.projectiles;
+    if (owned && owned.extra > 0) {
+      if (b.count !== undefined) n.count += owned.extra;
+      else if (b.chains !== undefined) n.chains += owned.extra;
+    }
     if (id === 'volantin') n.count += this.base.startingKites;
     return n;
   }
@@ -279,7 +314,10 @@ export class Build {
       const w = this.weapon(offer.id) ?? (offer.toLevel === 1 ? this.addWeapon(offer.id) : undefined);
       if (!w) return;
       if (offer.toLevel > 1) w.level = Math.min(w.def.maxLevel, w.level + 1);
-      w.rarityBonus += (mult - 1) * 0.2;
+      const r = RARITY_BY_ID[offer.rarity];
+      w.rarityBonus += r.weaponDamage;
+      if (w.def.base.cooldown !== undefined) w.cooldownBonus += r.weaponCooldown;
+      if (w.def.base.count !== undefined || w.def.base.chains !== undefined) w.extra += r.weaponExtra;
     } else if (offer.kind === 'trait') {
       let t = this.trait(offer.id);
       if (!t) {

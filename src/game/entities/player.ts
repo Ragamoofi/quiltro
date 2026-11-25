@@ -100,6 +100,8 @@ export class Player {
   movedThisRun = false;
   /** Carnaval shield: absorbs the next hit. */
   shield = false;
+  /** Seconds until the Aguante pillar gives the next free shield. */
+  private shieldTimer = 0;
   /** Extra movement from hazards (wind, dust devils), px/s, decays. */
   pushX = 0;
   pushY = 0;
@@ -179,6 +181,15 @@ export class Player {
       return;
     }
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
+    // Aguante pillar: a free shield every so often (the same one the Carnaval gives).
+    if (ctx.mods.shieldEvery > 0 && !this.shield) {
+      this.shieldTimer -= dt;
+      if (this.shieldTimer <= 0) {
+        this.shield = true;
+        this.shieldTimer = ctx.mods.shieldEvery;
+        ctx.particles.burst(ctx.rng, this.x, this.y - 10, 10, ['T', 't', 'W'], 60, 0.4);
+      }
+    }
     this.sinceHurt += dt;
 
     // Movement with soft inertia (exponential approach to the target velocity).

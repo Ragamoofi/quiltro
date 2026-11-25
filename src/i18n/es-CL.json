@@ -67,6 +67,12 @@
     "epica": "Épica",
     "legendaria": "¡Bacán!"
   },
+  "pilares": {
+    "garra": { "nombre": "Garra", "bono1": "+10% crítico", "bono2": "+25% crítico" },
+    "aguante": { "nombre": "Aguante", "bono1": "+25 vida máxima", "bono2": "+50 vida máxima y un escudo cada 40 s" },
+    "olfato": { "nombre": "Olfato", "bono1": "+10% experiencia", "bono2": "+25% experiencia" },
+    "barrio": { "nombre": "Barrio", "bono1": "+12% área", "bono2": "+12% área y +1 proyectil" }
+  },
   "efectos": {
     "count": "+{n} {unidad}",
     "damage": "+{n}% daño",
@@ -86,6 +92,11 @@
     "projectiles": "+1 proyectil a todas las armas en nv 2 y 4",
     "projectilesAhora": "¡+1 proyectil a todas las armas!",
     "rarityBonus": "y +{n}% daño extra",
+    "rarezaEspera": "-{n}% espera",
+    "rarezaExtra": "+1 extra",
+    "pilarLinea": "{pilar} {n}/{max}",
+    "pilarBono": "¡Bono de {pilar}!",
+    "pilarMaximo": "{pilar} al máximo",
     "guauDamage": "+{n}% daño y área",
     "guauCooldown": "-{n} s enfriamiento"
   },

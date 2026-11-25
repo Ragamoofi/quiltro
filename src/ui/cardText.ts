@@ -1,7 +1,8 @@
 import { ARMAS } from '../data/armas.ts';
 import { PICKUPS, RARITY } from '../data/balance.ts';
+import { PILLAR_POINTS, pillarOf, pillarTier } from '../data/pilares.ts';
 import { RASGOS } from '../data/rasgos.ts';
-import { levelUp, type Offer } from '../game/build.ts';
+import { levelUp, type Build, type Offer } from '../game/build.ts';
 import { t } from '../i18n/index.ts';
 
 export interface CardText {
@@ -21,6 +22,30 @@ export const LUCAS_CARD = 25;
 const pct = (v: number): string => fmt(Math.round(v * 100));
 /** Chilean number format with a decimal comma. */
 const fmt = (v: number): string => (Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ','));
+
+export interface PillarLine {
+  /** "Aguante 3/3" */
+  text: string;
+  /** Palette char of the pillar. */
+  color: string;
+  /** Taking this card unlocks a pillar bonus. */
+  unlocks: boolean;
+}
+
+/** For a trait card: which pillar it feeds and how far along it would be after taking it. */
+export function pillarLine(offer: Offer, build: Build): PillarLine | null {
+  if (offer.kind !== 'trait') return null;
+  const pillar = pillarOf(offer.id);
+  if (!pillar) return null;
+  const before = build.pillarPoints(pillar.id);
+  const after = before + 1;
+  const next = PILLAR_POINTS.find((p) => after <= p) ?? PILLAR_POINTS[PILLAR_POINTS.length - 1] ?? after;
+  return {
+    text: t('efectos.pilarLinea', { pilar: t(`${pillar.i18n}.nombre`), n: Math.min(after, next), max: next }),
+    color: pillar.color,
+    unlocks: pillarTier(after) > pillarTier(before),
+  };
+}
 
 /** Texts for a level-up card, with numbers already scaled by rarity. */
 export function describe(offer: Offer): CardText {
@@ -63,7 +88,17 @@ export function describe(offer: Offer): CardText {
       if (up.areaMult) parts.push(t('efectos.area', { n: pct(up.areaMult) }));
       effect = parts.join(', ');
     }
-    if (mult > 1) effect += ` ${t('efectos.rarityBonus', { n: pct((mult - 1) * 0.2) })}`;
+    const rar = RARITY.find((r) => r.id === offer.rarity);
+    if (rar && rar.weaponDamage > 0) {
+      const extras = [t('efectos.rarityBonus', { n: pct(rar.weaponDamage) })];
+      if (rar.weaponCooldown < 0 && def.base.cooldown !== undefined) {
+        extras.push(t('efectos.rarezaEspera', { n: pct(-rar.weaponCooldown) }));
+      }
+      if (rar.weaponExtra > 0 && (def.base.count !== undefined || def.base.chains !== undefined)) {
+        extras.push(t('efectos.rarezaExtra'));
+      }
+      effect += ` ${extras.join(', ')}`;
+    }
     return { title, level, effect, flavor: '', icon: def.id };
   }
 

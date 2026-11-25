@@ -15,18 +15,18 @@ describe('build', () => {
     expect(b.slotWeapons).toHaveLength(1);
   });
 
-  it('applies the volantín level table from the GDD', () => {
+  it('applies the volantín level table (GDD shape; Fase 9.2 raised damage 8 → 12 and +20 % → +40 %)', () => {
     const b = new Build();
     expect(b.numbers('volantin').count).toBe(3);
     levelUp(b, 'volantin'); // nv 2: +1
     expect(b.numbers('volantin').count).toBe(4);
-    levelUp(b, 'volantin'); // nv 3: +20 % daño
-    expect(b.numbers('volantin').damage).toBeCloseTo(9.6);
+    levelUp(b, 'volantin'); // nv 3: +40 % daño
+    expect(b.numbers('volantin').damage).toBeCloseTo(12 * 1.4);
     levelUp(b, 'volantin');
     levelUp(b, 'volantin');
     expect(b.weapon('volantin')?.level).toBe(5);
     expect(b.numbers('volantin').count).toBe(5);
-    expect(b.numbers('volantin').damage).toBeCloseTo(8 * 1.2 * 1.2);
+    expect(b.numbers('volantin').damage).toBeCloseTo(12 * 1.4 * 1.4);
   });
 
   it('traits stack, rarity scales them, cooldowns have a floor', () => {

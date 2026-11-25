@@ -91,11 +91,17 @@ export const LEVEL_UP = {
   cardStaggerSeconds: 0.08,
 } as const;
 
+/**
+ * `mult` scales trait cards. `weapon*` is what a weapon card of that rarity adds to the weapon
+ * for good: damage (0,35 = +35 %), cooldown (−0,1 = 10 % faster, only weapons with a cooldown) and
+ * `extra` (+1 projectile / chain, only weapons that have them). It used to be just +10/20/40 %
+ * damage, which nobody noticed.
+ */
 export const RARITY = [
-  { id: 'comun', chance: 0.7, mult: 1 },
-  { id: 'rara', chance: 0.22, mult: 1.5 },
-  { id: 'epica', chance: 0.07, mult: 2 },
-  { id: 'legendaria', chance: 0.01, mult: 3 },
+  { id: 'comun', chance: 0.7, mult: 1, weaponDamage: 0, weaponCooldown: 0, weaponExtra: 0 },
+  { id: 'rara', chance: 0.22, mult: 1.5, weaponDamage: 0.15, weaponCooldown: 0, weaponExtra: 0 },
+  { id: 'epica', chance: 0.07, mult: 2, weaponDamage: 0.35, weaponCooldown: -0.1, weaponExtra: 0 },
+  { id: 'legendaria', chance: 0.01, mult: 3, weaponDamage: 0.7, weaponCooldown: -0.15, weaponExtra: 1 },
 ] as const;
 
 export const CAJA = {

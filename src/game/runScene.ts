@@ -11,7 +11,8 @@ import { CIUDADES } from '../data/zonas.ts';
 import { t, tList } from '../i18n/index.ts';
 import { Banner } from '../ui/banner.ts';
 import { CajaView } from '../ui/cajaView.ts';
-import { LUCAS_CARD } from '../ui/cardText.ts';
+import { pillarOf, pillarTier } from '../data/pilares.ts';
+import { LUCAS_CARD, pillarLine } from '../ui/cardText.ts';
 import { EndScreen } from '../ui/endScreen.ts';
 import { Hud } from '../ui/hud.ts';
 import { LevelUpView } from '../ui/levelUp.ts';
@@ -556,7 +557,17 @@ export class RunScene implements Scene {
       // Legendary card: a happy accordion and "¡Bacán!".
       this.ctx.sfx.play('acordeon');
       window.setTimeout(() => this.ctx.sfx.play('bacan'), 450);
+    } else if (fresh && this.offers.some((o) => o.rarity === 'epica')) {
+      // Epic card: a bell.
+      this.ctx.sfx.play('campana', { pitch: 1.1 });
     }
+    this.showOffers(fresh, this.tutorial.glowFirstCard);
+    this.tutorial.cardsShown();
+  }
+
+  /** Draws the current offers (with their "Evoluciona" stamps and pillar tags). */
+  private showOffers(fresh: boolean, glowFirst = false): void {
+    const b = this.ctx.build;
     this.levelUp.show(
       this.offers,
       this.ctx.progress.level,
@@ -565,10 +576,10 @@ export class RunScene implements Scene {
       this.viewW,
       this.viewH,
       fresh,
-      this.offers.map((o) => this.ctx.build.completesEvolution(o)),
-      this.tutorial.glowFirstCard,
+      this.offers.map((o) => b.completesEvolution(o)),
+      glowFirst,
+      this.offers.map((o) => pillarLine(o, b)),
     );
-    this.tutorial.cardsShown();
   }
 
   private pick(i: number): void {
@@ -583,7 +594,19 @@ export class RunScene implements Scene {
     const ctx = this.ctx;
     if (offer.kind === 'heal') ctx.player.heal(PICKUPS.moteConHuesillo.heal, ctx);
     else if (offer.kind === 'lucas') ctx.progress.lucas += LUCAS_CARD;
-    else ctx.build.apply(offer);
+    else {
+      const line = pillarLine(offer, ctx.build);
+      ctx.build.apply(offer);
+      if (line?.unlocks && offer.kind === 'trait') {
+        // A pillar bonus just woke up: say which one and what it does.
+        const pillar = pillarOf(offer.id);
+        const tier = pillar ? pillarTier(ctx.build.pillarPoints(pillar.id)) : 0;
+        if (pillar && tier > 0) {
+          this.banner.show(t('efectos.pilarBono', { pilar: t(`${pillar.i18n}.nombre`) }), 'a', t(`${pillar.i18n}.bono${tier}`));
+          ctx.sfx.play('cargaLista', { pitch: 1.2 });
+        }
+      }
+    }
     ctx.refreshMods();
   }
 
@@ -591,7 +614,7 @@ export class RunScene implements Scene {
     if (this.rerolls <= 0) return;
     this.rerolls--;
     this.offers = this.ctx.build.offers(this.ctx.rngCards, this.offers.length);
-    this.levelUp.show(this.offers, this.ctx.progress.level, this.rerolls, this.banishes, this.viewW, this.viewH, false);
+    this.showOffers(false);
   }
 
   private banish(i: number): void {
@@ -604,7 +627,7 @@ export class RunScene implements Scene {
       .offers(this.ctx.rngCards, 6)
       .find((o) => !taken.has('id' in o ? o.id : o.kind));
     this.offers[i] = replacement ?? { kind: 'lucas', rarity: 'comun' };
-    this.levelUp.show(this.offers, this.ctx.progress.level, this.rerolls, this.banishes, this.viewW, this.viewH, false);
+    this.showOffers(false);
   }
 
   private skip(): void {

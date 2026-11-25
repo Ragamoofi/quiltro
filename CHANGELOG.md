@@ -4,6 +4,17 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.2 — Rarezas, cartas y pilares
+
+#### Agregado
+- **Cartas por rareza:** cada rareza se ve distinta de lejos. Común crema con banda gris, rara celeste con banda azul, épica rosada con banda vino y legendaria dorada. Épica y legendaria brillan (borde que parpadea y destellos que giran). La rareza se escribe en una banda en la parte de arriba. Épica suena con una campana; legendaria sigue con acordeón y "¡Bacán!".
+- **Rarezas con efecto real en las armas:** rara +15 % de daño, épica +35 % y −10 % de espera, legendaria +70 %, −15 % de espera y +1 proyectil o salto (solo donde el arma tiene espera, proyectiles o saltos). Antes era +10/20/40 % de daño. El texto de la carta lo dice.
+- **Pilares** (`src/data/pilares.ts`): Garra (Choro, Al tiro), Aguante (Chalequito, La once), Olfato (Olfato, Pata de perro) y Barrio (La jauría, Cachai). Los niveles de los rasgos de un pilar se suman; a los 3 y a los 7 puntos se abre un bono (el de más arriba reemplaza al de abajo): crítico, vida y un escudo cada 40 s, experiencia, área y un proyectil. Cada carta de rasgo muestra su pilar ("Aguante 2/3") y avisa cuando abre un bono; al tomarla sale un cartel con el nombre y el efecto.
+- Pruebas nuevas de pilares y rarezas (`tests/pilares.test.ts`).
+
+#### Cambiado
+- Volantín: daño base 8 → 12 y +20 % → +40 % por nivel de daño (el bot lo medía 5 veces más débil que el promedio de las armas). Fuegos artificiales: 20 → 14. Resultados y lectura honesta en `docs/BALANCE.md`.
+
 ### Fase 9.1 — Lectura visual de los suelos
 
 #### Agregado

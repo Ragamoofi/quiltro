@@ -80,8 +80,10 @@ export const ARMAS: readonly WeaponDef[] = [
     i18n: 'armas.volantin',
     maxLevel: 5,
     takesSlot: true,
-    base: { damage: 8, count: 3 },
-    levels: [{ count: 1 }, { damageMult: 0.2 }, { count: 1 }, { damageMult: 0.2 }],
+    // Fase 9.2: 8 → 12 and +20 % → +40 % per damage level. The bot measured the kite at ~1/25 of
+    // the fireworks' damage and ~1/5 of the average weapon.
+    base: { damage: 12, count: 3 },
+    levels: [{ count: 1 }, { damageMult: 0.4 }, { count: 1 }, { damageMult: 0.4 }],
     evolvesWith: 'laOnce',
   },
   {
@@ -116,7 +118,8 @@ export const ARMAS: readonly WeaponDef[] = [
     i18n: 'armas.fuegos',
     maxLevel: 5,
     takesSlot: true,
-    base: { damage: 20, count: 2, cooldown: 1.6, area: 40 },
+    // Fase 9.2: 20 → 14. The bot measured ~50.000 damage per minute, 25 times the kite.
+    base: { damage: 14, count: 2, cooldown: 1.6, area: 40 },
     perLevel: { count: 1, areaMult: 0.2 },
     evolvesWith: 'choro',
   },

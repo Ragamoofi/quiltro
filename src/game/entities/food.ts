@@ -134,7 +134,7 @@ export class Food {
   private collect(p: Piece, ctx: RunContext): void {
     this.release(p);
     ctx.stats.food += 1;
-    ctx.progress.xp += p.xp;
+    ctx.progress.xp += p.xp * ctx.mods.xpMult;
     ctx.sfx.pickup();
     ctx.particles.burst(ctx.rng, p.x, p.y, 3, ['y', 'W', 'a'], 30, 0.2);
   }

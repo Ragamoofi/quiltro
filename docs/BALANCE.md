@@ -70,6 +70,25 @@ Todos esquivan enemigos y proyectiles escogiendo entre 16 direcciones. Juegan co
 4. **Rendimiento:** con hasta 292 enemigos, ~5 ms de CPU por segundo de juego (la simulación sola, sin dibujar).
 5. **El novato no se parece a una persona que recién empieza.** Muere a los 2 minutos, sobre todo por los jotes y los escupos. Sirve de piso, no de meta.
 
+## Después de la 9.2 (rarezas con efecto, pilares, volantín 8→12 y +40 %, fuegos 20→14)
+
+Mismas semillas (7000–7019), 20 viajes por nivel.
+
+| | Medio antes | Medio ahora | Experto antes | Experto ahora |
+| --- | --- | --- | --- | --- |
+| Minuto promedio de muerte | 5,5 | 5,6 | 6,2 | **8,1** |
+| Nivel promedio | 13,9 | 13,7 | 14,2 | **22,6** |
+| Llegan al Sur (min 6) | 20 % | 15 % | 25 % | **40 %** |
+| Llegan a Patagonia (min 9) | 15 % | 15 % | 20 % | **35 %** |
+| Mueren en el Norte (Alicanto) | 13/20 | 16/20 | 13/20 | 10/20 |
+
+Daño por minuto del volantín: medio 1.596 → 2.349, experto 1.704 → 5.031. Fuegos: medio 34.082 → 32.167, experto 26.685 → 37.455.
+
+**Lectura honesta:**
+- El experto mejora claramente (llega más lejos y sube más de nivel); el medio no se mueve. Con 20 viajes, la diferencia entre antes y después del medio está dentro del ruido.
+- **El Alicanto sigue siendo el muro del Norte** (10 a 16 de 20 muertes ahí). Ni las rarezas ni los pilares lo tocan: hay que mirar el jefe mismo.
+- **La disparidad de armas sigue**: los fuegos todavía hacen 6 a 15 veces el daño del volantín. Medirla con partidas completas mezcla demasiadas cosas (qué cartas salieron, cuánto se vivió). Falta un **banco de armas** (arena controlada, mismos enemigos, mismo nivel) para ajustar arma por arma con datos limpios.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.
