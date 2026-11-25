@@ -7,6 +7,7 @@ import { enemigosFase3, nubeToxica, proyectiles, remolinoDef, roca } from './ene
 import { jefesSprites } from './jefes.ts';
 import { cuchaDef, moaiDef, objetosCucha, vecinosDef } from './cucha.ts';
 import { personajesSprites } from './personajes.ts';
+import { personajesSprites2 } from './personajes2.ts';
 import { manoDef, martinaDef, teclaDef, volantinAzul } from './historia.ts';
 import { sueloAntartica, sueloCosta, sueloLagos, sueloNorte, sueloPatagonia, sueloSantiago, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
@@ -71,6 +72,7 @@ export const SPRITES: readonly SpriteDef[] = [
   remolinoDef,
   ...jefesSprites,
   ...personajesSprites,
+  ...personajesSprites2,
   objetosCucha,
   cuchaDef,
   vecinosDef,

@@ -204,6 +204,8 @@ export class SelectScene implements Scene {
       }
       case 'total':
         return t(`meta.condicion.${u.stat}`, { n: formatNumber(u.cantidad) });
+      case 'pasaje':
+        return t('meta.condicion.pasaje', { nombre: t(`${pasajeAt(u.ganados - 1).i18n}.nombre`) });
       case 'vencer': {
         const boss = JEFES.find((j) => j.id === u.jefe);
         return t('meta.condicion.vencer', { jefe: boss ? t(`${boss.i18n}.nombre`) : u.jefe });

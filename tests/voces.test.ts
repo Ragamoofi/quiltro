@@ -7,9 +7,12 @@ describe('Fase 11.9: cada personaje suena y se mueve distinto', () => {
   it('every character but the quiltro has its own cry, and only the two dogs bark', () => {
     const sounds = PERSONAJES.map((c) => c.voice?.sound ?? 'guau');
     for (const s of sounds) expect(PRIORITY[s], s).toBe(3);
+    // Only the dogs bark (the quiltro, the ratonera, the fire dog and the party dog).
     const barkers = PERSONAJES.filter((c) => (c.voice?.sound ?? 'guau') === 'guau').map((c) => c.id);
-    expect(barkers.sort()).toEqual(['quiltra', 'quiltro']);
-    expect(new Set(sounds).size).toBe(PERSONAJES.length - 1);
+    expect(barkers.sort()).toEqual(['dieciocho', 'pillan', 'quiltra', 'quiltro']);
+    // Characters that share a cry sound different (another pitch).
+    const keys = PERSONAJES.map((c) => `${c.voice?.sound ?? 'guau'}@${c.voice?.pitch ?? 1}`);
+    expect(new Set(keys).size).toBe(PERSONAJES.length);
   });
 
   it('the condor and the pigeon fly: their trot is a different drawing from their standing pose', () => {
@@ -20,6 +23,6 @@ describe('Fase 11.9: cada personaje suena y se mueve distinto', () => {
       expect(trot, c.id).toBeDefined();
       expect(trot).not.toEqual(stand);
     }
-    expect(PERSONAJES.filter((x) => x.flies).map((x) => x.id).sort()).toEqual(['condor', 'paloma']);
+    expect(PERSONAJES.filter((x) => x.flies).map((x) => x.id).sort()).toEqual(['caleuchito', 'carpintero', 'condor', 'flamenco', 'paloma', 'tucan']);
   });
 });

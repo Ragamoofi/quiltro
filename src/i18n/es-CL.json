@@ -367,7 +367,8 @@
       "sopaipillas": "Junta {n} sopaipillas",
       "palomas": "Derrota {n} palomas",
       "kills": "Derrota {n} enemigos en total",
-      "vencer": "Vence a {jefe}"
+      "vencer": "Vence a {jefe}",
+      "pasaje": "Gana el pasaje {nombre}"
     },
     "efectos": {
       "platoLleno": "+10 vida máxima",
@@ -504,7 +505,7 @@
   },
   "personajes": {
     "quiltro": "El Quiltro",
-    "quiltra": "La Quiltra del Chalequito",
+    "quiltra": "La Ratonera",
     "gato": "El Gato del Almacén",
     "pudu": "El Pudú",
     "pinguino": "El Pingüino de Humboldt",
@@ -512,11 +513,27 @@
     "chingue": "El Chingue",
     "condor": "El Cóndor",
     "guanaco": "El Guanaco",
-    "paloma": "La Paloma Rebelde"
+    "paloma": "La Paloma Rebelde",
+    "flamenco": "El Flamenco Chileno",
+    "loboMarino": "El Lobo Marino",
+    "puma": "El Puma",
+    "monito": "El Monito del Monte",
+    "chinchilla": "La Chinchilla",
+    "vizcacha": "La Vizcacha",
+    "huemul": "El Huemul",
+    "carpintero": "El Carpintero Negro",
+    "capibara": "La Capibara",
+    "llama": "La Llama",
+    "tucan": "El Tucán",
+    "jaguar": "El Jaguar",
+    "caleuchito": "El Caleuchito",
+    "dieciocho": "El Perro del Dieciocho",
+    "pillan": "El Pillán",
+    "trauco": "El Trauquito"
   },
   "personajesPasiva": {
     "quiltro": "Aullido de barrio: el ¡GUAU! vuelve 20% más rápido",
-    "quiltra": "Cría de la cucha: cada 40 enemigos, te cura 5 de vida",
+    "quiltra": "Ratonera: fox terrier chilena; cada 40 enemigos te cura 5 de vida",
     "gato": "Siete vidas: una segunda vida gratis por viaje",
     "zorro": "Astuto: 12% menos de espera y 10% de esquivar un golpe",
     "pudu": "Sigiloso: cuerpo chico y 12% de esquivar un golpe",
@@ -524,7 +541,23 @@
     "chingue": "Perfume: los enemigos que se acercan reciben daño",
     "condor": "Ojo de cóndor: junta comida desde más lejos y pega 20% más fuerte",
     "guanaco": "Lana gruesa: un escudo gratis cada 30 segundos",
-    "paloma": "Vuelo: más rápida y fuerte, ignora los peligros del ambiente y atraviesa las nubes"
+    "paloma": "Vuelo: más rápida y fuerte, ignora los peligros del ambiente y atraviesa las nubes",
+    "flamenco": "Patas largas: nada lo frena y su chaya es 20% más grande",
+    "loboMarino": "Grasa de lobo: muchísima vida, +2 de armadura y se desliza",
+    "puma": "Zarpazo: 25% más daño y 10% más crítico",
+    "monito": "Chiquitito: cuerpo chico y 20% de esquivar un golpe",
+    "chinchilla": "Pelaje suave: rapidísima, chica y difícil de pillar",
+    "vizcacha": "Centinela: 15% de esquivar y huele la comida de lejos",
+    "huemul": "Astas firmes: +2 de armadura y harta vida",
+    "carpintero": "Picoteo: 15% menos de espera en todas las armas",
+    "capibara": "Tranquilidad: se cura quieta y cada 60 enemigos",
+    "llama": "Escupitajo: 15% más daño y junta comida de lejos",
+    "tucan": "Pico de colores: más crítico y vuela sobre los peligros",
+    "jaguar": "Rey del monte: 35% más daño y 10% más crítico",
+    "caleuchito": "Fantasma: 25% de esquivar y atraviesa los peligros",
+    "dieciocho": "Fonda: parte con La jauría nivel 2 (un volantín más)",
+    "pillan": "Brasa: quema a los enemigos que se le acercan",
+    "trauco": "Hachazo: 30% más daño, cuerpo chico"
   },
   "logros": {
     "niSeInmuto": { "nombre": "Ni se inmutó", "desc": "Sobrevivir un Temblor sin moverte" },

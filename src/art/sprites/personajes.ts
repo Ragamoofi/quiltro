@@ -1,7 +1,7 @@
 import { Pix } from '../draw.ts';
 import { outlined, type Frame, type SpriteDef } from '../types.ts';
 
-type Anims = Record<string, SpriteDef['animations'][string]>;
+export type Anims = Record<string, SpriteDef['animations'][string]>;
 import { characterAnims, QUILTRO_FRAMES } from './quiltro.ts';
 
 /*
@@ -20,7 +20,7 @@ export interface Pose {
   wiggle: number;
 }
 
-type Draw = (p: Pose) => Pix;
+export type Draw = (p: Pose) => Pix;
 
 const POSES: Record<keyof typeof QUILTRO_FRAMES, Pose> = {
   stand: { legs: 'stand', eye: 'open', mouth: false, dy: 0, wiggle: 0 },
@@ -45,7 +45,7 @@ const POSES: Record<keyof typeof QUILTRO_FRAMES, Pose> = {
  * pudú hops). Whatever it leaves out keeps the common poses (the condor stands to charge the cry,
  * to sleep in the menu and when it falls).
  */
-function character(name: string, draw: Draw, own?: (pose: (p: Partial<Pose>) => Frame) => Partial<Anims>): SpriteDef {
+export function character(name: string, draw: Draw, own?: (pose: (p: Partial<Pose>) => Frame) => Partial<Anims>): SpriteDef {
   const frames = Object.fromEntries(
     Object.entries(POSES).map(([k, pose]) => [k, outlined(draw(pose).frame())]),
   ) as Record<keyof typeof QUILTRO_FRAMES, Frame>;
@@ -55,7 +55,7 @@ function character(name: string, draw: Draw, own?: (pose: (p: Partial<Pose>) => 
 }
 
 /** A wing seen from the side as a band of pixels, with the given lift at the tips (+ up, − down). */
-function wing(p: Pix, cx: number, cy: number, span: number, lift: number, color: string, patch: string | null, tip: string): void {
+export function wing(p: Pix, cx: number, cy: number, span: number, lift: number, color: string, patch: string | null, tip: string): void {
   for (let x = cx - span; x <= cx + span; x++) {
     const d = Math.abs(x - cx);
     if (d < 2) continue;
@@ -103,7 +103,7 @@ function palomaFly(lift: number): Frame {
 }
 
 /** Four legs in side view (x positions of back and front pairs). */
-function legs(p: Pix, pose: Pose, xs: readonly number[], top: number, color: string, paw: string, thin = false): void {
+export function legs(p: Pix, pose: Pose, xs: readonly number[], top: number, color: string, paw: string, thin = false): void {
   if (pose.legs === 'lie') return;
   const h = pose.legs === 'tuck' ? 2 : 21 - top;
   xs.forEach((x, i) => {
@@ -285,27 +285,29 @@ const zorro: Draw = (pose) => {
   // Drawn by hand, pixel by pixel: a long horizontal body, the head held high, and a huge brush of a
   // tail straight out behind, grizzled grey with a black tip (o fire · O rust · m/n grizzled grey ·
   // w white · k black).
+  // The fox's wedge of a head: wide at the big ears, tapering to a long pointed snout, white jaw.
   p.rows(0, 2 + y, [
-    '...............OO..OO',
-    '...............OkO.Ok',
-    '...............oooooo',
-    '..............oooooooo',
-    '..............ooooooOk',
-    '..............ooowwww',
+    '.............O...O',
+    '.............OO..OO',
+    '.............OkOoOkO',
+    '............oooooooo',
+    '............ooooooooo',
+    '............woooooooOk',
+    '.............wwwwwO',
   ]);
   p.rows(0, 8 + y + tw, ['.nnmm', 'nmmmmmm', 'kmmmmmmm', 'kkmmmm', '.kk']);
   p.rows(0, 8 + y, [
-    '.............oooww',
+    '..............',
     '.......nnnnnnnmoow',
     '........mmmmmmmooww',
     '......OOOOOOOOOooww',
     '......OOOOOOOOOoow',
     '......OwwwwwwwOOo',
   ]);
-  if (pose.eye === 'open') p.set(17, 5 + y, 'a').set(18, 5 + y, 'k');
-  else if (pose.eye === 'closed') p.rect(17, 5 + y, 2, 1, 'O');
-  else p.set(17, 4 + y, 'k').set(18, 5 + y, 'k');
-  if (pose.mouth) p.rect(18, 7 + y, 3, 1, 'R').set(21, 7 + y, 'w');
+  if (pose.eye === 'open') p.set(16, 6 + y, 'a').set(17, 6 + y, 'k');
+  else if (pose.eye === 'closed') p.rect(16, 6 + y, 2, 1, 'O');
+  else p.set(16, 5 + y, 'k').set(17, 6 + y, 'k');
+  if (pose.mouth) p.rect(17, 8 + y, 3, 1, 'R');
   // Long thin legs, rust on top and black socks.
   legs(p, pose, [7, 9, 14, 16], 14 + y, 'O', 'k', true);
   if (!lie && pose.legs !== 'tuck') {

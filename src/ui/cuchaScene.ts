@@ -443,6 +443,8 @@ export class CuchaScene implements Scene {
         const boss = JEFES.find((j) => j.id === u.jefe);
         return t('meta.condicion.vencer', { jefe: boss ? t(`${boss.i18n}.nombre`) : u.jefe });
       }
+      case 'pasaje':
+        return t('meta.condicion.pasaje', { nombre: t(`pasajes.${['normal', 'horaPunta', 'ultimoBus'][u.ganados - 1] ?? 'normal'}.nombre`) });
     }
   }
 

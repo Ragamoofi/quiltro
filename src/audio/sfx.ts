@@ -47,7 +47,18 @@ export type SoundId =
   | 'arrullo'
   | 'siseo'
   | 'relincho'
-  | 'bufido';
+  | 'bufido'
+  | 'rugido'
+  | 'bramido'
+  | 'chillido'
+  | 'graznido'
+  | 'ladridoMarino'
+  | 'tamborileo'
+  | 'silbido'
+  | 'chasquido'
+  | 'zumbido'
+  | 'aullido'
+  | 'risa';
 
 export const MAX_VOICES = 24;
 export const MERGE_MS = 30;
@@ -63,6 +74,17 @@ export const PRIORITY: Readonly<Record<SoundId, 1 | 2 | 3>> = {
   siseo: 3,
   relincho: 3,
   bufido: 3,
+  rugido: 3,
+  bramido: 3,
+  chillido: 3,
+  graznido: 3,
+  ladridoMarino: 3,
+  tamborileo: 3,
+  silbido: 3,
+  chasquido: 3,
+  zumbido: 3,
+  aullido: 3,
+  risa: 3,
   dano: 3,
   jefe: 3,
   retumbo: 3,
@@ -522,6 +544,87 @@ export class Sfx {
         src.start(t + 0.1, Math.random());
         src.stop(t + 0.46);
         return 0.48;
+      }
+      // ---- Fase 11.14: the new characters' cries ----
+      case 'rugido': {
+        // Puma / jaguar: a rough growl that rises and breaks (a noisy low voice with a fast wobble).
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 120], [0.15, 190], [0.5, 110]], formant: [[0, 500], [0.2, 900], [0.5, 400]], q: 2, dur: 0.55, gain: 0.7, am: { rate: 30, depth: 0.5 } }, pitch, gainMul);
+        const g = this.noiseSource(ctx);
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.value = 700;
+        const gg = ctx.createGain();
+        env(gg, 0.25, 0.05, 0.45);
+        g.connect(f).connect(gg).connect(out);
+        g.start(t, Math.random());
+        g.stop(t + 0.55);
+        return 0.58;
+      }
+      case 'bramido': {
+        // Huemul: a deep, long bellow.
+        tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 140], [0.3, 170], [0.6, 120]], formant: [[0, 600], [0.6, 450]], q: 3, dur: 0.65, gain: 0.6, vib: { rate: 5, depth: 6 } }, pitch, gainMul);
+        return 0.68;
+      }
+      case 'chillido': {
+        // Monito del monte / chinchilla: two quick high squeaks.
+        for (const at of [0, 0.12]) tone(ctx, out, t, { type: 'sine', freq: [[0, 2200], [0.07, 2900], [0.1, 2400]], dur: 0.1, gain: 0.35, at }, pitch, gainMul);
+        return 0.25;
+      }
+      case 'graznido': {
+        // Flamingo / toucan: a nasal goose-like honk, twice.
+        for (const at of [0, 0.2]) tone(ctx, out, t, { type: 'square', freq: [[0, 520], [0.14, 470]], formant: [[0, 1300]], q: 4, dur: 0.15, gain: 0.4, at }, pitch, gainMul);
+        return 0.38;
+      }
+      case 'ladridoMarino': {
+        // Sea lion: deep honking barks ("¡ouh! ¡ouh! ¡ouh!").
+        for (const at of [0, 0.22, 0.44]) tone(ctx, out, t, { type: 'sawtooth', freq: [[0, 230], [0.1, 180]], formant: [[0, 700], [0.1, 500]], q: 3, dur: 0.14, gain: 0.55, at }, pitch, gainMul);
+        return 0.62;
+      }
+      case 'tamborileo': {
+        // Woodpecker: a fast drum roll on a trunk.
+        for (let i = 0; i < 9; i++) {
+          const src = this.noiseSource(ctx);
+          const f = ctx.createBiquadFilter();
+          f.type = 'bandpass';
+          f.frequency.value = 1100 * pitch;
+          f.Q.value = 6;
+          const g = ctx.createGain();
+          const at = t + i * 0.045;
+          g.gain.setValueAtTime(0.0001, at);
+          g.gain.exponentialRampToValueAtTime(0.6 * gainMul * (1 - i * 0.06), at + 0.004);
+          g.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
+          src.connect(f).connect(g).connect(out);
+          src.start(at, Math.random());
+          src.stop(at + 0.035);
+        }
+        return 0.45;
+      }
+      case 'silbido': {
+        // Vizcacha: its alarm whistle, high and falling.
+        tone(ctx, out, t, { type: 'sine', freq: [[0, 2600], [0.25, 1800]], dur: 0.28, gain: 0.4, vib: { rate: 12, depth: 40 } }, pitch, gainMul);
+        return 0.3;
+      }
+      case 'chasquido': {
+        // Capybara: soft clicks and a low purr.
+        tone(ctx, out, t, { type: 'triangle', freq: [[0, 110], [0.4, 100]], dur: 0.42, gain: 0.45, am: { rate: 18, depth: 0.8 } }, pitch, gainMul);
+        for (const at of [0.05, 0.2, 0.32]) tone(ctx, out, t, { type: 'square', freq: [[0, 900]], dur: 0.02, gain: 0.2, at }, pitch, gainMul);
+        return 0.45;
+      }
+      case 'zumbido': {
+        // Llama: its humming "mmmh", rising at the end like a question.
+        tone(ctx, out, t, { type: 'triangle', freq: [[0, 300], [0.3, 320], [0.45, 420]], formant: [[0, 700]], q: 2, dur: 0.5, gain: 0.5, vib: { rate: 6, depth: 8 } }, pitch, gainMul);
+        return 0.52;
+      }
+      case 'aullido': {
+        // Caleuchito: a ghostly howl with a long echo.
+        tone(ctx, out, t, { type: 'sine', freq: [[0, 420], [0.3, 760], [0.8, 520]], dur: 0.85, gain: 0.45, vib: { rate: 5, depth: 25 } }, pitch, gainMul);
+        tone(ctx, out, t, { type: 'sine', freq: [[0, 420], [0.3, 760], [0.8, 520]], dur: 0.85, gain: 0.18, at: 0.18 }, pitch * 1.01, gainMul);
+        return 1.05;
+      }
+      case 'risa': {
+        // The Trauquito: a cheeky goblin giggle ("¡jiji-ji!").
+        for (const [at, hz] of [[0, 900], [0.09, 1050], [0.18, 950], [0.3, 1150]] as const) tone(ctx, out, t, { type: 'square', freq: [[0, hz], [0.06, hz * 0.8]], formant: [[0, 1800]], q: 3, dur: 0.07, gain: 0.35, at }, pitch, gainMul);
+        return 0.4;
       }
       case 'dano': {
         const o = ctx.createOscillator();
