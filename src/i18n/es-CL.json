@@ -67,6 +67,17 @@
     "epica": "Épica",
     "legendaria": "¡Bacán!"
   },
+  "ciudadesLinea": {
+    "arica": "El Morro y el primer paso",
+    "antofagasta": "La Portada te mira. Aprovecha la brisa.",
+    "santiago": "El valle, la cordillera y mucha gente apurada.",
+    "valparaiso": "Cerros de colores. ¡Ladran los perros de los cerros!",
+    "temuco": "Araucarias y un volcán con humo. Caen piñones.",
+    "puertoMontt": "Mar y volcanes. Es hora del curanto.",
+    "chiloe": "Palafitos e iglesias de madera. Se asoma la Pincoya.",
+    "coyhaique": "Picos de roca y mucho viento. Te llega un escudo.",
+    "puntaArenas": "El estrecho. Aquí se acaba el camino."
+  },
   "pilares": {
     "garra": { "nombre": "Garra", "bono1": "+10% crítico", "bono2": "+25% crítico" },
     "aguante": { "nombre": "Aguante", "bono1": "+25 vida máxima", "bono2": "+50 vida máxima y un escudo cada 40 s" },

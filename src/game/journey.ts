@@ -1,7 +1,7 @@
 import type { Container } from 'pixi.js';
 import { kmAt, TEMBLOR_WINDOW_MIN } from '../data/balance.ts';
 import { ANTARTICA_BOSS_EVERY_MIN, JEFES } from '../data/jefes.ts';
-import { CIUDADES, ZONAS, type ZoneDef } from '../data/zonas.ts';
+import { ZONAS, type ZoneDef } from '../data/zonas.ts';
 import { t } from '../i18n/index.ts';
 import { Alicanto } from './bosses/alicanto.ts';
 import type { Boss } from './bosses/boss.ts';
@@ -43,7 +43,6 @@ export class Journey {
   private readonly temblorAt: number;
   private temblorT = -1;
   private temblorDone = false;
-  private valpoShown = false;
   private zoneStart = 0;
 
   constructor(ctx: RunContext, hooks: JourneyHooks) {
@@ -96,15 +95,6 @@ export class Journey {
   update(dt: number, realDt: number, ctx: RunContext): void {
     const z = this.zone;
     const p = ctx.player;
-
-    // Mid-Centro: Valparaíso.
-    if (!this.valpoShown && z.id === 'centro') {
-      const valpo = CIUDADES.find((c) => c.id === 'valparaiso');
-      if (valpo && this.km(ctx.time) >= valpo.km && !this.boss) {
-        this.valpoShown = true;
-        ctx.banner(t('zonas.valparaiso.titulo'), 'w', t('zonas.valparaiso.subtitulo'));
-      }
-    }
 
     // A boss closes each zone.
     const zoneSeconds = (z.endMin - z.startMin) * 60;

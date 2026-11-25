@@ -28,6 +28,7 @@ export class Decor {
   private readonly world: Container;
   private readonly seed: number;
   private zone = 'centro';
+  private cityProp: string | null = null;
   private time = 0;
 
   constructor(world: Container, seed = 7) {
@@ -38,9 +39,20 @@ export class Decor {
   setZone(zone: string): void {
     if (zone === this.zone) return;
     this.zone = zone;
+    this.clearChunks();
+    this.overhead.clear();
+  }
+
+  /** The ground prop of the city that is near (null: none); redraws the props around the view. */
+  setCityProp(sprite: string | null): void {
+    if (sprite === this.cityProp) return;
+    this.cityProp = sprite;
+    this.clearChunks();
+  }
+
+  private clearChunks(): void {
     for (const c of this.chunks.values()) for (const s of c.items) s.destroy();
     this.chunks.clear();
-    this.overhead.clear();
   }
 
   private isStreet(cy: number): boolean {
@@ -65,6 +77,11 @@ export class Decor {
     const h = hash2(cx, cy, this.seed);
     const ox = x0 + 20 + hash2(cx, cy, this.seed + 3) * (CHUNK - 40);
     const oy = y0 + 30 + hash2(cx, cy, this.seed + 4) * (CHUNK - 40);
+
+    // The near city's own prop, scattered on top of the zone's decoration.
+    if (this.cityProp && !nearOrigin && !this.isStreet(cy) && hash2(cx, cy, this.seed + 11) < 0.2) {
+      add(this.cityProp, x0 + 14 + hash2(cx, cy, this.seed + 12) * (CHUNK - 28), y0 + 24 + hash2(cx, cy, this.seed + 13) * (CHUNK - 36));
+    }
 
     if (this.zone === 'centro') {
       if (this.isStreet(cy)) {

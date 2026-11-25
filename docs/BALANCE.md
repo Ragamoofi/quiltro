@@ -162,6 +162,20 @@ Reemplaza al Gran Temblor: un vecino original (nadie real) con megáfono y celul
 - El Alicanto volvió a matar 9 de 20 porque el bot ahora se acerca a los jefes (como lo haría una persona): confirma que sigue siendo el primer escalón difícil y que conviene revisarlo con partidas humanas.
 - El experto no gana al medio: el bot no distingue bien a los jefes por patrón. Con una persona real el resultado puede ser muy distinto.
 
+## 9.4 — Ciudades como escenarios
+
+Se midió con el mismo bot v2 y las mismas semillas (20 viajes) para ver que los eventos de ciudad no rompan nada ni muevan mucho el balance:
+
+| | Medio antes | Medio ahora | Experto antes | Experto ahora |
+| --- | --- | --- | --- | --- |
+| Minuto promedio de muerte | 8,8 | 10,1 | 8,6 | 9,2 |
+| Nivel promedio | 21,8 | 30,1 | 23,2 | 21,9 |
+| Llegan al Sur / Patagonia | 50 % / 45 % | 55 % / 55 % | 45 % / 35 % | 55 % / 40 % |
+| CPU por segundo de juego | 5,5 ms | 5,5 ms | 5,8 ms | 5,8 ms |
+| Errores en consola | — | 0 | — | 0 |
+
+Los cambios van en la dirección esperada (los eventos dan una ayuda chica: vida, experiencia, ladridos, una caja, un escudo), pero con 20 viajes están dentro del ruido (±15 puntos). La meta era "no mover las metas de supervivencia más de 5 puntos"; **no puedo confirmarlo ni refutarlo con esta muestra**. Rendimiento sin cambios.
+
 ## Límites de esta medición
 
 - El bot esquiva por puntaje, no ve patrones de ataque ni usa "dar hilo". Una persona buena lo hace mejor y una persona distraída peor. **Necesito que juegues 3 viajes** y me cuentes en qué minuto moriste y de qué, para saber a qué nivel de bot se parece cada quien y calibrar las metas de la Fase 9.

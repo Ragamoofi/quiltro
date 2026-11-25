@@ -4,6 +4,15 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Fase 9.4 — Ciudades como escenarios
+
+#### Agregado
+- **Nueve hitos en el horizonte** (`src/art/sprites/ciudades.ts`), uno por ciudad, que cruzan la pantalla de derecha a izquierda mientras pasas por ella: el Morro de Arica, La Portada de Antofagasta, la cordillera y los edificios de Santiago, el cerro de casas de colores de Valparaíso, las araucarias y el volcán de Temuco, el volcán y el barco de Puerto Montt, los palafitos y la iglesia de madera de Chiloé, los picos de Coyhaique y el faro y el barco del estrecho en Punta Arenas. Todos originales y genéricos (sin marcas ni símbolos).
+- **Decorado local:** mientras la ciudad está cerca, el suelo se llena con su prop (casa de Valparaíso nueva, araucarias en Temuco, iglesias en Chiloé, salitreras en Antofagasta…).
+- **Cartel de ciudad** con una frase corta en cada una (antes solo Valparaíso tenía).
+- **Mini-evento por ciudad**, una vez por viaje y nunca durante un jefe: Antofagasta, 2 motes con huesillo; Santiago y Temuco, lluvia de comida; Valparaíso, cuatro ladridos de los perros de los cerros alrededor del quiltro; Puerto Montt, 3 motes (curanto); Chiloé, una Caja del Almacén (la Pincoya); Coyhaique, un escudo gratis.
+- Pruebas de escenarios (`tests/ciudades.test.ts`) y datos en `src/data/escenarios.ts`. Con el bot, sin errores en consola y sin cambio de CPU; el efecto en el balance está dentro del ruido (ver `docs/BALANCE.md`).
+
 ### Fase 9.4b — El Vecino Viral, jefe final nuevo
 
 #### Cambiado

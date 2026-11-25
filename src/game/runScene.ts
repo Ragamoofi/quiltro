@@ -46,6 +46,7 @@ import { WeaponSet } from './weapons/index.ts';
 import { Decor } from './world/decor.ts';
 import { FloorLayer } from './world/floor.ts';
 import { Hazards } from './world/hazards.ts';
+import { Cities } from './world/cities.ts';
 import { Horizon } from './world/horizon.ts';
 import { Weather } from './world/weather.ts';
 
@@ -136,6 +137,7 @@ export class RunScene implements Scene {
   private victory = false;
   readonly journey: Journey;
   private readonly horizon = new Horizon();
+  private readonly cities = new Cities();
   private readonly weather = new Weather();
   private readonly hazards = new Hazards();
   private timeScale = 1;
@@ -507,6 +509,12 @@ export class RunScene implements Scene {
     this.weather.update(dt, ctx.wind.x, ctx.rng);
     this.journey.update(dt, real, ctx);
     if (this.mode === 'end') return;
+    // City scenery: landmark on the horizon, local props on the ground, and the small events.
+    const km = this.journey.km(ctx.time);
+    this.cities.update(dt, ctx, km, this.journey.bossActive);
+    const city = this.journey.antartica ? null : this.cities.view(km);
+    this.horizon.setLandmark(city?.scene.landmark ?? null, city?.progress ?? 0);
+    this.decor.setCityProp(city?.scene.prop ?? null);
     this.spawner.update(dt, ctx, this.viewW, this.viewH, this.journey.zone.id, this.journey.bossActive);
     ctx.enemies.recycleFar(p.x, p.y, Math.hypot(this.viewW, this.viewH) * 0.9, ctx, this.viewW, this.viewH);
 

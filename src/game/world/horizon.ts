@@ -1,4 +1,5 @@
-import { Container, Texture, TilingSprite } from 'pixi.js';
+import { Container, Sprite, Texture, TilingSprite } from 'pixi.js';
+import { anim } from '../../art/assets.ts';
 import { colorOf } from '../../art/palette.ts';
 
 const W = 480;
@@ -34,10 +35,38 @@ export class Horizon {
   private far: TilingSprite | null = null;
   private near: TilingSprite | null = null;
   private zone = '';
+  private viewW = W;
+  private landmark: Sprite | null = null;
+  private landmarkName = '';
+
+  /**
+   * A city's landmark crossing the horizon: `progress` 0 puts it just off the right edge,
+   * 1 just off the left one. Pass null when no city is near.
+   */
+  setLandmark(name: string | null, progress: number): void {
+    if (!name) {
+      if (this.landmark) this.landmark.visible = false;
+      return;
+    }
+    if (!this.landmark || this.landmarkName !== name) {
+      this.landmark?.destroy();
+      const tex = anim(name, 'quieto').textures[0];
+      this.landmark = new Sprite(tex);
+      this.landmark.anchor.set(0, 1);
+      this.landmarkName = name;
+      this.root.addChild(this.landmark);
+    }
+    const s = this.landmark;
+    s.visible = true;
+    s.position.set(Math.round(this.viewW + 4 - progress * (this.viewW + s.width + 8)), HORIZON_H);
+  }
 
   setZone(zone: string, viewW: number): void {
     if (zone === this.zone && this.far && this.far.width === viewW) return;
     this.zone = zone;
+    this.viewW = viewW;
+    this.landmark = null;
+    this.landmarkName = '';
     this.root.removeChildren().forEach((c) => c.destroy());
     const look = LOOKS[zone] ?? LOOKS.centro;
     if (!look) return;
