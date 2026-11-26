@@ -8,6 +8,8 @@ Roguelite de supervivencia en pixel art con meta incremental. Diseño completo e
 
 ## Desarrollo
 
+Revisión y mejoras: [informe](docs/REVISION-CODEX.md), [comparación de fauna](docs/revision-fauna.html) y [fuentes de arte](art-source/README.md).
+
 Requiere Node 22.18+ (usa TypeScript nativo de Node para el script de sprites).
 
 ```

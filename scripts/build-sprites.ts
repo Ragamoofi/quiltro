@@ -7,7 +7,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SPRITES as DRAWN } from '../src/art/sprites/index.ts';
-import { layoutSheet, rasterize, spritesheetJson, validateSprites } from '../src/art/sheet.ts';
+import { layoutTextureSheet, rasterize, spritesheetJson, validateSprites } from '../src/art/sheet.ts';
 import { encodePng } from './png.ts';
 import { applyRetouches } from './sprite-retouch.ts';
 
@@ -24,7 +24,7 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-const layout = layoutSheet(SPRITES, 512);
+const layout = layoutTextureSheet(SPRITES);
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'sprites.png'), encodePng(layout.width, layout.height, rasterize(layout)));
 writeFileSync(join(outDir, 'sprites.json'), JSON.stringify(spritesheetJson(layout, 'sprites.png')));

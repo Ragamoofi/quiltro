@@ -16,6 +16,7 @@ import type { Telegraphs } from './systems/telegraphs.ts';
 
 /** Everything a system may need during a run, passed instead of globals. */
 export interface RunContext {
+  readonly fair?: import('./systems/fairChallenge.ts').FairChallenge;
   /**
    * Three random streams, all from the run's seed. `rngDirector` decides what
    * attacks and when (enemies, elites, flocks, bosses, hazards) and `rngCards`

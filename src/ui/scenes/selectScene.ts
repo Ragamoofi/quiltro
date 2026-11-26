@@ -106,8 +106,9 @@ export class SelectScene implements Scene {
     // Big animated character (or its silhouette).
     const a = anim(c.sprite, unlocked ? 'trotar' : 'silueta');
     const big = new Sprite(a.textures[0]);
-    big.anchor.set(0.5, 22 / 24);
-    big.scale.set(portrait ? 4 : 5);
+    big.anchor.set(a.textures[0]?.defaultAnchor?.x ?? 0.5, a.textures[0]?.defaultAnchor?.y ?? 22 / 24);
+    const side = Math.max(a.textures[0]?.width ?? 24, a.textures[0]?.height ?? 24);
+    big.scale.set(Math.max(1, Math.floor((portrait ? 96 : 120) / side)));
     const bx = portrait ? Math.round(w / 2) : Math.round(w * 0.3);
     const by = portrait ? 150 : Math.round(h * 0.62);
     big.position.set(bx, by);

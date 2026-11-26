@@ -4,6 +4,25 @@ Todos los cambios importantes de QUILTRO. Formato basado en [Keep a Changelog](h
 
 ## [Sin publicar]
 
+### Identidad visual de los 26 personajes
+
+- Capibara y zorro conservados exactamente como fueron aprobados; los otros 24 personajes redibujados a 32×32.
+- Gamas naturales por especie en lugar del gris violáceo compartido: felinos de arena/ocre, pudú castaño, huemul pardo, chinchilla gris frío y vizcacha arena.
+- Proporciones, cabezas, orejas, colas y marcas diferenciadas; movimiento de ocho cuadros, con vuelo horizontal, saltos, trote, deslizamiento o flotación según el personaje.
+- Conservados los colores de collar del Quiltro y las variantes blancas de impacto.
+- Anclajes corregidos en menú, Cucha, carga, mapa, tarjeta para compartir y compañeros.
+- Hoja de sprites adaptativa dentro de 4096×4096 para evitar una textura de 6000px de alto.
+- Comparación animada actualizada a los 26 personajes; dirección visual documentada en `docs/ELENCO.md`.
+
+### Fauna y claridad de builds
+
+- Zorro y capibara reemplazados con pixel art externo con permisos revisados; originales, créditos y conversión reproducible en `art-source/`.
+- Puma, huemul, monito del monte, chinchilla y vizcacha redibujados con movimientos por especie y poses de descanso/caída.
+- La fauna importada conserva sus colores; exportación y retoque admiten la paleta extendida.
+- Selección adaptada al tamaño y anclaje del sprite.
+- Botón Guía en la pausa: recetas de evolución y progreso de la build actual.
+- Comparación animada en `docs/revision-fauna.html`; informe en `docs/REVISION-CODEX.md`.
+
 ### Personajes rehechos y 16 nuevos (Fases 11.13 y 11.14)
 
 #### Cambiado

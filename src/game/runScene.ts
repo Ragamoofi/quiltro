@@ -1,4 +1,4 @@
-import { Container } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 
 import { SUELO_CENTRO_PESOS, SUELO_PESOS } from '../art/sprites/suelos.ts';
 import { ambienteAt, CIUDADES } from '../data/zonas.ts';
@@ -16,6 +16,8 @@ import { CajaView } from '../ui/cajaView.ts';
 
 import { pillarLine } from '../ui/cardText.ts';
 import { EndScreen } from '../ui/endScreen.ts';
+import type { Checkpoint } from './checkpoint.ts';
+import { FairView } from '../ui/fairView.ts';
 import { Hud } from '../ui/hud.ts';
 import { LevelUpView } from '../ui/levelUp.ts';
 import { PauseView } from '../ui/pauseView.ts';
@@ -67,6 +69,8 @@ const DEATH_DELAY = 1.6;
 type Mode = 'playing' | 'slowmo' | 'cards' | 'caja' | 'paused' | 'end' | 'comic';
 
 export interface RunOptions {
+  checkpoint?: Checkpoint;
+  saveCheckpoint?: (value: Checkpoint) => void;
   seed: number;
   mobile: boolean;
   loadout: Loadout;
@@ -94,6 +98,8 @@ export interface RunOptions {
  * front): floor, chaya trail, shadows, food, y-sorted world, weapons, overhead
  * cables, particles, numbers, world fx — then screen fx, HUD and overlays.
  */
+import { FairChallenge } from './systems/fairChallenge.ts';
+
 export class RunScene implements Scene {
   readonly root = new Container();
   readonly ctx: RunContext;
@@ -117,6 +123,9 @@ export class RunScene implements Scene {
   private readonly opts: RunOptions;
   private viewW = 480;
   private viewH = 270;
+  private readonly fairGround = new Graphics();
+  private readonly fairView = new FairView();
+  private checkpointZone = -1;
   private freeze = 0;
   private mode: Mode = 'playing';
   private slowLeft = 0;
@@ -219,6 +228,7 @@ export class RunScene implements Scene {
         this.weapons.sync(ctx);
       },
       time: 0,
+      fair: new FairChallenge(),
       stats: { kills: 0, food: 0, damageTaken: 0, damageBy: {}, damageFrom: {}, lastHit: '', killsBy: {}, bossesBeaten: [], temblorQuieto: false },
       progress: { level: 1, xp: 0, lucas: 0, bosses: 0, wallet: 0 },
       onKill: (e, source) => {
@@ -317,6 +327,7 @@ export class RunScene implements Scene {
     this.shadows.addChildAt(this.shrines.ground, 1);
     this.worldRoot.addChild(
       this.weapons.floor,
+      this.fairGround,
       ctx.telegraphs.root,
       this.shadows,
       ctx.clouds.root,
@@ -338,6 +349,7 @@ export class RunScene implements Scene {
       this.horizon.root,
       screen.screen,
       this.hud.root,
+      this.fairView.root,
       this.banner.root,
       this.tutorial.root,
       this.levelUp.root,
@@ -354,17 +366,26 @@ export class RunScene implements Scene {
       else if (this.options.open) this.closeOptions();
       else this.togglePause();
     });
+    input.onPress('KeyE', () => {
+      if (this.mode === 'playing') this.events.interact();
+    });
     input.onPress('KeyP', () => this.togglePause());
     input.onPress('KeyR', () => {
       if (this.mode === 'end') this.opts.onRestart();
     });
-    ['Digit1', 'Digit2', 'Digit3', 'Digit4'].forEach((code, i) => input.onPress(code, () => this.levelUp.pressNumber(i)));
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4'].forEach((code, i) => input.onPress(code, () => {
+      if (this.mode === 'playing' && this.ctx.fair?.choices.length) {
+        const choice = this.ctx.fair.choices[i];
+        if (choice !== undefined) this.ctx.fair.choose(choice, this.ctx);
+      } else this.levelUp.pressNumber(i);
+    }));
     input.onPress('ArrowLeft', () => this.navigate(-1));
     input.onPress('ArrowRight', () => this.navigate(1));
     input.onPress('ArrowUp', () => this.navigate(-1));
     input.onPress('ArrowDown', () => this.navigate(1));
     const confirm = (): void => {
-      if (this.mode === 'comic') this.comic?.next();
+      if (this.mode === 'playing' && this.ctx.fair?.choices.length) this.fairView.focus.press();
+      else if (this.mode === 'comic') this.comic?.next();
       else if (this.mode === 'cards') this.levelUp.confirm();
       else if (this.mode === 'caja') this.caja.tap();
       else if (this.mode === 'paused') this.pause.focus.press();
@@ -376,7 +397,8 @@ export class RunScene implements Scene {
 
   /** Arrow keys / d-pad in the menus of the run. */
   private navigate(dir: number): void {
-    if (this.mode === 'cards') this.levelUp.move(dir);
+    if (this.mode === 'playing' && this.ctx.fair?.choices.length) this.fairView.focus.move(dir);
+    else if (this.mode === 'cards') this.levelUp.move(dir);
     else if (this.mode === 'paused' && !this.options.open) this.pause.focus.move(dir);
     else if (this.mode === 'end') this.end.focus.move(dir);
   }
@@ -404,6 +426,27 @@ export class RunScene implements Scene {
     this.music.setBoss(false);
     this.music.setMuffled(false);
     this.journey.begin(this.ctx);
+    const saved = this.opts.checkpoint;
+    if (saved) {
+      const ctx = this.ctx;
+      ctx.time = saved.time;
+      this.rerolls = saved.rerolls ?? this.rerolls;
+      this.banishes = saved.banishes ?? this.banishes;
+      Object.assign(ctx.progress, saved.progress);
+      Object.assign(ctx.stats, saved.stats);
+      ctx.build.weapons.splice(0, ctx.build.weapons.length, ...saved.weapons);
+      ctx.build.traits.splice(0, ctx.build.traits.length, ...saved.traits);
+      saved.evolved.forEach(id => ctx.build.evolved.add(id));
+      saved.banished.forEach(id => ctx.build.banished.add(id));
+      for (const id of saved.relics) ctx.fair?.owned.add(id);
+      ctx.refreshMods();
+      ctx.player.hp = Math.min(ctx.player.maxHp, saved.hp);
+      this.journey.restoreCheckpoint(saved.zone, ctx);
+      ctx.rng.restore(saved.rng[0]);
+      ctx.rngDirector.restore(saved.rng[1]);
+      ctx.rngCards.restore(saved.rng[2]);
+      this.checkpointZone = saved.zone;
+    }
   }
 
   exit(): void {
@@ -540,7 +583,19 @@ export class RunScene implements Scene {
     this.weather.update(dt, ctx.wind.x, ctx.rng);
     this.journey.update(dt, real, ctx);
     if (this.mode === 'end') return;
-    this.events.update(dt, ctx, this.journey.bossActive);
+    if (!this.journey.bossActive && !this.journey.antartica && !ctx.player.dead
+      && this.mode === 'playing' && this.checkpointZone !== this.journey.zoneIndex) {
+      this.checkpointZone = this.journey.zoneIndex;
+      this.opts.saveCheckpoint?.({
+        seed: this.opts.seed, loadout: this.opts.loadout, zone: this.checkpointZone, time: ctx.time,
+        hp: ctx.player.hp, rerolls: this.rerolls, banishes: this.banishes, progress: ctx.progress, stats: ctx.stats, weapons: ctx.build.weapons,
+        traits: ctx.build.traits, evolved: [...ctx.build.evolved], banished: [...ctx.build.banished],
+        relics: [...(ctx.fair?.owned ?? [])],
+        rng: [ctx.rng.snapshot(), ctx.rngDirector.snapshot(), ctx.rngCards.snapshot()],
+      });
+    }
+    this.events.update(dt, ctx, this.journey.bossActive, this.journey.zone.id);
+    ctx.fair?.update(dt, ctx, this.journey.bossActive);
     this.shrines.update(dt, ctx, this.journey.bossActive);
     // City scenery: landmark on the horizon, local props on the ground, and the small events.
     const km = this.journey.km(ctx.time);
@@ -748,6 +803,7 @@ export class RunScene implements Scene {
         level: ctx.progress.level,
         hp: Math.ceil(ctx.player.hp),
         maxHp: ctx.player.maxHp,
+        relics: [...(ctx.fair?.owned ?? [])],
       },
     );
   }
@@ -849,6 +905,18 @@ export class RunScene implements Scene {
   }
 
   render(alpha: number): void {
+    const fair = this.ctx.fair;
+    this.fairGround.clear();
+    const boundary = fair?.boundary;
+    if (boundary) this.fairGround.circle(boundary.x, boundary.y, boundary.radius).stroke({ color: 0xffce68, alpha: 0.7, width: 2 });
+    const coin = fair?.coin;
+    if (coin) this.fairGround.circle(coin.x, coin.y, 5).fill(0xffce68).stroke({ color: 0x2a2233, width: 2 });
+    this.fairView.root.visible = this.mode === 'playing' && !this.ctx.player.dead;
+    if (fair && this.fairView.root.visible) {
+      this.fairView.show(fair, this.ctx, this.viewW, this.viewH, id => {
+        if (this.mode === 'playing') fair.choose(id, this.ctx);
+      });
+    }
     const ctx = this.ctx;
     const p = ctx.player;
     const a = this.mode === 'playing' || this.mode === 'slowmo' ? alpha : 1;

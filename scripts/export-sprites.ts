@@ -7,7 +7,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { hexToRgb, PALETTE } from '../src/art/palette.ts';
+import { hexToRgb, ART_PALETTE } from '../src/art/palette.ts';
 import { SPRITES } from '../src/art/sprites/index.ts';
 import { encodePng } from './png.ts';
 import { baseFrame, editableAnims, sheetRgba, stripName, stripRgba } from './sprite-retouch.ts';
@@ -45,9 +45,9 @@ for (const def of SPRITES) {
 // The palette: one 16×16 square per colour, in the order of src/art/palette.ts.
 const sw = 16;
 const pw = sw * 8;
-const ph = sw * Math.ceil(PALETTE.length / 8);
+const ph = sw * Math.ceil(ART_PALETTE.length / 8);
 const pal = new Uint8Array(pw * ph * 4);
-PALETTE.forEach((c, i) => {
+ART_PALETTE.forEach((c, i) => {
   const [r, g, b] = hexToRgb(c.hex);
   const x0 = (i % 8) * sw;
   const y0 = Math.floor(i / 8) * sw;

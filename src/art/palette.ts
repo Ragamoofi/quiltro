@@ -1,11 +1,14 @@
 /**
- * QUILTRO's fixed 32-colour palette.
+ * QUILTRO's 32-colour base palette, extended by licensed fauna colors below.
  *
  * Every sprite is a matrix of characters; each character maps to one entry here.
  * `.` (TRANSPARENT) is the only character that is not a colour.
  * The base colours come from the GDD ("Paleta"); the rest are the shadows and
  * lights derived from them so every zone has a muted floor and a bright cast.
  */
+import { FAUNA_PALETTE } from './faunaPalette.ts';
+import { CAST_PALETTE } from './castPalette.ts';
+
 export interface PaletteColor {
   /** Single character used in sprite matrices. */
   readonly char: string;
@@ -63,7 +66,9 @@ export const PALETTE: readonly PaletteColor[] = [
   { char: 'n', hex: '#D9CBB0', name: 'Arena clara', use: 'Arena, polvo, luz de piedra' },
 ];
 
-const BY_CHAR = new Map(PALETTE.map((c) => [c.char, c]));
+/** Imported fauna retains its authored shading instead of collapsing into the UI's 32 colors. */
+export const ART_PALETTE: readonly PaletteColor[] = [...PALETTE, ...FAUNA_PALETTE, ...CAST_PALETTE];
+const BY_CHAR = new Map(ART_PALETTE.map((c) => [c.char, c]));
 
 /** Returns the palette entry for a matrix character, or undefined for '.' / unknown. */
 export function colorOf(char: string): PaletteColor | undefined {

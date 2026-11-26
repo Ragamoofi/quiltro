@@ -30,7 +30,7 @@ export class LoadingScene implements Scene {
     this.onDone = onDone;
     this.dogAnim = anim('quiltro', 'quieto');
     this.dog = new Sprite(this.dogAnim.textures[0]);
-    this.dog.anchor.set(0.5, 22 / 24);
+    this.dog.anchor.copyFrom(this.dog.texture.defaultAnchor ?? { x: 0.5, y: 1 });
     this.dog.scale.set(3);
     this.kiteAnim = anim('volantinAzul', 'ondear');
     this.kite = new Sprite(this.kiteAnim.textures[0]);

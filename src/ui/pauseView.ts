@@ -4,7 +4,9 @@ import type { Build } from '../game/build.ts';
 import { PILARES, PILLAR_POINTS, pillarTier } from '../data/pilares.ts';
 import { PLAYER_BASE } from '../data/personajes.ts';
 import { formatNumber, t } from '../i18n/index.ts';
+import { RELICS } from '../game/systems/fairChallenge.ts';
 import { PixelText } from './text.ts';
+import { evolutionGuideView } from './evolutionGuideView.ts';
 import { Button, C, ditherOverlay, FocusList, panel } from './widgets.ts';
 
 export interface PauseStats {
@@ -14,6 +16,7 @@ export interface PauseStats {
   level: number;
   hp: number;
   maxHp: number;
+  relics?: readonly number[];
 }
 
 /**
@@ -81,6 +84,12 @@ export class PauseView {
       });
     });
     this.root.addChild(dots);
+    if (stats.relics?.length) {
+      const names = stats.relics.flatMap(id => RELICS[id]?.name ?? []);
+      const relics = new PixelText(names.join(' · '), { color: 'a', maxWidth: pw - 20, align: 'center' });
+      relics.position.set(Math.round((viewW - relics.width) / 2), y0 + 99);
+      this.root.addChild(relics);
+    }
 
     // Two columns: the dog's numbers right now, and the pillars with their bonus.
     const colY = y0 + 112;
@@ -155,7 +164,16 @@ export class PauseView {
     options.position.set(x0 + 18 + bw, by);
     quit.position.set(x0 + 24 + bw * 2, by);
     this.root.addChild(resume, options, quit);
-    this.focus.set([resume, options, quit]);
+    const guide = new Button(t('guiaEvoluciones.boton'), 36, 16, () => {
+      const view = evolutionGuideView(build, viewW, viewH, this.focus, () => {
+        view.destroy({ children: true });
+        this.focus.set([resume, guide, options, quit]);
+      });
+      this.root.addChild(view);
+    }, 'b', 'w');
+    guide.position.set(x0 + pw - 44, y0 + 7);
+    this.root.addChild(guide);
+    this.focus.set([resume, guide, options, quit]);
   }
 
   hide(): void {

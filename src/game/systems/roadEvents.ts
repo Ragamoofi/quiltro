@@ -1,3 +1,4 @@
+import { REGIONAL_TRIALS } from './fairChallenge.ts';
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { anim } from '../../art/assets.ts';
 import { deriveSeed, Rng } from '../../core/rng.ts';
@@ -6,7 +7,7 @@ import { PixelText } from '../../ui/text.ts';
 import { C } from '../../ui/widgets.ts';
 import type { RunContext } from '../context.ts';
 
-export type EventKind = 'cofre' | 'animita' | 'feriante';
+export type EventKind = 'cofre' | 'animita' | 'feriante' | 'refugio';
 
 /** Seconds before the first event, between events (min, max) and how long one waits to be used. */
 export const EVENT_TIMING = { first: 50, between: [70, 100], stays: 45 } as const;
@@ -30,6 +31,7 @@ export function chestPrice(level: number, opened: number): number {
 
 interface Active {
   kind: EventKind;
+  zone: string;
   x: number;
   y: number;
   age: number;
@@ -72,13 +74,29 @@ export class RoadEvents {
     return this.active?.kind ?? null;
   }
 
-  update(dt: number, ctx: RunContext, bossActive: boolean): void {
+  private alternate: Active | null = null;
+  private requested = false;
+
+  interact(): void { this.requested = true; }
+
+  update(dt: number, ctx: RunContext, bossActive: boolean, zone = 'norte'): void {
+    const other = this.alternate;
+    const current = this.active;
+    if (other && current && Math.hypot(ctx.player.x - other.x, ctx.player.y - other.y)
+      < Math.hypot(ctx.player.x - current.x, ctx.player.y - current.y)) {
+      this.active = other;
+      this.alternate = current;
+    }
     const a = this.active;
     if (!a) {
-      if (ctx.time >= this.next && !bossActive && !ctx.player.dead) this.spawn(ctx);
+      this.requested = false;
+      if (ctx.time >= this.next && !bossActive && !ctx.player.dead) this.spawn(ctx, zone);
       return;
     }
+    const requested = this.requested;
+    this.requested = false;
     a.age += dt;
+    if (this.alternate) this.alternate.age = a.age;
     a.nag -= dt;
     // A boss arrives or the wait is over: the event goes away until the next one.
     if (a.age > EVENT_TIMING.stays || (bossActive && a.age > 1)) {
@@ -91,10 +109,11 @@ export class RoadEvents {
     switch (a.kind) {
       case 'cofre': {
         a.sprite.y = Math.round(a.y + Math.sin(a.age * 3) * 1);
-        if (dist < REACH.cofre && !p.dead) {
+        if (requested && !bossActive && dist < REACH.cofre && !p.dead) {
           const price = chestPrice(ctx.progress.level, this.opened);
           if (ctx.progress.wallet >= price) {
             ctx.progress.wallet -= price;
+            ctx.fair?.chestOpened(ctx, a.x, a.y);
             this.opened++;
             this.burst(ctx, a, ['a', 'y', 'W']);
             ctx.sfx.play('campana');
@@ -106,7 +125,7 @@ export class RoadEvents {
             ctx.banner(t('eventos.cofre.faltan', { n: price - ctx.progress.wallet }), 'w', t('eventos.cofre.faltanSub'));
           }
         }
-        if (this.active === a && a.label) a.label.text = t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) });
+        if (this.active === a && a.label) a.label.text = t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) }) + ' [E / TOCA]';
         break;
       }
       case 'animita': {
@@ -122,8 +141,16 @@ export class RoadEvents {
         }
         break;
       }
+      case 'refugio': {
+        if (requested && !bossActive && dist < REACH.feriante && !p.dead) {
+          p.heal(Math.ceil(p.maxHp * 0.25), ctx);
+          ctx.banner('Refugio', 'a', 'Recuperas un cuarto de tu vida máxima.');
+          this.finish(ctx);
+        }
+        break;
+      }
       case 'feriante': {
-        if (dist < REACH.feriante && !p.dead) {
+        if (requested && !bossActive && dist < REACH.feriante && !p.dead) {
           ctx.food.dropValue(70 + ctx.progress.level * 8, p.x, p.y - 14, ctx, 40);
           ctx.food.drop('mote', p.x + 20, p.y - 12, ctx);
           this.burst(ctx, a, ['y', 'p', 't', 'W']);
@@ -131,6 +158,7 @@ export class RoadEvents {
           ctx.banner(t('eventos.feriante.nombre'), 'r', t('eventos.feriante.trato'));
           this.finish(ctx);
           // "Lleva, lleva…": and then the neighbourhood arrives.
+          ctx.fair?.start(ctx, a.zone, a.x, a.y);
           this.onCrowd(18 + Math.floor(ctx.time / 120));
         }
         break;
@@ -144,16 +172,28 @@ export class RoadEvents {
     this.place(ctx, kind);
   }
 
-  private spawn(ctx: RunContext): void {
+  private spawn(ctx: RunContext, zone: string): void {
     // The animitas now live on their own as shrines (systems/shrines.ts); the road keeps the chest and the stall.
-    const kind: EventKind = (['cofre', 'animita', 'feriante'] as const)[this.rng.weighted([55, 0, 45])] ?? 'cofre';
-    this.place(ctx, kind);
+    const weights = zone === 'norte' ? [45, 30, 25]
+      : zone === 'centro' ? [35, 15, 50]
+        : zone === 'sur' ? [45, 25, 30]
+          : [50, 20, 30];
+    const kind: EventKind = (['cofre', 'refugio', 'feriante'] as const)[this.rng.weighted(weights)] ?? 'cofre';
+    if (kind === 'cofre') {
+      this.place(ctx, kind, zone);
+      return;
+    }
+    const angle = this.rng.range(0, Math.PI * 2);
+    this.place(ctx, 'refugio', zone, angle, false);
+    this.alternate = this.active;
+    this.place(ctx, 'feriante', zone, angle + Math.PI, false);
+    ctx.banner('Bifurcación', 'a', 'Elige el refugio o el desafío. El otro camino se cerrará.');
   }
 
-  private place(ctx: RunContext, kind: EventKind): void {
+  private place(ctx: RunContext, kind: EventKind, zone = 'norte', angle?: number, announce = true): void {
     const p = ctx.player;
     // Close enough to be on screen and to walk to, in a direction the dice choose.
-    const ang = this.rng.range(0, Math.PI * 2);
+    const ang = angle ?? this.rng.range(0, Math.PI * 2);
     const dist = this.rng.range(95, 130);
     const x = Math.round(p.x + Math.cos(ang) * dist);
     const y = Math.round(p.y + Math.sin(ang) * dist * 0.6);
@@ -162,21 +202,40 @@ export class RoadEvents {
     sprite.anchor.set(0.5, 1);
     sprite.position.set(x, y);
     sprite.zIndex = y;
+    if (kind !== 'animita') {
+      sprite.eventMode = 'static';
+      sprite.cursor = 'pointer';
+      sprite.on('pointertap', () => this.interact());
+    }
     this.root.addChild(sprite);
     let label: PixelText | null = null;
     if (kind === 'cofre') {
-      label = new PixelText(t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) }), { color: 'a', outline: 'k' });
+      label = new PixelText(t('eventos.cofre.precio', { n: chestPrice(ctx.progress.level, this.opened) }) + ' [E / TOCA]', { color: 'a', outline: 'k' });
       label.position.set(x - Math.round(label.width / 2), y - 30);
       label.zIndex = 1e7;
       this.root.addChild(label);
     }
-    this.active = { kind, x, y, age: 0, charge: 0, sprite, label, nag: 0 };
+    if (kind === 'feriante' || kind === 'refugio') {
+      label = new PixelText(kind === 'refugio' ? 'Refugio: cura 25% [E / TOCA]' : (REGIONAL_TRIALS[zone]?.name ?? 'Feria') + ' + horda [E / TOCA]', { color: 'a', outline: 'k' });
+      label.position.set(x - Math.round(label.width / 2), y - 30);
+      label.zIndex = 1e7;
+      this.root.addChild(label);
+    }
+    this.active = { kind, zone, x, y, age: 0, charge: 0, sprite, label, nag: 0 };
+    if (!announce) return;
+    if (kind === 'refugio') {
+      ctx.banner('Refugio cerca', 'a', 'Acércate para recuperar vida.');
+      return;
+    }
     const text = kind === 'cofre' ? 'eventos.cofre' : kind === 'animita' ? 'eventos.animita' : 'eventos.feriante';
     ctx.banner(t(`${text}.nombre`), 'a', t(`${text}.aviso`));
     ctx.sfx.play('zona', { pitch: 1.4, gain: 0.6 });
   }
 
   private finish(ctx: RunContext): void {
+    this.alternate?.sprite.destroy();
+    this.alternate?.label?.destroy();
+    this.alternate = null;
     const a = this.active;
     if (!a) return;
     a.sprite.destroy();

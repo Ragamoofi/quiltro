@@ -5,6 +5,7 @@
   "description": "QUILTRO: roguelite de supervivencia con meta incremental ambientado en Chile.",
   "type": "module",
   "scripts": {
+    "sprites:importar-fauna": "node scripts/import-fauna.ts",
     "sprites": "node scripts/build-sprites.ts",
     "sprites:exportar": "node scripts/export-sprites.ts",
     "contraste": "node scripts/contraste.ts --quiet",

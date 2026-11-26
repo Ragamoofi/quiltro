@@ -8,6 +8,8 @@ import { jefesSprites } from './jefes.ts';
 import { cuchaDef, moaiDef, objetosCucha, vecinosDef } from './cucha.ts';
 import { personajesSprites } from './personajes.ts';
 import { personajesSprites2 } from './personajes2.ts';
+import { elencoSprites } from './elenco.ts';
+import { importedFauna } from './faunaImported.ts';
 import { manoDef, martinaDef, teclaDef, volantinAzul } from './historia.ts';
 import { sueloAntartica, sueloCosta, sueloLagos, sueloNorte, sueloPatagonia, sueloSantiago, sueloSur } from './suelos.ts';
 import { caja, chorrillana, completo, moteConHuesillo, silbido, temblor } from './objetos.ts';
@@ -28,7 +30,7 @@ import { eventosSprites } from './eventos.ts';
 
 /** Every sprite in the game. The build script and /sprites.html read this list. */
 export const SPRITES: readonly SpriteDef[] = [
-  quiltro,
+  elencoSprites.find(sprite => sprite.name === 'quiltro') ?? quiltro,
   zancudo,
   paloma,
   volantin,
@@ -71,8 +73,8 @@ export const SPRITES: readonly SpriteDef[] = [
   nubeToxica,
   remolinoDef,
   ...jefesSprites,
-  ...personajesSprites,
-  ...personajesSprites2,
+  ...personajesSprites.map((sprite) => importedFauna.find((updated) => updated.name === sprite.name) ?? elencoSprites.find(updated => updated.name === sprite.name) ?? sprite),
+  ...personajesSprites2.map((sprite) => importedFauna.find((updated) => updated.name === sprite.name) ?? elencoSprites.find(updated => updated.name === sprite.name) ?? sprite),
   objetosCucha,
   cuchaDef,
   vecinosDef,

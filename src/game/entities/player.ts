@@ -174,6 +174,7 @@ export class Player {
 
   heal(amount: number, ctx: RunContext): void {
     if (this.dead) return;
+    ctx.fair?.overheal(Math.max(0, this.hp + amount - this.maxHp), ctx);
     const before = this.hp;
     this.hp = Math.min(this.maxHp, this.hp + amount);
     if (this.hp - before >= 1) {
@@ -354,6 +355,7 @@ export class Player {
     this.setAnim('ladrar');
     const radius = px(n.area);
     ctx.enemies.shockwave(this.x, this.y - 8, radius, n.damage, ctx);
+    ctx.fair?.chargeWeapon();
     ctx.screen.guau(this.x, this.y, radius);
     ctx.shake.add(0.55);
     ctx.sfx.play(this.voice.sound, { pitch: this.voice.pitch * (0.95 + ctx.rng.range(0, 0.1)) });

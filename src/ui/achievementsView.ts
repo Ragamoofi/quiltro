@@ -8,13 +8,15 @@ import { LOGROS } from '../data/logros.ts';
 import { PERSONAJES } from '../data/personajes.ts';
 import { formatNumber, hasKey, t } from '../i18n/index.ts';
 import type { SaveData } from '../meta/save.ts';
+import { OBJECTIVES } from '../meta/objectives.ts';
+import { RELICS } from '../game/systems/fairChallenge.ts';
 import { PixelText } from './text.ts';
 import { Button, C, ditherOverlay, panel } from './widgets.ts';
 
 /** What the view reads from the save. */
-export type AchievementsSave = Pick<SaveData, 'achievements' | 'bestiary' | 'bossesBeaten' | 'totals' | 'best' | 'bestRunLucas' | 'stats' | 'pasajesGanados'>;
+export type AchievementsSave = Pick<SaveData, 'achievements' | 'bestiary' | 'bossesBeaten' | 'totals' | 'best' | 'bestRunLucas' | 'stats' | 'pasajesGanados' | 'history'>;
 
-type Tab = 'logros' | 'bestiario' | 'estadisticas';
+type Tab = 'logros' | 'bestiario' | 'estadisticas' | 'historial' | 'objetivos';
 
 /** The key with the most votes in a count table, with its count. */
 export function topOf(table: Readonly<Record<string, number>>): { id: string; n: number } | null {
@@ -87,7 +89,7 @@ const KIND_COLOR: Readonly<Record<Entry['kind'], string>> = { enemigo: 'r', jefe
  * Achievements and bestiary in one panel, two tabs, with pages. Secret achievements stay hidden
  * until earned; bestiary entries show a silhouette until the dog has beaten, used or seen them.
  */
-export function achievementsView(save: AchievementsSave, viewW: number, viewH: number, onClose: () => void, startTab: Tab = 'logros'): Container {
+export function achievementsView(save: SaveData, viewW: number, viewH: number, onClose: () => void, startTab: Tab = 'objetivos'): Container {
   const root = new Container();
   root.addChild(ditherOverlay(viewW, viewH));
   const w = Math.min(viewW - 16, 320);
@@ -110,15 +112,17 @@ export function achievementsView(save: AchievementsSave, viewW: number, viewH: n
 
   const draw = (): void => {
     body.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const title = new PixelText(t(tab === 'logros' ? 'meta.logrosTitulo' : tab === 'bestiario' ? 'meta.bestiarioTitulo' : 'meta.estadisticasTitulo'), { color: 'a', outline: 'k' }, 2);
+    const title = new PixelText(tab === 'objetivos' ? 'Objetivos' : tab === 'historial' ? 'Historial de viajes' : t(tab === 'logros' ? 'meta.logrosTitulo' : tab === 'bestiario' ? 'meta.bestiarioTitulo' : 'meta.estadisticasTitulo'), { color: 'a', outline: 'k' }, 2);
     title.position.set(Math.round((w - title.width) / 2), 5);
     body.addChild(title);
 
     // Tabs.
-    const half = Math.floor((w - 28) / 3);
+    const half = Math.floor((w - 28) / 5);
     const tabs: { id: Tab; label: string }[] = [
       { id: 'logros', label: t('meta.pestanaLogros') },
       { id: 'bestiario', label: t('meta.pestanaBestiario') },
+      { id: 'objetivos', label: 'Metas' },
+      { id: 'historial', label: 'Viajes' },
       { id: 'estadisticas', label: t('meta.pestanaEstadisticas') },
     ];
     tabs.forEach((tb, i) => {
@@ -155,6 +159,41 @@ export function achievementsView(save: AchievementsSave, viewW: number, viewH: n
           swatch.position.set(w - 16, y + 1);
           body.addChild(swatch);
         }
+      });
+    } else if (tab === 'objetivos') {
+      OBJECTIVES.forEach((goal, i) => {
+        const claimed = save.claimedObjectives?.includes(goal.id);
+        const progress = Math.min(goal.target, goal.progress(save));
+        const unit = goal.id === 'temuco' ? ' km' : goal.id === 'weapons' ? ' evoluciones' : ' personajes';
+        const label = new PixelText(goal.name, { color: 'a', maxWidth: w - 24 });
+        const detail = new PixelText(formatNumber(progress) + '/' + formatNumber(goal.target) + unit
+          + ' · ' + goal.reward + ' lucas' + (claimed ? ' cobradas' : ''), { color: 'w', maxWidth: w - 24 });
+        label.position.set(12, TOP + 8 + i * 42);
+        detail.position.set(12, label.y + label.height + 4);
+        body.addChild(label, detail);
+      });
+    } else if (tab === 'historial') {
+      const history = Array.isArray(save.history) ? save.history : [];
+      pages = Math.max(1, history.length);
+      const trip = history[page];
+      const character = PERSONAJES.find(c => c.id === trip?.character);
+      const lines = trip ? [
+        character ? t(character.nameKey) : trip.character,
+        formatNumber(trip.km) + ' km · ' + Math.floor(trip.seconds / 60) + ' min · Pasaje ' + (trip.pasaje + 1),
+        trip.deathBy ? 'Caída: ' + causeName(trip.deathBy) : 'Viaje registrado',
+        'Armas: ' + trip.weapons.map(id => {
+          const weapon = ARMAS.find(a => a.id === id);
+          return weapon ? t(weapon.i18n + '.nombre') : id;
+        }).join(', '),
+        'Evoluciones: ' + (trip.evolutions.map(id => t(EVOLUCIONES.find(e => e.id === id)?.nameKey ?? id)).join(', ') || 'ninguna'),
+        'Reliquias: ' + (trip.relics.flatMap(id => RELICS[id]?.name ?? []).join(', ') || 'ninguna'),
+      ] : ['Todavía no hay viajes registrados.'];
+      let y = TOP + 8;
+      lines.forEach((line, i) => {
+        const text = new PixelText(line, { color: i ? 'w' : 'a', maxWidth: w - 24 });
+        text.position.set(12, y);
+        y += text.height + 7;
+        body.addChild(text);
       });
     } else if (tab === 'estadisticas') {
       const lines = statLines(save);

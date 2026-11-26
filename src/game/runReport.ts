@@ -53,6 +53,7 @@ export function runResult(ctx: RunContext, km: number, zones: string[], victory:
     seconds: ctx.time,
     level: ctx.progress.level,
     character: extras.character,
+    relics: [...(ctx.fair?.owned ?? [])],
     weapons: ctx.build.slotWeapons.map((w) => w.def.id),
     evolutions: EVOLUCIONES.filter((e) => ctx.build.evolved.has(e.weapon)).map((e) => e.id),
     daily: extras.daily,

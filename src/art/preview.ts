@@ -2,7 +2,7 @@
  * /sprites.html: every sprite animated at ×4 over the floor of every zone,
  * plus the palette. Plain canvas 2D so it does not depend on the game code.
  */
-import { PALETTE } from './palette.ts';
+import { ART_PALETTE } from './palette.ts';
 
 interface SheetFrame {
   frame: { x: number; y: number; w: number; h: number };
@@ -144,7 +144,7 @@ function blit(
 
 function renderPalette(): void {
   const el = $('palette');
-  for (const c of PALETTE) {
+  for (const c of ART_PALETTE) {
     const s = document.createElement('div');
     s.className = 'swatch';
     s.title = c.use;

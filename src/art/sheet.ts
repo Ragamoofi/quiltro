@@ -53,6 +53,16 @@ export interface SheetLayout {
 
 const PADDING = 1;
 
+/** Grow horizontally before exceeding the common 4096px GPU texture limit.
+ * More detailed characters otherwise turn the old 512px sheet into a 6000px strip. */
+export function layoutTextureSheet(sprites: readonly SpriteDef[], maxSide = 4096): SheetLayout {
+  for (let width = 512; width <= maxSide; width *= 2) {
+    const layout = layoutSheet(sprites, width);
+    if (layout.height <= maxSide) return layout;
+  }
+  throw new Error(`La hoja de sprites supera ${maxSide}px; hay que dividirla en varias texturas.`);
+}
+
 /** Shelf-packs every frame of every sprite into one sheet. */
 export function layoutSheet(sprites: readonly SpriteDef[], sheetWidth = 256): SheetLayout {
   const items: Omit<PackedFrame, 'x' | 'y'>[] = [];

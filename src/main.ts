@@ -1,3 +1,4 @@
+import { readCheckpoint, storeCheckpoint, type Checkpoint } from './game/checkpoint.ts';
 import { Application, Rectangle, TextureStyle } from 'pixi.js';
 import { loadSprites } from './art/assets.ts';
 import { COLORS } from './art/palette.ts';
@@ -232,15 +233,17 @@ async function boot(): Promise<void> {
   };
 
   /** `botSeed`: a balance-bot trip (plain Quiltro, fixed seed, nothing is saved). */
-  const makeRun = (daily: DailyRun | null = null, botSeed?: number, botCharacter?: string, botPasaje = 0): RunScene =>
+  const makeRun = (daily: DailyRun | null = null, botSeed?: number, botCharacter?: string, botPasaje = 0, checkpoint?: Checkpoint): RunScene =>
     new RunScene(input, sfx, music, {
-      seed: daily ? daily.seed : (botSeed ?? Date.now() >>> 0),
+      seed: checkpoint?.seed ?? (daily ? daily.seed : (botSeed ?? Date.now() >>> 0)),
+      ...(checkpoint ? { checkpoint } : {}),
+      ...(!daily && botSeed === undefined ? { saveCheckpoint: storeCheckpoint } : {}),
       mobile: isMobile(),
-      loadout: botCharacter
+      loadout: checkpoint?.loadout ?? (botCharacter
         ? { ...loadout(true), character: PERSONAJES.find((p) => p.id === botCharacter) ?? defaultLoadout().character, pasaje: botPasaje }
         : botSeed !== undefined
           ? { ...loadout(true), pasaje: botPasaje }
-          : loadout(daily !== null),
+          : loadout(daily !== null)),
       setTimeScale: (v) => {
         loop.timeScale = v;
       },
@@ -253,6 +256,7 @@ async function boot(): Promise<void> {
           finishDaily(data, daily, result.bestKm ?? result.km);
           persist();
         }
+        if (!daily) storeCheckpoint(null);
         return onFinish(result);
       },
       daily,
@@ -291,6 +295,11 @@ async function boot(): Promise<void> {
       () =>
         new MenuScene(input, sfx, data, {
           travel: () => travel(),
+          resume: () => {
+            const saved = readCheckpoint();
+            if (saved) switchTo(() => (run = makeRun(null, undefined, undefined, 0, saved)));
+          },
+          hasCheckpoint: readCheckpoint() !== null,
           daily: () => goDaily(),
           cucha: () => goCucha(),
           options: () => goOptions(),

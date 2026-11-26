@@ -612,7 +612,7 @@ export class Enemies {
   /** A weapon hit: rolls the critical, then applies damage. */
   hit(e: Enemy, base: number, fromX: number, fromY: number, knock: number, ctx: RunContext, source: string): void {
     const crit = ctx.rng.chance(ctx.mods.critChance);
-    this.damage(e, base * (crit ? PLAYER_BASE.critMultiplier + ctx.mods.critDamage : 1), crit, fromX, fromY, knock * (1 + ctx.mods.knockMult), ctx, source);
+    this.damage(e, base * (ctx.fair?.weaponMultiplier(source) ?? 1) * (crit ? PLAYER_BASE.critMultiplier + ctx.mods.critDamage : 1), crit, fromX, fromY, knock * (1 + ctx.mods.knockMult), ctx, source);
   }
 
   damage(e: Enemy, amount: number, crit: boolean, fromX: number, fromY: number, knock: number, ctx: RunContext, source: string): void {
@@ -623,6 +623,7 @@ export class Enemies {
       ctx.numbers.spawn(e.x, e.y - e.radius, amount, crit ? 'crit' : 'normal');
       return;
     }
+    if (crit) ctx.fair?.onCritical(e.x, e.y, ctx.time);
     const dealt = Math.min(e.hp, amount);
     e.hp -= amount;
     ctx.stats.damageBy[source] = (ctx.stats.damageBy[source] ?? 0) + dealt;

@@ -116,7 +116,7 @@ export function buildShareCard(info: ShareInfo): Container {
 
   const sprite = PERSONAJES.find((p) => p.id === info.character)?.sprite ?? 'quiltro';
   const dog = new Sprite(anim(sprite, 'trotar').textures[0]);
-  dog.anchor.set(0.5, 22 / 24);
+  dog.anchor.copyFrom(dog.texture.defaultAnchor ?? { x: 0.5, y: 1 });
   dog.scale.set(3);
   dog.position.set(Math.round(colX + colW / 2), 250);
   root.addChild(dog);

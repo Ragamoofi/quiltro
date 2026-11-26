@@ -81,6 +81,12 @@ export class Journey {
   /** Secret route to Rapa Nui (La Antártica only). */
   rapaNui: { x: number; y: number; found: boolean } | null = null;
 
+  restoreCheckpoint(index: number, ctx: RunContext): void {
+    this.visited.splice(0, this.visited.length, ...ZONAS.slice(0, index).map(zone => zone.id));
+    this.bossSpawnedFor = index - 1;
+    this.enterZone(index, ctx);
+  }
+
   private enterZone(index: number, ctx: RunContext): void {
     this.zoneIndex = index;
     this.zoneStart = ctx.time;

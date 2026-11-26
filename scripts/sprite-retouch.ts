@@ -12,7 +12,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { hexToRgb, PALETTE } from '../src/art/palette.ts';
+import { hexToRgb, ART_PALETTE } from '../src/art/palette.ts';
 import { PAÑOLETAS } from '../src/art/sprites/quiltro.ts';
 import { recolor, type Frame, type SpriteDef } from '../src/art/types.ts';
 import { decodePng } from './png.ts';
@@ -28,7 +28,7 @@ export function stripName(sprite: string, anim: string): string {
   return `${sprite}__${anim}.png`;
 }
 
-const RGB = PALETTE.map((p) => ({ ch: p.char, rgb: hexToRgb(p.hex) }));
+const RGB = ART_PALETTE.map((p) => ({ ch: p.char, rgb: hexToRgb(p.hex) }));
 
 /** The palette character closest to a colour (plain RGB distance, weighted for the eye). */
 export function nearestChar(r: number, g: number, b: number): { ch: string; exact: boolean } {
@@ -55,7 +55,7 @@ export function stripRgba(frames: readonly Frame[], scale = 1): { width: number;
     rows.forEach((row, y) => {
       [...row].forEach((ch, x) => {
         if (ch === '.') return;
-        const hex = PALETTE.find((p) => p.char === ch)?.hex;
+        const hex = ART_PALETTE.find((p) => p.char === ch)?.hex;
         if (!hex) return;
         const [r, g, b] = hexToRgb(hex);
         for (let sy = 0; sy < scale; sy++) {

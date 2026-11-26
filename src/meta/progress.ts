@@ -1,3 +1,4 @@
+import { rewardObjectives } from './objectives.ts';
 import { PASAJES, pasajeAt } from '../data/pasajes.ts';
 import { FIRST_ZONE_BONUS_LUCAS, lucasForRun, upgradeCost } from '../data/balance.ts';
 import { CUCHA_PILARES, CUCHA_PILAR_NIVELES, IDLE, MEJORAS, VECINOS, type UpgradeDef } from '../data/cucha.ts';
@@ -39,6 +40,15 @@ export function level(save: SaveData, id: string): number {
 export function nextCost(save: SaveData, def: UpgradeDef): number | null {
   const l = level(save, def.id);
   return l >= def.maxLevel ? null : upgradeCost(def.baseCost, l);
+}
+
+export function refundLastUpgrade(save: SaveData, def: UpgradeDef): number {
+  const current = level(save, def.id);
+  if (!Number.isInteger(current) || current < 1 || current > def.maxLevel) return 0;
+  const amount = upgradeCost(def.baseCost, current - 1);
+  save.upgrades[def.id] = current - 1;
+  save.lucas += amount;
+  return amount;
 }
 
 export function canBuy(save: SaveData, id: string): boolean {
@@ -126,6 +136,7 @@ export interface RunResult {
   bestKm?: number;
   /** Second report of the same run (after continuing to Antarctica). */
   continued?: boolean;
+  relics?: readonly number[];
   kills: number;
   bosses: number;
   bossesBeaten: readonly string[];
@@ -197,6 +208,15 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
     }
   }
 
+  if (r.character && r.seconds !== undefined) {
+    const history = Array.isArray(save.history) ? save.history : [];
+    const record = {
+      character: r.character, km: r.bestKm ?? r.km, seconds: r.seconds, pasaje: r.pasaje ?? 0,
+      weapons: [...(r.weapons ?? [])], evolutions: [...(r.evolutions ?? [])],
+      relics: [...(r.relics ?? [])], deathBy: r.deathBy ?? '',
+    };
+    save.history = [record, ...history.slice(r.continued ? 1 : 0, r.continued ? 10 : 9)];
+  }
   if (!r.continued) {
     save.totals.runs++;
     if (r.character) save.stats.characters[r.character] = (save.stats.characters[r.character] ?? 0) + 1;
@@ -226,7 +246,10 @@ export function applyRun(save: SaveData, r: RunResult): RunRewards {
   save.bestRunLucas = Math.max(save.bestRunLucas, runLucas);
 
   const newCharacters = checkUnlocks(save);
-  return { lucas, runLucas, zoneBonus, newZones, newAchievements, achievementLucas, newCharacters, newRecord, newPasaje };
+  const objectiveLucas = rewardObjectives(save);
+  save.lucas += objectiveLucas;
+  save.totals.lucasEarned += objectiveLucas;
+  return { lucas: lucas + objectiveLucas, runLucas, zoneBonus, newZones, newAchievements, achievementLucas, newCharacters, newRecord, newPasaje };
 }
 
 /** Unlocks characters whose condition is now met; returns the new ones. */

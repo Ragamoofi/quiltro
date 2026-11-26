@@ -1,4 +1,14 @@
 {
+  "guiaEvoluciones": {
+    "titulo": "Evoluciones",
+    "boton": "Guía",
+    "ayuda": "Arma al máximo + rasgo. Después abre una Caja del Almacén.",
+    "receta": "{arma} {nivel}/{max} + {rasgo} [{tiene}]",
+    "ready": "¡Lista! Busca una Caja del Almacén.",
+    "building": "En curso: completa esta combinación.",
+    "evolved": "Ya evolucionó en este viaje.",
+    "missing": "Todavía falta reunir la combinación."
+  },
   "juego": {
     "titulo": "QUILTRO",
     "lema": "Un quiltro. 4.300 km de Chile. Puro aguante."

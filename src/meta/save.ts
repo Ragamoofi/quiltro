@@ -50,7 +50,20 @@ export function defaultSettings(): Settings {
 const KEY = 'quiltro.save';
 const BACKUP_KEY = 'quiltro.save.bak';
 
+export interface TripRecord {
+  character: string;
+  km: number;
+  seconds: number;
+  pasaje: number;
+  weapons: string[];
+  evolutions: string[];
+  relics: number[];
+  deathBy: string;
+}
+
 export interface SaveData {
+  history?: TripRecord[];
+  claimedObjectives?: string[];
   version: number;
   lucas: number;
   /** Upgrade id → level bought. */

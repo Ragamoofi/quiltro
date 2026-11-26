@@ -45,7 +45,7 @@ export class Passives {
     this.ground.addChild(this.ring);
     for (let i = 0; i < MAX_PETS; i++) {
       const sprite = new Sprite();
-      sprite.anchor.set(0.5, 22 / 24);
+      sprite.anchor.copyFrom(this.run.textures[0]?.defaultAnchor ?? { x: 0.5, y: 1 });
       sprite.visible = false;
       this.pets.addChild(sprite);
       this.list.push({ sprite, x: 0, y: 0, prevX: 0, prevY: 0, bite: 0, facing: 1 });

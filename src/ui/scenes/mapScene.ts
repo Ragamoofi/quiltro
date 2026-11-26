@@ -72,7 +72,7 @@ export class MapScene implements Scene {
     this.root.addChild(rec, flag);
     const tex = anim('quiltro', 'quieto').textures[0];
     if (tex) this.dog.texture = tex;
-    this.dog.anchor.set(0.5, 22 / 24);
+    this.dog.anchor.copyFrom(this.dog.texture.defaultAnchor ?? { x: 0.5, y: 1 });
     this.root.addChild(this.dog);
     const skip = new PixelText(t('menu.saltar'), { color: 'G', outline: 'k' });
     skip.position.set(w - skip.width - 6, h - 12);

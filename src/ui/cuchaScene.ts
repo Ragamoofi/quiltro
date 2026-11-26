@@ -14,7 +14,7 @@ import { CIUDADES } from '../data/zonas.ts';
 import { FloorLayer } from '../game/world/floor.ts';
 import { Horizon, HORIZON_H } from '../game/world/horizon.ts';
 import { formatNumber, t } from '../i18n/index.ts';
-import { befriend, buy, idleEarnings, level, lucasPerHour, mainNeighbour, nextCost, pillarLevels } from '../meta/progress.ts';
+import { befriend, buy, idleEarnings, level, lucasPerHour, mainNeighbour, nextCost, pillarLevels, refundLastUpgrade } from '../meta/progress.ts';
 import type { SaveData } from '../meta/save.ts';
 import { PixelText } from './text.ts';
 import { Button, C, ditherOverlay, panel } from './widgets.ts';
@@ -198,7 +198,7 @@ export class CuchaScene implements Scene {
     const suffix = char.id === 'quiltro' && this.data.bandana !== 'b' ? `@${this.data.bandana}` : '';
     const petAnim = anim(char.sprite, `quieto${suffix}`);
     const pet = new Sprite(petAnim.textures[0]);
-    pet.anchor.set(0.5, 22 / 24);
+    pet.anchor.copyFrom(pet.texture.defaultAnchor ?? { x: 0.5, y: 1 });
     pet.position.set(cx + (portrait ? 30 : 44), cy + 6);
     pet.scale.set(portrait ? 1 : 2);
     this.layer.addChild(pet);
@@ -383,6 +383,8 @@ export class CuchaScene implements Scene {
     return box;
   }
 
+  private refundPending: string | undefined;
+
   private upgradeRow(def: UpgradeDef, w: number): Container {
     const row = new Container();
     const lvl = level(this.data, def.id);
@@ -396,6 +398,22 @@ export class CuchaScene implements Scene {
     for (let i = 0; i < def.maxLevel; i++) pips.rect(w - 4 - (def.maxLevel - i) * 4, 4, 3, 4).fill(C(i < lvl ? 'a' : 'K')).rect(w - 4 - (def.maxLevel - i) * 4, 4, 3, 1).fill(C('k'));
     const effect = new PixelText(t(`meta.efectos.${def.id}`), { color: 'w', outline: 'k', maxWidth: w - 62 });
     effect.position.set(4, 15);
+    if (lvl > 0) {
+      const refund = new Button(this.refundPending === def.id ? 'Confirmar' : 'Devolver', 54, 14, () => {
+        if (this.refundPending !== def.id) {
+          this.refundPending = def.id;
+          this.note = 'Recuperas ' + formatNumber(nextCost({ ...this.data, upgrades: { ...this.data.upgrades, [def.id]: lvl - 1 } }, def) ?? 0) + ' lucas. Toca Confirmar.';
+        } else {
+          const amount = refundLastUpgrade(this.data, def);
+          this.refundPending = undefined;
+          this.note = '+' + formatNumber(amount) + ' lucas devueltas';
+          this.hooks.save();
+        }
+        this.build();
+      }, 'K', 'w');
+      refund.position.set(w - 108, ROW_H - 19);
+      row.addChild(refund);
+    }
     const label = cost === null ? t('meta.maximo') : formatNumber(cost);
     const b = new Button(label, 50, 14, () => this.buy(def), 'v', 'w');
     b.setEnabled(cost !== null && this.data.lucas >= cost);

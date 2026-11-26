@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { anim, frameAt, type Anim } from '../../art/assets.ts';
 import type { Sfx } from '../../audio/sfx.ts';
 import type { Input } from '../../core/input.ts';
@@ -15,6 +15,8 @@ import { PixelText } from '../text.ts';
 import { Button, C, FocusList } from '../widgets.ts';
 
 export interface MenuHooks {
+  resume?: () => void;
+  hasCheckpoint?: boolean;
   travel(): void;
   daily(): void;
   cucha(): void;
@@ -41,6 +43,7 @@ export class MenuScene implements Scene {
   private readonly hooks: MenuHooks;
   private readonly sfx: Sfx;
   /** Fase 11.10: the whole of Chile as a postcard behind the menu. */
+  private lobbyArt?: Texture;
   private readonly backdrop = new Sprite();
   private readonly flag = new Graphics();
   private logo: Sprite | null = null;
@@ -65,6 +68,11 @@ export class MenuScene implements Scene {
     this.hooks = hooks;
     this.sfx = sfx;
     this.root.addChild(this.backdrop, this.layer, this.overlay);
+    void Assets.load<Texture>('./assets/lobby.png').then(texture => {
+      if (this.root.destroyed) return;
+      this.lobbyArt = texture;
+      this.resize(this.w, this.h);
+    }).catch(() => { /* Keep the built-in panorama if the image is unavailable. */ });
     for (const code of ['ArrowUp', 'ArrowLeft']) input.onPress(code, () => this.focus.move(-1));
     for (const code of ['ArrowDown', 'ArrowRight']) input.onPress(code, () => this.focus.move(1));
     input.onPress('Enter', () => (this.overlay.children.length ? this.closeOverlay() : this.focus.press()));
@@ -82,8 +90,11 @@ export class MenuScene implements Scene {
   resize(width: number, height: number): void {
     this.w = width;
     this.h = height;
-    if (this.backdrop.texture !== Texture.EMPTY) this.backdrop.texture.destroy(true);
-    this.backdrop.texture = chilePanorama(width, height);
+    if (this.backdrop.texture !== Texture.EMPTY && this.backdrop.texture !== this.lobbyArt) this.backdrop.texture.destroy(true);
+    this.backdrop.texture = this.lobbyArt ?? chilePanorama(width, height);
+    const scale = Math.max(width / this.backdrop.texture.width, height / this.backdrop.texture.height);
+    this.backdrop.scale.set(scale);
+    this.backdrop.position.set(width - this.backdrop.width, (height - this.backdrop.height) / 2);
     this.build();
   }
 
@@ -137,7 +148,7 @@ export class MenuScene implements Scene {
     const stretch = anim(ch.sprite, `estirar${suffix}`);
     const idle = anim(ch.sprite, `quieto${suffix}`);
     const dog = new Sprite(sleep.textures[0]);
-    dog.anchor.set(0.5, 22 / 24);
+    dog.anchor.copyFrom(dog.texture.defaultAnchor ?? { x: 0.5, y: 1 });
     dog.scale.set(2);
     dog.position.set(cx + 40, cy + 6);
     dog.eventMode = 'static';
@@ -160,8 +171,15 @@ export class MenuScene implements Scene {
       return { sprite: s, anim: a, x: 40 + i * 90, dir: i % 2 === 0 ? 1 : -1, t: i };
     });
 
+    if (this.lobbyArt) {
+      for (const child of this.layer.children) child.visible = child === logo || child === tagline || child === lucas || child === rec;
+      if (!portrait) {
+        logo.x = Math.round(w * 0.05);
+        tagline.x = logo.x;
+      }
+    }
     // Sticker buttons.
-    const bx = portrait ? 20 : Math.round(w * 0.6);
+    const bx = portrait ? 20 : Math.round(w * (this.lobbyArt ? 0.05 : 0.6));
     const bw = portrait ? w - 40 : Math.round(w * 0.34);
     let by = portrait ? Math.round(h * 0.6) : Math.max(this.logoY + 60, Math.round(h * 0.3));
     const buttons: Button[] = [];
@@ -173,6 +191,10 @@ export class MenuScene implements Scene {
       this.layer.addChild(b);
       buttons.push(b);
     };
+    if (this.hooks.hasCheckpoint) {
+      by = Math.min(by, h - 158);
+      add('Continuar zona', () => this.hooks.resume?.(), 'a', 'k', 24);
+    }
     add(t('ui.viajar'), () => this.hooks.travel(), 'a', 'k', 28);
     // Ruta del día: today's number; once the counted attempt is used it shows the km and repeats as practice.
     const today = dailyToday(this.data);
@@ -184,7 +206,7 @@ export class MenuScene implements Scene {
       'w',
     );
     add(t('ui.cucha'), () => this.hooks.cucha(), 'v', 'w');
-    add(t('ui.logros'), () => this.showAchievements(), 'K', 'w');
+    add('Metas y registros', () => this.showAchievements(), 'K', 'w');
     add(t('ui.opciones'), () => this.hooks.options(), 'K', 'w');
     this.focus.set(buttons);
   }
